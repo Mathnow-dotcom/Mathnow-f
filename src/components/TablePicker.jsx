@@ -1,0 +1,420 @@
+// src/components/TablePicker.jsx
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { themeConfigs } from '../utils/mathGameLogic.js';
+import { getOperationLabel, getOperationMaxLevel } from '../config/modulesConfig.js';
+import { useMathGamePick } from '../store/mathGameBridgeStore.js';
+import useGuardedVideoPlayback from '../hooks/useGuardedVideoPlayback.js';
+import VideoPlaybackGate from './ui/VideoPlaybackGate.jsx';
+import FloatingBackButton from './ui/FloatingBackButton.jsx';
+// import UserInfoBadge from './ui/UserInfoBadge.jsx';
+// import DailyStreakCounter from './ui/DailyStreakCounter.jsx';
+
+const COLOR_BELTS = ['white', 'yellow', 'green', 'blue', 'red', 'brown'];
+const ALL_BELTS_FOR_DISPLAY = ['white', 'yellow', 'green', 'blue', 'red', 'brown', 'black'];
+
+/* ----------------- Progress helpers (Updated to rely on Context/Hook) ----------------- */
+function areColorBeltsCompleted(level, tableProgress) {
+  const lvlKey = `L${level}`;
+  const levelProgress = tableProgress?.[lvlKey];
+  if (!levelProgress) return false;
+  return COLOR_BELTS.every((belt) => !!levelProgress[belt]?.completed);
+}
+function countCompletedBelts(level, tableProgress) {
+  const lvlKey = `L${level}`;
+  const levelProgress = tableProgress?.[lvlKey];
+  if (!levelProgress) return 0;
+  
+  // Count the first six color belts completed
+  let completedCount = COLOR_BELTS.filter((belt) => !!levelProgress[belt]?.completed).length; 
+  
+  // Check if the Black Belt section is fully completed (Degree 7)
+  const isBlackCompleted = levelProgress?.black?.completedDegrees?.includes(7);
+  if (isBlackCompleted) {
+    completedCount = ALL_BELTS_FOR_DISPLAY.length; // Max out the stars
+  } else if (completedCount === COLOR_BELTS.length && levelProgress?.black?.unlocked) {
+  }
+  
+  //  Use the total number of belts for the maximum display count
+  const totalStars = ALL_BELTS_FOR_DISPLAY.length; 
+  let currentStars = completedCount;
+  
+  if (!!levelProgress?.black?.completedDegrees?.includes(7)) {
+    currentStars = 7;
+  } else if (!!levelProgress?.brown?.completed) {
+    currentStars = 6;
+  }
+
+  return currentStars;
+}
+function isPreviousLevelCompleted(level, tableProgress) {
+  const prevLevel = level - 1;
+  if (prevLevel < 1) return true; // Level 1 is always unlocked
+  
+  // A level is unlocked if the previous one is marked 'completed' (by Black Belt Degree 7 completion)
+  // OR if the current level is explicitly marked 'unlocked' (e.g., L1 is unlocked on login).
+  const prevLvlKey = `L${prevLevel}`;
+  return !!tableProgress?.[prevLvlKey]?.completed || !!tableProgress?.[`L${level}`]?.unlocked;
+}
+
+/* ----------------- Theme resolver (Keep existing logic) ----------------- */
+const THEME_LS_KEYS = ['math-selected-theme', 'selected-theme', 'selectedTheme', 'theme', 'themeKey'];
+const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z]/g, '');
+const safeParse = (s) => { try { return JSON.parse(s); } catch { return null; } };
+
+function resolveThemeKey(preferredFromContext) {
+  const keys = Object.keys(themeConfigs);
+
+  if (preferredFromContext && typeof preferredFromContext === 'object') {
+    const k = preferredFromContext.key || preferredFromContext.id || preferredFromContext.name;
+    if (k && themeConfigs[k]) return k;
+  }
+  if (preferredFromContext && typeof preferredFromContext === 'string') {
+    if (themeConfigs[preferredFromContext]) return preferredFromContext;
+  }
+  if (typeof window !== 'undefined') {
+    for (const lsKey of THEME_LS_KEYS) {
+      const raw = localStorage.getItem(lsKey);
+      if (!raw) continue;
+      let candidate = raw;
+      if (raw.trim().startsWith('{')) {
+        const obj = safeParse(raw);
+        candidate = obj?.key || obj?.value || obj?.name || obj?.id || '';
+      }
+      if (themeConfigs[candidate]) return candidate;
+    }
+  }
+  // Fallback to the first theme defined if no preference found
+  return keys[0];
+}
+
+const operationFactVideoModules = import.meta.glob('/public/instructional-videos/*/level_*.mp4', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+
+const operationFactVideoMap = Object.entries(operationFactVideoModules).reduce(
+  (acc, [modulePath, url]) => {
+    const match = modulePath.match(/\/instructional-videos\/([^/]+)\/level_(\d+)\.mp4$/i);
+    if (!match) return acc;
+
+    const [, operation, level] = match;
+    if (!acc[operation]) acc[operation] = {};
+    acc[operation][Number(level)] = url;
+    return acc;
+  },
+  {}
+);
+
+const getDefaultFactVideoPath = (level) => {
+  if (level === 1) return '/fact_level1.mp4';
+  if (level === 2) return '/fact_level2.mp4';
+  if (level === 5) return '/fact_level5.mp4';
+  if (level === 6) return '/fact_level6.mp4';
+  return '/fact1.mp4';
+};
+
+const getFactVideoPath = (operation, level) => {
+  const operationVideos = operationFactVideoMap[operation] || {};
+
+  if (operationVideos[level]) {
+    return operationVideos[level];
+  }
+
+  // Division should temporarily reuse addition instructional videos.
+  if (operation === 'div') {
+    const additionVideos = operationFactVideoMap.add || {};
+    if (additionVideos[level]) {
+      return additionVideos[level];
+    }
+  }
+
+  if (operation === 'mul' && operationVideos[7]) {
+    return operationVideos[7];
+  }
+
+  return getDefaultFactVideoPath(level);
+};
+
+/* ----------------- Component ----------------- */
+const TablePicker = () => {
+  const navigate = useNavigate();
+  const {
+    startLevelEntry,
+    tableProgress,
+    selectedTheme,
+    selectedOperation,
+    operationsMeta,
+    showDailyStreakAnimation,
+    playFactVideoAfterStreak,
+    setPlayFactVideoAfterStreak,
+    setHideStatsUI,
+    isInitialPrepLoading,
+  } = useMathGamePick((ctx) => ({
+    startLevelEntry: ctx.startLevelEntry || (() => {}),
+    tableProgress: ctx.tableProgress || {},
+    selectedTheme: ctx.selectedTheme,
+    selectedOperation: ctx.selectedOperation,
+    operationsMeta: ctx.operationsMeta || {},
+    showDailyStreakAnimation: Boolean(ctx.showDailyStreakAnimation),
+    playFactVideoAfterStreak: Boolean(ctx.playFactVideoAfterStreak),
+    setPlayFactVideoAfterStreak: ctx.setPlayFactVideoAfterStreak || (() => {}),
+    setHideStatsUI: ctx.setHideStatsUI || (() => {}),
+    isInitialPrepLoading: Boolean(ctx.isInitialPrepLoading),
+  }));
+
+  // Resolve theme
+  const themeKey = resolveThemeKey(selectedTheme);
+  const currentTheme = themeConfigs[themeKey] || {};
+
+  const totalLevels =
+    operationsMeta?.[selectedOperation]?.maxLevel || getOperationMaxLevel(selectedOperation, 19);
+  const operationShortLabelMap = {
+    add: 'Addition',
+    sub: 'Subtraction',
+    mul: 'Multiplication',
+    div: 'Division',
+  };
+  const operationShortLabel = operationShortLabelMap[selectedOperation] || getOperationLabel(selectedOperation);
+
+// 1. Generate a Memoized list of unlocked level NUMBERS (1, 2, 3...)
+  const unlockedLevelsList = useMemo(() => {
+    const list = [];
+    for (let lvl = 1; lvl <= totalLevels; lvl++) {
+      if (lvl === 1 || isPreviousLevelCompleted(lvl, tableProgress)) {
+        list.push(lvl);
+      }
+    }
+    return list;
+  }, [tableProgress, totalLevels]);
+
+  // Part 7: Always focus on the highest unlocked level.
+  const maxUnlockedIndex = unlockedLevelsList.length > 0 ? unlockedLevelsList.length - 1 : 0;
+  // State variables for sliding animation and index selection are removed.
+  // The effective level is always the highest unlocked one.
+  const levelNumber = unlockedLevelsList[maxUnlockedIndex] || 1; // Default to Level 1
+  const unlocked = !!levelNumber; 
+
+  const [showFactVideo, setShowFactVideo] = useState(false);
+  const [loadingDots, setLoadingDots] = useState(1);
+  const factVideoRef = useRef(null);
+  useEffect(() => {
+  if (playFactVideoAfterStreak && !showDailyStreakAnimation) {
+    setShowFactVideo(true);
+    setHideStatsUI(true);
+    setPlayFactVideoAfterStreak(false); 
+  }
+}, [playFactVideoAfterStreak, showDailyStreakAnimation]);
+
+  useEffect(() => {
+    if (!isInitialPrepLoading) {
+      setLoadingDots(1);
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setLoadingDots((prev) => (prev >= 3 ? 1 : prev + 1));
+    }, 450);
+
+    return () => clearInterval(timer);
+  }, [isInitialPrepLoading]);
+
+  
+  // The rest of the state and handlers for navigation (goPrev/goNext) are removed.
+  
+  const completedBelts = countCompletedBelts(levelNumber, tableProgress);
+  const starDisplay = '⭐'.repeat(completedBelts) + '☆'.repeat(ALL_BELTS_FOR_DISPLAY.length - completedBelts);
+  // Theme-driven visuals for THIS level (index is levelNumber - 1)
+  const themeIdx = levelNumber > 0 ? levelNumber - 1 : 0;
+  const emojiForLevel = currentTheme?.tableEmojis?.[themeIdx] ?? '⭐';
+  const nameForLevel  = currentTheme?.tableNames?.[themeIdx]  ?? 'Level';
+  const colorForLevel = currentTheme?.tableColors?.[themeIdx] ?? 'bg-white border-gray-300';
+
+   // Extract bg class; fill card; yellow ring like :3000
+  const bgMatch = colorForLevel.match(/\bbg-[\w-]+\b/);
+  const cardBgCls = bgMatch ? bgMatch[0] : 'bg-white';
+  const ringCls = 'ring-yellow-300';
+  const lvlKey = `L${levelNumber}`;
+  const levelProgress = tableProgress?.[lvlKey];
+  const isBlackBeltUnlocked = !!levelProgress?.black?.unlocked;
+  const cardSizeClass = 'min-w-[280px] sm:min-w-[380px] lg:min-w-[500px] xl:min-w-[560px]';
+  const cardPaddingClass = 'p-6 lg:p-8 xl:p-10';
+  const emojiWrapClass = 'w-20 h-20 text-5xl lg:w-24 lg:h-24 lg:text-6xl xl:w-28 xl:h-28 xl:text-7xl';
+  const nameClass = 'text-3xl lg:text-4xl xl:text-5xl';
+  const levelLineClass = 'text-lg lg:text-2xl xl:text-[1.65rem]';
+  const starsClass = 'text-2xl lg:text-3xl xl:text-4xl mt-2 lg:mt-3';
+  const loadingText = `Loading${'.'.repeat(loadingDots)}`;
+
+  const handleSelect = () => {
+    if (!unlocked || isInitialPrepLoading) return; // Safeguard
+    startLevelEntry(levelNumber, { isBlackBeltUnlocked });
+  };
+
+  const factVideoSrc = getFactVideoPath(selectedOperation, levelNumber);
+  const closeFactVideo = useCallback(() => {
+    setShowFactVideo(false);
+    setHideStatsUI(false);
+  }, [setHideStatsUI]);
+
+  const { showTapToPlay: showFactTapToPlay, handleTapToPlay: handleFactTapToPlay } =
+    useGuardedVideoPlayback({
+      videoRef: factVideoRef,
+      enabled: Boolean(showFactVideo && factVideoSrc && !showDailyStreakAnimation),
+      onHardTimeout: closeFactVideo,
+      deps: [showFactVideo, factVideoSrc, showDailyStreakAnimation, closeFactVideo],
+      hardTimeoutMs: 7000,
+    });
+
+  if (showFactVideo && factVideoSrc && !showDailyStreakAnimation) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
+  <div className="w-full h-full flex items-center justify-center px-4">
+    <video
+      ref={factVideoRef}
+      src={factVideoSrc}
+      autoPlay
+      playsInline
+      className="
+        max-w-full
+        max-h-full
+        w-auto
+        h-auto
+        object-contain
+      "
+      onEnded={closeFactVideo}
+      onError={closeFactVideo}
+    />
+  </div>
+  <VideoPlaybackGate
+    visible={showFactTapToPlay}
+    onTapToPlay={handleFactTapToPlay}
+    onSkip={closeFactVideo}
+  />
+
+  {/* SKIP BUTTON */}
+  <button
+    onClick={closeFactVideo}
+    className="
+      absolute
+      top-4 right-4
+      z-[200]
+      bg-black/70
+      text-white
+      px-4 py-2
+      rounded-full
+      text-sm font-semibold
+    "
+  >
+    Skip
+  </button>
+</div>
+
+
+    );
+  }
+
+   return (
+    <div
+      className="min-h-screen w-full px-4 py-6 flex flex-col items-center"
+      style={{
+        backgroundImage: "url('/night_sky_landscape.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Back button fixed top-left */}
+      <FloatingBackButton onClick={() => navigate('/operations')} ariaLabel="Back to operations" />
+
+      {/* <UserInfoBadge /> */}
+
+      {/* <DailyStreakCounter /> */}
+
+      {/* Centered column: Card controls */}
+      <div className="w-full max-w-5xl flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
+        {/* Part 7: Removed side buttons. Only the card wrapper remains. */}
+        <div className="flex items-center justify-center gap-4">
+          
+          <div
+            className={`transition-transform`}
+            key={`card-${levelNumber}`}
+          >
+            {levelNumber ? ( 
+              <button
+                onClick={handleSelect}
+                className={`relative rounded-2xl ${cardPaddingClass} ${cardBgCls} text-white shadow-xl ${cardSizeClass} ring-4 ${ringCls} 
+                  hover:shadow-2xl hover:-translate-y-0.5 transition-transform`}
+                aria-label={`Open Level ${levelNumber}`}
+              >
+                <div className="absolute top-2 right-3 text-xl">{''}</div>
+
+                {/* Emoji badge (pop-in) */}
+                  <div className={`${emojiWrapClass} bg-black/10 rounded-full shadow-md flex items-center justify-center select-none mx-auto`}>
+                    <span aria-hidden="true" className="leading-none">
+                      {emojiForLevel}
+                    </span>
+                  </div>
+
+
+                {/* Themed table name */}
+                <div className={`${nameClass} font-extrabold drop-shadow-sm text-center`}>{nameForLevel}</div>
+
+                {/* Level line */}
+                <div className={`${levelLineClass} font-semibold mt-1 lg:mt-2 text-center opacity-95`}>
+                  {operationShortLabel} Level {levelNumber}
+                </div>
+
+                {/* Stars */}
+                <div className={`${starsClass} text-center`}>{starDisplay}</div>
+              </button>
+            ) : (
+                <div className="text-white text-3xl font-extrabold drop-shadow-lg text-center">
+                    No Levels Available
+                </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {isInitialPrepLoading && (
+        <div
+          className="fixed inset-0 z-[100200] flex items-center justify-center px-4"
+          style={{
+            backgroundImage: "url('/night_sky_landscape.jpg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundColor: 'rgba(2, 6, 23, 0.72)',
+            backdropFilter: 'blur(2px)',
+          }}
+        >
+          <div className="w-[92vw] max-w-[22rem] sm:max-w-[28rem] lg:max-w-[36rem] rounded-[1.6rem] sm:rounded-[1.9rem] border border-cyan-200/35 bg-slate-950/72 p-5 sm:p-7 lg:p-9 text-white shadow-2xl">
+            <div className="mx-auto w-fit">
+              <div
+                className={`relative rounded-2xl ${cardPaddingClass} ${cardBgCls} text-white shadow-xl ${cardSizeClass} ring-4 ${ringCls} animate-pulse`}
+              >
+                <div className={`${emojiWrapClass} bg-black/10 rounded-full shadow-md flex items-center justify-center select-none mx-auto`}>
+                  <span aria-hidden="true" className="leading-none">
+                    {emojiForLevel}
+                  </span>
+                </div>
+                <div className={`${nameClass} font-extrabold drop-shadow-sm text-center`}>{nameForLevel}</div>
+                <div className={`${levelLineClass} font-semibold mt-1 lg:mt-2 text-center opacity-95`}>
+                  {operationShortLabel} Level {levelNumber}
+                </div>
+                <div className={`${starsClass} text-center`}>{starDisplay}</div>
+              </div>
+            </div>
+
+            <div className="mt-4 sm:mt-5 text-center text-xl sm:text-2xl lg:text-3xl font-extrabold text-cyan-100 min-h-[2.2rem] sm:min-h-[2.7rem]">
+              {loadingText}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TablePicker;

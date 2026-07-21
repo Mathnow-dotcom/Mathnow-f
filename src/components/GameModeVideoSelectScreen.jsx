@@ -1,0 +1,136 @@
+﻿import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMathGamePick } from "../store/mathGameBridgeStore.js";
+
+const GameModeVideoSelectScreen = () => {
+  const {
+    videoOptions,
+    handleVideoSelection,
+    setIsTimerPaused,
+    setPausedTime,
+    setBonusCorrectStreak,
+    isTimerPaused,
+    pausedTime,
+    gameModeType,
+    showQuitModal,
+    isQuittingRef,
+  } = useMathGamePick((ctx) => ({
+    videoOptions: ctx.videoOptions || null,
+    handleVideoSelection: ctx.handleVideoSelection || (() => {}),
+    setIsTimerPaused: ctx.setIsTimerPaused || (() => {}),
+    setPausedTime: ctx.setPausedTime || (() => {}),
+    setBonusCorrectStreak: ctx.setBonusCorrectStreak || (() => {}),
+    isTimerPaused: Boolean(ctx.isTimerPaused),
+    pausedTime: ctx.pausedTime || 0,
+    gameModeType: ctx.gameModeType,
+    showQuitModal: Boolean(ctx.showQuitModal),
+    isQuittingRef: ctx.isQuittingRef || { current: false },
+  }));
+  const navigate = useNavigate();
+
+  // Pause timers/inactivity while the selection screen is visible.
+  useEffect(() => {
+    if (!isTimerPaused) {
+      setIsTimerPaused(true);
+      setPausedTime(Date.now());
+      return;
+    }
+    if (!pausedTime) {
+      setPausedTime(Date.now());
+    }
+  }, [isTimerPaused, pausedTime, setIsTimerPaused, setPausedTime]);
+
+  useEffect(() => {
+    if (gameModeType === 'bonus') {
+      setBonusCorrectStreak(0);
+    }
+  }, [gameModeType, setBonusCorrectStreak]);
+
+  // Redirect if no options are set (e.g., direct access)
+  useEffect(() => {
+    if (showQuitModal || isQuittingRef?.current) return;
+    if (!videoOptions) {
+      navigate("/game-mode", { replace: true });
+    }
+  }, [videoOptions, navigate, showQuitModal, isQuittingRef]);
+
+  useEffect(() => {
+    if (showQuitModal || isQuittingRef?.current) return;
+    if (!videoOptions) return;
+
+    const timeoutId = setTimeout(() => {
+      const options = [videoOptions.option1, videoOptions.option2].filter(Boolean);
+      if (options.length === 0) return;
+      const randomPick = options[Math.floor(Math.random() * options.length)];
+      handleVideoSelection(randomPick);
+    }, 5000);
+
+    return () => clearTimeout(timeoutId);
+  }, [videoOptions, handleVideoSelection, showQuitModal, isQuittingRef]);
+
+  if (!videoOptions) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
+  }
+
+  const headingText =
+    gameModeType === "surf"
+      ? "Accuracy Bonus Unlocked"
+      : gameModeType === "rocket"
+        ? "Rocket Bonus Unlocked"
+        : gameModeType === "bonus"
+          ? "Bonus Video Unlocked"
+        : "Speed Bonus Unlocked";
+
+  const renderCard = (option, accentClass) => {
+    const displayName =
+      option.name.length <= 16
+        ? option.name.toUpperCase()
+        : option.name.slice(0, 14).toUpperCase() + "_";
+
+    return (
+      <button
+        type="button"
+        onClick={() => handleVideoSelection(option)}
+        className={`w-full max-w-[560px] sm:flex-1 rounded-3xl overflow-hidden shadow-xl border-2 border-white/20 bg-slate-800/80 hover:bg-slate-700/90 transition-transform duration-150 ${accentClass}`}
+      >
+        <div className="w-full aspect-[16/10] bg-slate-900 overflow-hidden">
+          {option.thumbnailUrl ? (
+            <img
+              src={option.thumbnailUrl}
+              alt={option.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
+              No thumbnail
+            </div>
+          )}
+        </div>
+        <div className="px-5 py-4 text-center">
+          <div className="text-xl sm:text-2xl font-extrabold tracking-wide leading-tight">
+            {displayName}
+          </div>
+        </div>
+      </button>
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center px-4 text-white">
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-10 text-yellow-300 drop-shadow-lg text-center">
+        {headingText}
+      </h2>
+      <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-8 w-full max-w-5xl">
+        {renderCard(videoOptions.option1, "hover:scale-[1.02]")}
+        {renderCard(videoOptions.option2, "hover:scale-[1.02]")}
+      </div>
+      
+    </div>
+  );
+};
+
+export default GameModeVideoSelectScreen;
