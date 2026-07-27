@@ -10,12 +10,14 @@ import {
   FaCheckCircle,
   FaChartLine,
   FaLayerGroup,
+  FaDownload,
 } from "react-icons/fa";
 import {
   analyticsGetSummary,
   analyticsGetFacts,
   analyticsGetFactDetail,
   analyticsGetStruggling,
+  exportUserAttemptsCsv,
   getAdminStats,
   userGetProgress,
 } from "../api/mathApi.js";
@@ -227,7 +229,7 @@ const getAnalyticsOperationMaxLevel = (operation) => {
   return Number.isFinite(configuredMax) && configuredMax > 0 ? configuredMax : 0;
 };
 
-const FactDetailModal = ({ open, onClose, pin, factKey, onDetailLoaded }) => {
+const FactDetailModal = ({ open, onClose, pin, factKey }) => {
   const [loading, setLoading] = useState(false);
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState("");
@@ -249,7 +251,6 @@ const FactDetailModal = ({ open, onClose, pin, factKey, onDetailLoaded }) => {
         });
         if (alive) {
           setDetail(data);
-          onDetailLoaded?.(data, factKey);
         }
       } catch (e) {
         if (alive) setError(e?.message || "Failed to load fact details");
@@ -425,8 +426,7 @@ export default function AnalyticsScreen() {
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailFact, setDetailFact] = useState(null);
-  const [lastFactDetail, setLastFactDetail] = useState(null);
-  const [lastFactKey, setLastFactKey] = useState(null);
+  const [exportingQuestion, setExportingQuestion] = useState(null);
   const loadMoreRef = useRef(null);
   const factsRequestSeqRef = useRef(0);
   const availableLevels = useMemo(() => {
@@ -493,11 +493,6 @@ export default function AnalyticsScreen() {
     </span>
   );
 
-  const handleDetailLoaded = (data, key) => {
-    setLastFactDetail(data);
-    setLastFactKey(key);
-  };
-
   const getFactStableId = (f) => f?._id ?? f?.id ?? f?.factId ?? f?.fact?._id ?? null;
   const mergeFacts = (prevFacts, nextFacts) => {
     const combined = [...prevFacts, ...nextFacts];
@@ -522,100 +517,40 @@ export default function AnalyticsScreen() {
     return merged;
   };
 
-  const escapeCsv = (value) => {
-    if (value == null) return "";
-    const str = String(value);
-    if (/[",\n]/.test(str)) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
-  };
-
-  const formatCsvDate = (value) => {
-    if (!value) return "";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return "";
-    return ATTEMPT_DATE_TIME_FORMATTER.format(d);
-  };
-
-  const handleExportCsv = () => {
-    const rows = [];
-    const todayLabel = new Date().toISOString().slice(0, 10);
-
-    rows.push(["Summary Totals"]);
-    rows.push(["Student name", studentInfo.name || ""]);
-    rows.push(["Current level", studentInfo.level || ""]);
-    rows.push(["Current belt", studentInfo.belt || ""]);
-    rows.push(["PIN", pin || ""]);
-    rows.push(["Date (exported)", todayLabel]);
-    rows.push(["Level filter", level]);
-    rows.push(["Operation filter", operation]);
-    rows.push([
-      "Total attempts",
-      summary?.overall?.totalAttempts ?? 0,
-    ]);
-    rows.push([
-      "Total correct",
-      summary?.overall?.totalCorrect ?? 0,
-    ]);
-    rows.push([
-      "Accuracy",
-      pct(summary?.overall?.accuracy ?? 0),
-    ]);
-    rows.push([]);
-    rows.push(["Facts"]);
-    rows.push(["Question", "Accuracy", "Attempts", "Avg Time", "Last Attempt", "Flags"]);
-    sortedFacts.forEach((f) => {
-      rows.push([
-        f.question,
-        pct(f.stats?.accuracy),
-        f.stats?.totalAttempts ?? 0,
-        ms(f.stats?.avgMs),
-        f.stats?.lastAttemptAt ? new Date(f.stats.lastAttemptAt).toLocaleDateString() : "--",
-        `${f.stats?.mastered ? "mastered" : ""}${f.stats?.struggling ? " struggling" : ""}`.trim(),
-      ]);
-    });
-
-    rows.push([]);
-    rows.push(["Recent Attempts (Selected Fact)"]);
-    rows.push([
-      "Question",
-      "Timestamp",
-      "Correct",
-      "User Answer",
-      "Correct Answer",
-      "Response Ms",
-      "Mode",
-      "Choices",
-    ]);
-
-    if (lastFactDetail?.recentAttempts?.length) {
-      lastFactDetail.recentAttempts.forEach((a) => {
-        rows.push([
-          lastFactDetail?.fact?.question || "",
-          formatCsvDate(a.attemptedAt),
-          a.correct ? "Correct" : "Wrong",
-          a.userAnswer ?? "",
-          a.correctAnswer ?? "",
-          a.responseMs ?? "",
-          a.gameMode ? "Game mode" : "Quiz",
-          Array.isArray(a.choices) ? a.choices.join(" ") : "",
-        ]);
-      });
-    } else {
-      rows.push(["", "", "No recent attempts loaded", "", "", "", "", ""]);
-    }
-
-    const csv = rows.map((row) => row.map(escapeCsv).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const downloadBlob = (blob, filename) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `analytics_${pin || "user"}_${todayLabel}.csv`;
+    link.download = filename || `attempt_history_${pin || "student"}.csv`;
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+  };
+
+  const handleExportAttempts = async (question = "") => {
+    const adminPin = localStorage.getItem("math-admin-pin") || "";
+    if (!adminPin) {
+      setError("Missing admin PIN. Please log in as admin again.");
+      return;
+    }
+    if (!pin) {
+      setError("Missing student identifier for export.");
+      return;
+    }
+
+    const exportKey = question || "__all__";
+    setExportingQuestion(exportKey);
+    setError("");
+
+    try {
+      const { blob, filename } = await exportUserAttemptsCsv(adminPin, pin, question);
+      downloadBlob(blob, filename);
+    } catch (e) {
+      setError(e?.message || "Failed to export attempt history.");
+    } finally {
+      setExportingQuestion(null);
+    }
   };
 
   useEffect(() => {
@@ -853,10 +788,12 @@ export default function AnalyticsScreen() {
           </div>
           <button
             type="button"
-            onClick={handleExportCsv}
-            className="inline-flex items-center gap-2 rounded-xl border border-blue-200/20 bg-[#0c1f4f]/70 px-4 py-2.5 font-extrabold text-blue-50 transition-colors hover:bg-[#12306f]/80"
+            onClick={() => handleExportAttempts()}
+            disabled={exportingQuestion !== null}
+            className="inline-flex items-center gap-2 rounded-xl border border-cyan-200/35 bg-cyan-500 px-4 py-2.5 font-extrabold text-slate-950 shadow-[0_10px_24px_rgba(34,211,238,0.18)] transition-colors hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Export CSV
+            <FaDownload className="text-sm" />
+            <span>{exportingQuestion === "__all__" ? "Downloading..." : "Download All"}</span>
           </button>
         </div>
 
@@ -1029,7 +966,7 @@ export default function AnalyticsScreen() {
 
           {!loadingFacts && sortedFacts.length > 0 && (
             <div className="overflow-auto rounded-xl border border-blue-100/10">
-              <table className="w-full min-w-[760px] text-left">
+              <table className="w-full min-w-[860px] text-left">
                 <thead className="text-sm text-blue-100/75 bg-[#10295f]">
                   <tr>
                     <th className="px-3 py-3 font-semibold">Question</th>
@@ -1062,6 +999,7 @@ export default function AnalyticsScreen() {
                     </th>
                     <th className="px-3 py-3 font-semibold">Last Attempt</th>
                     <th className="px-3 py-3 font-semibold">Flags</th>
+                    <th className="px-3 py-3 text-center font-semibold">Download</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1095,6 +1033,23 @@ export default function AnalyticsScreen() {
                         ) : (
                           <span className="text-blue-100/45">--</span>
                         )}
+                      </td>
+                      <td className="px-3 py-3 text-center">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleExportAttempts(f.question);
+                          }}
+                          disabled={exportingQuestion !== null || !f.question}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-cyan-100/45 bg-cyan-400/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-colors hover:border-cyan-100/80 hover:bg-cyan-300/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
+                          aria-label={`Download attempts for ${f.question}`}
+                          title={`Download attempts for ${f.question}`}
+                        >
+                          <span className="block text-2xl font-black leading-none" aria-hidden="true">
+                            ↓
+                          </span>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -1138,7 +1093,6 @@ export default function AnalyticsScreen() {
         onClose={() => setDetailOpen(false)}
         pin={pin}
         factKey={detailFact}
-        onDetailLoaded={handleDetailLoaded}
       />
     </div>
   );

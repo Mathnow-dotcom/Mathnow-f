@@ -8,7 +8,7 @@ export default defineConfig({
     proxy: {
       // Anything starting with /api is proxied to the backend
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
         // If your backend does NOT mount under /api, uncomment next line:
