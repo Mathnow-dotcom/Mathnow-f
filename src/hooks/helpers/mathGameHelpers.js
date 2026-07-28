@@ -34,6 +34,38 @@ export const resolvePretestInactivityThresholdMs = (...sources) => {
   return null;
 };
 
+export const resolveInactivityThresholdMs = (...sources) => {
+  for (const source of sources) {
+    if (!source || typeof source !== 'object') continue;
+
+    const fromGeneralMs = Number(source?.general?.inactivityThresholdMs);
+    if (Number.isFinite(fromGeneralMs) && fromGeneralMs >= 0) return fromGeneralMs;
+
+    const fromGeneralSeconds = Number(source?.general?.inactivityThresholdSeconds);
+    if (Number.isFinite(fromGeneralSeconds) && fromGeneralSeconds >= 0) {
+      return Math.round(fromGeneralSeconds * 1000);
+    }
+
+    const fromTopLevelMs = Number(source?.inactivityThresholdMs);
+    if (Number.isFinite(fromTopLevelMs) && fromTopLevelMs >= 0) return fromTopLevelMs;
+
+    const fromTopLevelSeconds = Number(source?.inactivityThresholdSeconds);
+    if (Number.isFinite(fromTopLevelSeconds) && fromTopLevelSeconds >= 0) {
+      return Math.round(fromTopLevelSeconds * 1000);
+    }
+
+    const fromRunMs = Number(source?.run?.inactivityThresholdMs);
+    if (Number.isFinite(fromRunMs) && fromRunMs >= 0) return fromRunMs;
+
+    const fromRunSeconds = Number(source?.run?.inactivityThresholdSeconds);
+    if (Number.isFinite(fromRunSeconds) && fromRunSeconds >= 0) {
+      return Math.round(fromRunSeconds * 1000);
+    }
+  }
+
+  return null;
+};
+
 export const normalizeProgressTree = (payload, fallbackOperation = DEFAULT_OPERATION) => {
   if (!payload || typeof payload !== 'object') return {};
   const source = payload?.progress && typeof payload.progress === 'object' ? payload.progress : payload;

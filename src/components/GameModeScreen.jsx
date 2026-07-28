@@ -18,7 +18,9 @@ const GameModeScreen = () => {
     completedRocketQuizzes,
     rocketQuizzesRequired,
     rocketQuestionsPerQuiz,
-    bonusCorrectStreak,
+    bonusLightningCount,
+    bonusStarCount,
+    bonusBadgeSequence,
     bonusVideoIntervalCorrect,
     lightningCount,
     lightningCycleStart,
@@ -41,7 +43,9 @@ const GameModeScreen = () => {
     completedRocketQuizzes: Number.isFinite(ctx.completedRocketQuizzes) ? ctx.completedRocketQuizzes : 0,
     rocketQuizzesRequired: Number.isFinite(ctx.rocketQuizzesRequired) ? ctx.rocketQuizzesRequired : 0,
     rocketQuestionsPerQuiz: Number.isFinite(ctx.rocketQuestionsPerQuiz) ? ctx.rocketQuestionsPerQuiz : 0,
-    bonusCorrectStreak: Number.isFinite(ctx.bonusCorrectStreak) ? ctx.bonusCorrectStreak : 0,
+    bonusLightningCount: Number.isFinite(ctx.bonusLightningCount) ? ctx.bonusLightningCount : 0,
+    bonusStarCount: Number.isFinite(ctx.bonusStarCount) ? ctx.bonusStarCount : 0,
+    bonusBadgeSequence: Array.isArray(ctx.bonusBadgeSequence) ? ctx.bonusBadgeSequence : [],
     bonusVideoIntervalCorrect: Number.isFinite(ctx.bonusVideoIntervalCorrect)
       ? ctx.bonusVideoIntervalCorrect
       : 4,
@@ -150,16 +154,38 @@ const GameModeScreen = () => {
       Number.isFinite(rocketQuestionsPerQuiz) ? rocketQuestionsPerQuiz : 10
     )
   );
-  const bonusStarCount = Math.max(
-    0,
-    Math.min(
-      Number.isFinite(bonusCorrectStreak) ? bonusCorrectStreak : 0,
-      Number.isFinite(bonusVideoIntervalCorrect) && bonusVideoIntervalCorrect > 0
-        ? bonusVideoIntervalCorrect
-        : 4
-    )
-  );
-
+  const bonusDisplayLimit =
+    Number.isFinite(bonusVideoIntervalCorrect) && bonusVideoIntervalCorrect > 0
+      ? bonusVideoIntervalCorrect
+      : 4;
+  const orderedBonusBadges = Array.isArray(bonusBadgeSequence)
+    ? bonusBadgeSequence
+        .filter((badge) => badge === 'lightning' || badge === 'star')
+        .slice(-bonusDisplayLimit)
+    : [];
+  const fallbackBonusBadges =
+    orderedBonusBadges.length > 0
+      ? orderedBonusBadges
+      : [
+          ...Array.from({
+            length: Math.max(
+              0,
+              Math.min(Number.isFinite(bonusLightningCount) ? bonusLightningCount : 0, bonusDisplayLimit)
+            ),
+          }).map(() => 'lightning'),
+          ...Array.from({
+            length: Math.max(
+              0,
+              Math.min(
+                Number.isFinite(bonusStarCount) ? bonusStarCount : 0,
+                Math.max(
+                  0,
+                  bonusDisplayLimit - (Number.isFinite(bonusLightningCount) ? bonusLightningCount : 0)
+                )
+              )
+            ),
+          }).map(() => 'star'),
+        ];
   const shellClassName =
     'relative overflow-hidden rounded-[32px] border border-[#bfe2ff]/18 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.96),_rgba(231,243,255,0.94)_40%,_rgba(215,233,255,0.92)_100%)] shadow-[0_26px_56px_rgba(4,12,20,0.34),inset_0_1px_0_rgba(255,255,255,0.9)] w-full mx-auto p-4 sm:p-6 md:p-7 min-h-[220px] sm:min-h-[320px] md:min-h-[410px] flex flex-col justify-center';
   const surfShellClassName =
@@ -265,19 +291,21 @@ const GameModeScreen = () => {
 
           {isBonusMode && (
             <div className="flex justify-center items-center min-h-[4.5rem] sm:min-h-[5.5rem] mt-2 sm:mt-3 mb-4 sm:mb-5 text-2xl sm:text-3xl">
-              {bonusStarCount > 0 && (
+              {fallbackBonusBadges.length > 0 && (
                 <div className="flex justify-center items-center gap-1 sm:gap-2">
-                  {Array.from({ length: bonusStarCount }).map((_, index) => (
+                  {fallbackBonusBadges.map((badge, index) => (
                     <span
-                      key={`bonus-star-${index}`}
+                      key={`bonus-${badge}-${index}`}
                       role="img"
-                      aria-label="star"
+                      aria-label={badge === 'lightning' ? 'lightning' : 'star'}
                       className="inline-flex w-14 sm:w-16 justify-center text-[2.9rem] sm:text-[3.3rem] leading-none"
                       style={{
                         filter: 'drop-shadow(0 0 18px rgba(255,214,102,0.42))',
                       }}
                     >
-                      {String.fromCodePoint(0x2b50)}
+                      {badge === 'lightning'
+                        ? String.fromCodePoint(0x26a1)
+                        : String.fromCodePoint(0x2b50)}
                     </span>
                   ))}
                 </div>

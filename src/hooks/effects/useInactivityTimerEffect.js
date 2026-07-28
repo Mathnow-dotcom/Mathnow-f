@@ -22,6 +22,9 @@ export const useInactivityTimerEffect = ({
   setCurrentQuizStreak,
   setTransientStreakMessage,
   setBonusCorrectStreak,
+  setBonusLightningCount,
+  setBonusStarCount,
+  setBonusBadgeSequence,
   setPausedTime,
   setInterventionQuestion,
   setShowLearningModule,
@@ -115,6 +118,9 @@ export const useInactivityTimerEffect = ({
         setTransientStreakMessage(null);
         if (isGameMode && gameModeType === 'bonus') {
           setBonusCorrectStreak(0);
+          setBonusLightningCount?.(0);
+          setBonusStarCount?.(0);
+          setBonusBadgeSequence?.([]);
         }
 
         if (out?.practice) {
@@ -260,6 +266,9 @@ export const useInactivityTimerEffect = ({
     setCurrentQuizStreak,
     setTransientStreakMessage,
     setBonusCorrectStreak,
+    setBonusLightningCount,
+    setBonusStarCount,
+    setBonusBadgeSequence,
     setPausedTime,
     setInterventionQuestion,
     setShowLearningModule,

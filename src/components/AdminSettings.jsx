@@ -640,7 +640,11 @@ const AdminSettings = () => {
         }
       }
       if (refreshedConfig?.general) {
-        const inactivityThresholdMs = Number(refreshedConfig.general.inactivityThresholdMs);
+        const inactivityThresholdMs = Number.isFinite(Number(refreshedConfig.general.inactivityThresholdMs))
+          ? Number(refreshedConfig.general.inactivityThresholdMs)
+          : Number.isFinite(Number(refreshedConfig.general.inactivityThresholdSeconds))
+            ? Math.round(Number(refreshedConfig.general.inactivityThresholdSeconds) * 1000)
+            : NaN;
         if (Number.isFinite(inactivityThresholdMs)) {
           localStorage.setItem('math-inactivity-ms', String(inactivityThresholdMs));
         }

@@ -28,6 +28,7 @@ import { buildPretestSlice } from './slices/pretestSlice.js';
 import { buildQuizSlice } from './slices/quizSlice.js';
 import { buildUiSlice } from './slices/uiSlice.js';
 import {
+  resolveInactivityThresholdMs,
   readStoredNumber,
   resolvePretestInactivityThresholdMs,
 } from './helpers/mathGameHelpers.js';
@@ -97,6 +98,7 @@ const GAME_MODE_STORAGE_KEYS = [
   'game-mode-belt',
   'game-mode-table',
   'game-mode-operation',
+  'game-mode-pin',
 ];
 
 const shouldStartWithEmptyIdentity = () =>
@@ -190,6 +192,9 @@ const useMathGame = () => {
   const [rocketQuizzesRequired, setRocketQuizzesRequired] = useState(5);
   const [rocketQuestionsPerQuiz, setRocketQuestionsPerQuiz] = useState(4);
   const [bonusCorrectStreak, setBonusCorrectStreak] = useState(0);
+  const [bonusLightningCount, setBonusLightningCount] = useState(0);
+  const [bonusStarCount, setBonusStarCount] = useState(0);
+  const [bonusBadgeSequence, setBonusBadgeSequence] = useState([]);
   const [bonusVideoIntervalCorrect, setBonusVideoIntervalCorrect] = useState(
     DEFAULT_BONUS_VIDEO_INTERVAL_CORRECT
   );
@@ -364,6 +369,56 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   }, 500);
 }, []);
 
+  const rebuildBonusBadgeSequence = useCallback((lightningCount, starCount, latestBadge) => {
+    const safeLightningCount = Math.max(0, Number.isFinite(lightningCount) ? lightningCount : 0);
+    const safeStarCount = Math.max(0, Number.isFinite(starCount) ? starCount : 0);
+    const total = safeLightningCount + safeStarCount;
+
+    if (total === 0) {
+      setBonusBadgeSequence([]);
+      return;
+    }
+
+    setBonusBadgeSequence((prev) => {
+      const kept = [];
+      let usedLightning = 0;
+      let usedStar = 0;
+
+      (Array.isArray(prev) ? prev : []).forEach((badge) => {
+        if (badge === 'lightning' && usedLightning < safeLightningCount) {
+          kept.push(badge);
+          usedLightning += 1;
+        } else if (badge === 'star' && usedStar < safeStarCount) {
+          kept.push(badge);
+          usedStar += 1;
+        }
+      });
+
+      while (usedLightning < safeLightningCount) {
+        kept.push('lightning');
+        usedLightning += 1;
+      }
+      while (usedStar < safeStarCount) {
+        kept.push('star');
+        usedStar += 1;
+      }
+
+      if (
+        (latestBadge === 'lightning' || latestBadge === 'star') &&
+        kept.length > 0 &&
+        kept[kept.length - 1] !== latestBadge
+      ) {
+        const latestIndex = kept.lastIndexOf(latestBadge);
+        if (latestIndex >= 0) {
+          const [latest] = kept.splice(latestIndex, 1);
+          kept.push(latest);
+        }
+      }
+
+      return kept.slice(-total);
+    });
+  }, []);
+
   const registerQuizDisruption = useCallback(() => {
     quizDisruptionStreakRef.current += 1;
   }, []);
@@ -404,18 +459,77 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   const applyBonusState = useCallback((payload) => {
     if (!payload) return;
 
-    const nextBonusCorrectStreak =
-      typeof payload.bonusCorrectStreak === 'number'
-        ? payload.bonusCorrectStreak
-        : typeof payload.bonusStreak === 'number'
-          ? payload.bonusStreak
-          : null;
-    const nextBonusVideoIntervalCorrect =
-      typeof payload.bonusVideoIntervalCorrect === 'number'
-        ? payload.bonusVideoIntervalCorrect
-        : typeof payload.bonusMode?.videoIntervalCorrect === 'number'
-          ? payload.bonusMode.videoIntervalCorrect
-          : null;
+    const bonusSources = [
+      payload,
+      payload.run,
+      payload.bonusMode,
+      payload.gameMode,
+      payload.run?.bonusMode,
+      payload.run?.gameMode,
+    ].filter(Boolean);
+
+    const pickNumber = (...keys) => {
+      for (const source of bonusSources) {
+        for (const key of keys) {
+          if (typeof source?.[key] === 'number' && Number.isFinite(source[key])) {
+            return source[key];
+          }
+        }
+      }
+      return null;
+    };
+
+    const pickString = (...keys) => {
+      for (const source of bonusSources) {
+        for (const key of keys) {
+          if (typeof source?.[key] === 'string' && source[key].trim()) {
+            return source[key];
+          }
+        }
+      }
+      return null;
+    };
+
+    const nextBonusLightningCount = pickNumber('bonusLightningCount', 'lightningCount');
+    const nextBonusStarCount = pickNumber('bonusStarCount', 'starCount');
+    const nextBonusAnswerBadge = pickString('bonusAnswerBadge', 'answerBadge');
+
+    if (typeof nextBonusLightningCount === 'number') {
+      setBonusLightningCount(Math.max(0, nextBonusLightningCount));
+    }
+    if (typeof nextBonusStarCount === 'number') {
+      setBonusStarCount(Math.max(0, nextBonusStarCount));
+    }
+    if (
+      typeof nextBonusLightningCount === 'number' ||
+      typeof nextBonusStarCount === 'number'
+    ) {
+      rebuildBonusBadgeSequence(
+        typeof nextBonusLightningCount === 'number'
+          ? Math.max(0, nextBonusLightningCount)
+          : bonusLightningCount,
+        typeof nextBonusStarCount === 'number'
+          ? Math.max(0, nextBonusStarCount)
+          : bonusStarCount,
+        nextBonusAnswerBadge
+      );
+    }
+    if (
+      nextBonusAnswerBadge !== 'lightning' &&
+      nextBonusAnswerBadge !== 'star' &&
+      payload.showBonusVideo === true ||
+      payload.correct === false ||
+      payload.isCorrect === false ||
+      payload.practice
+    ) {
+      setCurrentAnswerSymbol(null);
+    }
+
+    const nextBonusCorrectStreak = pickNumber('bonusCorrectStreak', 'bonusStreak', 'correctStreak');
+    const nextBonusVideoIntervalCorrect = pickNumber(
+      'bonusVideoIntervalCorrect',
+      'videoIntervalCorrect'
+    );
     const resolvedBonusVideoIntervalCorrect =
       typeof nextBonusVideoIntervalCorrect === 'number' &&
       Number.isFinite(nextBonusVideoIntervalCorrect) &&
@@ -437,7 +551,13 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         normalizeBonusDisplayStreak(nextBonusCorrectStreak, resolvedBonusVideoIntervalCorrect)
       );
     }
-  }, [bonusVideoIntervalCorrect, normalizeBonusDisplayStreak]);
+  }, [
+    bonusLightningCount,
+    bonusStarCount,
+    bonusVideoIntervalCorrect,
+    normalizeBonusDisplayStreak,
+    rebuildBonusBadgeSequence,
+  ]);
 
   const applyLightningTarget = useCallback((payload) => {
     if (!payload) return;
@@ -454,6 +574,17 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
     if (typeof nextTarget === 'number') {
       setLightningTargetCorrect(nextTarget);
+    }
+  }, []);
+
+  const applyInactivityTimeout = useCallback((...sources) => {
+    const nextInactivityTimeoutMs = resolveInactivityThresholdMs(...sources);
+    if (
+      Number.isFinite(nextInactivityTimeoutMs) &&
+      nextInactivityTimeoutMs >= 0
+    ) {
+      setInactivityTimeoutMs(nextInactivityTimeoutMs);
+      localStorage.setItem(INACTIVITY_TIMEOUT_STORAGE_KEY, String(nextInactivityTimeoutMs));
     }
   }, []);
 
@@ -513,7 +644,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   }, []);
 
 
-  const hardResetQuizState = useCallback(() => {
+  const hardResetQuizState = useCallback(({ preserveGameModeContext = false } = {}) => {
     if (inactivityTimeoutId.current) {
       clearTimeout(inactivityTimeoutId.current);
       inactivityTimeoutId.current = null;
@@ -590,8 +721,13 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     setRocketQuizzesRequired(5);
     setRocketQuestionsPerQuiz(4);
     setBonusCorrectStreak(0);
+    setBonusLightningCount(0);
+    setBonusStarCount(0);
+    setBonusBadgeSequence([]);
     setBonusVideoIntervalCorrect(DEFAULT_BONUS_VIDEO_INTERVAL_CORRECT);
-    clearStoredGameModeContext();
+    if (!preserveGameModeContext) {
+      clearStoredGameModeContext();
+    }
   }, [clearStoredGameModeContext]);
 
   // Ensure totalTimeToday reflects the daily base time when no quiz is running.
@@ -609,7 +745,9 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   // --- FINAL step of login (unchanged) ---
   const processLoginFinal = useCallback(
     (loginResponse) => {
-      hardResetQuizState();
+      hardResetQuizState({
+        preserveGameModeContext: loginResponse?.preserveGameModeContext === true,
+      });
       setChildName(loginResponse.user.name);
 
       const themeKeyFromBackend = loginResponse.user.theme || null;
@@ -766,6 +904,9 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   const handlePinSubmit = useCallback(
     async (pinValue, nameValue) => {
       const oldPin = localStorage.getItem('math-child-pin');
+      const storedGameModePin = localStorage.getItem('game-mode-pin');
+      const shouldPreserveGameModeContext =
+        oldPin === pinValue || storedGameModePin === pinValue;
       localStorage.setItem('math-child-pin', pinValue);
       setChildPin(pinValue);
 
@@ -773,6 +914,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         setIsLoginLoading(true);
 
         const loginResponse = await authLogin(pinValue, nameValue.trim());
+        loginResponse.preserveGameModeContext = shouldPreserveGameModeContext;
         try {
           const operationsPayload = await userGetOperations(pinValue);
           loginResponse.operationsMeta = operationsPayload?.operations || {};
@@ -780,7 +922,9 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
           console.warn('Failed to fetch operation availability:', opsErr?.message || opsErr);
         }
 
-        hardResetQuizState();
+        hardResetQuizState({
+          preserveGameModeContext: shouldPreserveGameModeContext,
+        });
         setLoginPendingName(loginResponse.user.name);
         setLoginPendingResponse(loginResponse);
         setShowSiblingCheck(true);
@@ -879,8 +1023,10 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
           return;
         }
 
+        const started = await quizStart(idToUse, childPin);
+        applyInactivityTimeout(started);
         const { questions: backendQuestions, resumed = false, currentIndex, mainFlowCorrect, wrong } =
-          await quizStart(idToUse, childPin);
+          started;
 
         if (!backendQuestions || backendQuestions.length === 0) {
           throw new Error('No questions returned from quiz start.');
@@ -947,6 +1093,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       selectedDifficulty,
       determineMaxQuestions,
       showUiMessage,
+      applyInactivityTimeout,
     ]
   );
 
@@ -1019,6 +1166,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       localStorage.setItem('game-mode-belt', reqBelt);
       localStorage.setItem('game-mode-table', String(reqLevel));
       localStorage.setItem('game-mode-operation', reqOperation);
+      localStorage.setItem('game-mode-pin', childPin);
       setSelectedOperation(reqOperation);
 
       try {
@@ -1032,6 +1180,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
           targetCorrect,
           requestedGameModeType
         );
+        applyInactivityTimeout(prep);
 
         setQuizRunId(prep.quizRunId);
         const totalCorrect = typeof prep.totalCorrect === 'number' ? prep.totalCorrect : 0;
@@ -1044,6 +1193,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         applyBonusState(prep);
 
         const started = await quizStart(prep.quizRunId, childPin);
+        applyInactivityTimeout(started, prep);
 
         const backendQuestions = started?.questions || started?.run?.questions || [];
         if (started?.practice) {
@@ -1125,6 +1275,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       selectedDifficulty,
       selectedOperation,
       navigate,
+      applyInactivityTimeout,
       applySurfState,
       applyRocketState,
       applyBonusState,
@@ -1142,6 +1293,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
       try {
         const started = await quizStart(quizRunId, childPin);
+        applyInactivityTimeout(started);
         const backendQuestions = started?.questions || started?.run?.questions || [];
 
         if (!backendQuestions || backendQuestions.length === 0) {
@@ -1177,7 +1329,16 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         navigate(fallbackRoute, { replace: true });
       }
     },
-    [quizRunId, childPin, navigate, applySurfState, getRecoveryRoute, logClientError, showUiMessage]
+    [
+      quizRunId,
+      childPin,
+      navigate,
+      applyInactivityTimeout,
+      applySurfState,
+      getRecoveryRoute,
+      logClientError,
+      showUiMessage,
+    ]
   );
 
   const startRocketNextQuiz = useCallback(
@@ -1186,6 +1347,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
       try {
         const started = await quizStart(quizRunId, childPin);
+        applyInactivityTimeout(started);
         const backendQuestions = started?.questions || started?.run?.questions || [];
 
         if (!backendQuestions || backendQuestions.length === 0) {
@@ -1229,7 +1391,16 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         navigate(fallbackRoute, { replace: true });
       }
     },
-    [quizRunId, childPin, navigate, applyRocketState, getRecoveryRoute, logClientError, showUiMessage]
+    [
+      quizRunId,
+      childPin,
+      navigate,
+      applyInactivityTimeout,
+      applyRocketState,
+      getRecoveryRoute,
+      logClientError,
+      showUiMessage,
+    ]
   );
 
   const startBonusNextQuiz = useCallback(
@@ -1238,6 +1409,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
       try {
         const started = await quizStart(quizRunId, childPin);
+        applyInactivityTimeout(started);
         const backendQuestions = started?.questions || started?.run?.questions || [];
 
         if (!backendQuestions || backendQuestions.length === 0) {
@@ -1281,7 +1453,16 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         navigate(fallbackRoute, { replace: true });
       }
     },
-    [quizRunId, childPin, navigate, applyBonusState, getRecoveryRoute, logClientError, showUiMessage]
+    [
+      quizRunId,
+      childPin,
+      navigate,
+      applyInactivityTimeout,
+      applyBonusState,
+      getRecoveryRoute,
+      logClientError,
+      showUiMessage,
+    ]
   );
 
   const startPretestRun = useCallback(
@@ -1542,6 +1723,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
       try {
         const prep = await quizPrepare(table, difficulty, childPin, selectedOperation);
+        applyInactivityTimeout(prep);
 
         if (prep?.pretestMode || prep?.gameModeType === 'pretest') {
           setIsInitialPrepLoading(false);
@@ -1613,6 +1795,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       syncConfigFromStorage,
       selectedOperation,
       showUiMessage,
+      applyInactivityTimeout,
     ]
   );
 
@@ -1655,6 +1838,12 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
               resolvedBonusVideoIntervalCorrect,
               (Number.isFinite(bonusCorrectStreak) ? bonusCorrectStreak : 0) + 1
             )
+          : null;
+      const optimisticBonusAnswerBadge =
+        isGameMode && gameModeType === 'bonus' && isCorrect
+          ? responseMs <= 2000
+            ? 'lightning'
+            : 'star'
           : null;
       const shouldHoldBonusOptimisticAdvance =
         optimisticBonusStreak != null &&
@@ -1759,6 +1948,14 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     if (optimisticBonusStreak != null) {
       setBonusCorrectStreak(optimisticBonusStreak);
     }
+    if (optimisticBonusAnswerBadge === 'lightning') {
+      setBonusLightningCount((prev) => Math.max(0, prev) + 1);
+      setBonusBadgeSequence((prev) => [...(Array.isArray(prev) ? prev : []), 'lightning']);
+    }
+    if (optimisticBonusAnswerBadge === 'star') {
+      setBonusStarCount((prev) => Math.max(0, prev) + 1);
+      setBonusBadgeSequence((prev) => [...(Array.isArray(prev) ? prev : []), 'star']);
+    }
     if (optimisticSurfNextIndex != null) {
       setCurrentQuestionIndex(optimisticSurfNextIndex);
       setCurrentQuestion(quizQuestions[optimisticSurfNextIndex]);
@@ -1804,6 +2001,10 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
     if (isGameMode && gameModeType === 'bonus' && !isCorrect) {
       setBonusCorrectStreak(0);
+      setBonusLightningCount(0);
+      setBonusStarCount(0);
+      setBonusBadgeSequence([]);
+      setCurrentAnswerSymbol(null);
     }
 
     const out = await quizSubmitAnswer(
@@ -2115,6 +2316,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
       if (out?.showBonusVideo) {
         playGameModeAnswerFeedback();
+        applyBonusState(out);
         setIsTimerPaused(true);
         setPausedTime(Date.now());
         await new Promise((resolve) => setTimeout(resolve, GAME_MODE_PRE_REWARD_PREVIEW_MS));
@@ -2133,6 +2335,9 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
         setBonusResumeAfterVideo(false);
         setBonusCorrectStreak(0);
+        setBonusLightningCount(0);
+        setBonusStarCount(0);
+        setBonusBadgeSequence([]);
         await startBonusNextQuiz({ navigateToGameMode: true });
         return;
       }
@@ -2305,6 +2510,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
       if (!quizQuestions || quizQuestions.length === 0 || nextIndex >= quizQuestions.length) {
         const restarted = await quizStart(quizRunId, childPin);
+        applyInactivityTimeout(restarted);
         const backendQuestions = restarted?.questions || restarted?.run?.questions || [];
         const mapped = backendQuestions.map(mapQuestionToFrontend);
 
@@ -2339,6 +2545,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     // If we ran out of cached questions, refresh from backend (same run)
     if (!quizQuestions || quizQuestions.length === 0 || nextIndex >= quizQuestions.length) {
       const restarted = await quizStart(quizRunId, childPin);
+      applyInactivityTimeout(restarted);
       const backendQuestions = restarted?.questions || restarted?.run?.questions || [];
       const mapped = backendQuestions.map(mapQuestionToFrontend);
 
@@ -2618,6 +2825,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
           // If local cache does not match backend pointer, resync from backend.
           if (quizRunId && childPin) {
             const restarted = await quizStart(quizRunId, childPin);
+            applyInactivityTimeout(restarted);
             const backendQuestions = restarted?.questions || restarted?.run?.questions || [];
             if (backendQuestions.length > 0) {
               const mapped = backendQuestions.map(mapQuestionToFrontend);
@@ -2642,6 +2850,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
           try {
             if (quizRunId && childPin) {
               const restarted = await quizStart(quizRunId, childPin);
+              applyInactivityTimeout(restarted);
               const backendQuestions = restarted?.questions || restarted?.run?.questions || [];
               if (backendQuestions.length > 0) {
                 const mapped = backendQuestions.map(mapQuestionToFrontend);
@@ -2699,9 +2908,11 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       lightningFastThresholdMs,
       inactivityTimeoutMs,
       navigate,
+      applyInactivityTimeout,
       applyBonusState,
       applySurfState,
       applyRocketState,
+      showAnswerSymbolFor300ms,
       startSurfNextQuiz,
       startRocketNextQuiz,
       startBonusNextQuiz,
@@ -2819,6 +3030,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
           if (!pausedTime) setPausedTime(Date.now());
 
           setGameModeType('bonus');
+          applyBonusState(out);
           if (typeof out?.bonusCorrectStreak !== 'number') {
             setBonusCorrectStreak(0);
           }
@@ -2915,6 +3127,9 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     setCurrentQuizStreak,
     setTransientStreakMessage,
     setBonusCorrectStreak,
+    setBonusLightningCount,
+    setBonusStarCount,
+    setBonusBadgeSequence,
     setPausedTime,
     setInterventionQuestion,
     setShowLearningModule,
@@ -2961,7 +3176,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   // ---------------- QUIT/RESET ----------------
   const handleConfirmQuit = useCallback(() => {
     setShowQuitModal(false);
-    hardResetQuizState();
+    hardResetQuizState({ preserveGameModeContext: true });
     isQuittingRef.current = true;
     navigate('/', { replace: true });
 
@@ -3060,6 +3275,12 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     rocketQuestionsPerQuiz,
     bonusCorrectStreak,
     setBonusCorrectStreak,
+    bonusLightningCount,
+    setBonusLightningCount,
+    bonusStarCount,
+    setBonusStarCount,
+    bonusBadgeSequence,
+    setBonusBadgeSequence,
     bonusVideoIntervalCorrect,
     currentAnswerSymbol,
     setCurrentAnswerSymbol,
