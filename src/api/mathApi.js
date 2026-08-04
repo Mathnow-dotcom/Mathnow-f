@@ -1,6 +1,6 @@
 // src/api/mathApi.js
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8081/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api';
 
 /**
  * Helper function for authenticated API calls.
@@ -434,6 +434,60 @@ export const exportUserAttemptsCsv = async (adminPin, userId, question = "") => 
   const filename =
     getFilenameFromContentDisposition(response.headers.get("Content-Disposition")) ||
     `attempt_history_${safeUserId}${safeQuestion ? `_${safeQuestion.replace(/[^a-z0-9]+/gi, "_")}` : ""}.csv`;
+
+  return { blob, filename };
+};
+
+export const exportUserLatestAttemptsPerQuestionCsv = async (
+  adminPin,
+  userId,
+  limitPerQuestion = 30
+) => {
+  const safeUserId = String(userId ?? "").trim();
+  if (!safeUserId) {
+    throw new Error("Missing student identifier for export.");
+  }
+
+  const headers = {};
+  if (adminPin) {
+    headers["x-pin"] = adminPin;
+  }
+
+  const safeLimit = Number.isFinite(Number(limitPerQuestion))
+    ? Math.max(1, Math.floor(Number(limitPerQuestion)))
+    : 30;
+  const query = `limitPerQuestion=${encodeURIComponent(String(safeLimit))}`;
+  const response = await fetch(
+    `${API_BASE_URL}/admin/users/${encodeURIComponent(safeUserId)}/attempts/export?${query}`,
+    {
+      method: "GET",
+      headers,
+    }
+  );
+
+  if (!response.ok) {
+    const rawText = await response.text();
+    let data = {};
+    if (rawText) {
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        data = {};
+      }
+    }
+
+    throw new Error(
+      data?.error?.message ||
+        data?.error ||
+        rawText ||
+        `Export failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const blob = await response.blob();
+  const filename =
+    getFilenameFromContentDisposition(response.headers.get("Content-Disposition")) ||
+    `student_${safeUserId}_latest_${safeLimit}_attempts_per_question.csv`;
 
   return { blob, filename };
 };

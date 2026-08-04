@@ -17,6 +17,7 @@ import {
   analyticsGetFacts,
   analyticsGetFactDetail,
   analyticsGetStruggling,
+  exportUserLatestAttemptsPerQuestionCsv,
   exportUserAttemptsCsv,
   getAdminStats,
   userGetProgress,
@@ -553,6 +554,30 @@ export default function AnalyticsScreen() {
     }
   };
 
+  const handleExportLatestAttemptsPerQuestion = async () => {
+    const adminPin = localStorage.getItem("math-admin-pin") || "";
+    if (!adminPin) {
+      setError("Missing admin PIN. Please log in as admin again.");
+      return;
+    }
+    if (!pin) {
+      setError("Missing student identifier for export.");
+      return;
+    }
+
+    setExportingQuestion("__latest30__");
+    setError("");
+
+    try {
+      const { blob, filename } = await exportUserLatestAttemptsPerQuestionCsv(adminPin, pin, 30);
+      downloadBlob(blob, filename);
+    } catch (e) {
+      setError(e?.message || "Failed to export latest 30 attempts per question.");
+    } finally {
+      setExportingQuestion(null);
+    }
+  };
+
   useEffect(() => {
     if (!pin) return;
 
@@ -786,15 +811,26 @@ export default function AnalyticsScreen() {
             <FaChartLine className="text-2xl md:text-4xl text-blue-300" />
             <span>Analytics</span>
           </div>
-          <button
-            type="button"
-            onClick={() => handleExportAttempts()}
-            disabled={exportingQuestion !== null}
-            className="inline-flex items-center gap-2 rounded-xl border border-cyan-200/35 bg-cyan-500 px-4 py-2.5 font-extrabold text-slate-950 shadow-[0_10px_24px_rgba(34,211,238,0.18)] transition-colors hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <FaDownload className="text-sm" />
-            <span>{exportingQuestion === "__all__" ? "Downloading..." : "Download All"}</span>
-          </button>
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleExportLatestAttemptsPerQuestion}
+              disabled={exportingQuestion !== null}
+              className="inline-flex items-center gap-2 rounded-xl border border-blue-200/30 bg-[#12306f]/85 px-4 py-2.5 font-extrabold text-blue-50 shadow-[0_10px_24px_rgba(34,211,238,0.12)] transition-colors hover:bg-[#1b438f] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <FaDownload className="text-sm" />
+              <span>{exportingQuestion === "__latest30__" ? "Downloading..." : "30 attempts"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleExportAttempts()}
+              disabled={exportingQuestion !== null}
+              className="inline-flex items-center gap-2 rounded-xl border border-cyan-200/35 bg-cyan-500 px-4 py-2.5 font-extrabold text-slate-950 shadow-[0_10px_24px_rgba(34,211,238,0.18)] transition-colors hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <FaDownload className="text-sm" />
+              <span>{exportingQuestion === "__all__" ? "Downloading..." : "Download All"}</span>
+            </button>
+          </div>
         </div>
 
         {(loadingTop || loadingFacts) && (
