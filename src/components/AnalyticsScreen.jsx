@@ -219,6 +219,139 @@ const formatAttemptDateTime = (value) => {
   return ATTEMPT_DATE_TIME_FORMATTER.format(date);
 };
 
+const parseCsvText = (text = "") => {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        cell += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (char === "," && !inQuotes) {
+      row.push(cell);
+      cell = "";
+      continue;
+    }
+
+    if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && next === "\n") i += 1;
+      row.push(cell);
+      if (row.some((value) => String(value).length > 0)) {
+        rows.push(row);
+      }
+      row = [];
+      cell = "";
+      continue;
+    }
+
+    cell += char;
+  }
+
+  row.push(cell);
+  if (row.some((value) => String(value).length > 0)) {
+    rows.push(row);
+  }
+
+  return rows;
+};
+
+const csvCell = (value = "") => {
+  const safe = String(value ?? "");
+  return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+};
+
+const stringifyCsvRows = (rows = []) =>
+  rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+
+const getColumnIndex = (headers = [], name) =>
+  headers.findIndex((header) => String(header || "").trim().toLowerCase() === name);
+
+const compareNaturalText = (left, right) =>
+  String(left || "").localeCompare(String(right || ""), undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+
+const buildGroupedLatestAttemptsCsvBlob = async (blob, limitPerQuestion = 30) => {
+  const text = await blob.text();
+  const rows = parseCsvText(text);
+  if (rows.length <= 1) return blob;
+
+  const headers = rows[0];
+  const bodyRows = rows.slice(1);
+  const dateIndex = getColumnIndex(headers, "date");
+  const operationIndex = getColumnIndex(headers, "operation");
+  const gameModeIndex = getColumnIndex(headers, "game mode");
+  const beltIndex = getColumnIndex(headers, "belt/degree");
+  const questionIndex = getColumnIndex(headers, "question");
+  const safeLimit = Number.isFinite(Number(limitPerQuestion))
+    ? Math.max(1, Math.floor(Number(limitPerQuestion)))
+    : 30;
+
+  if (questionIndex < 0) return blob;
+
+  const groups = new Map();
+  bodyRows.forEach((row, originalIndex) => {
+    const keyParts = [
+      operationIndex >= 0 ? row[operationIndex] : "",
+      gameModeIndex >= 0 ? row[gameModeIndex] : "",
+      beltIndex >= 0 ? row[beltIndex] : "",
+      row[questionIndex],
+    ];
+    const key = keyParts.map((part) => String(part ?? "").trim()).join("\u0001");
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        operation: operationIndex >= 0 ? row[operationIndex] : "",
+        gameMode: gameModeIndex >= 0 ? row[gameModeIndex] : "",
+        belt: beltIndex >= 0 ? row[beltIndex] : "",
+        question: row[questionIndex],
+        rows: [],
+      });
+    }
+    groups.get(key).rows.push({ row, originalIndex });
+  });
+
+  const groupedRows = Array.from(groups.values())
+    .sort((a, b) => {
+      const byOperation = compareNaturalText(a.operation, b.operation);
+      if (byOperation !== 0) return byOperation;
+      const byGameMode = compareNaturalText(a.gameMode, b.gameMode);
+      if (byGameMode !== 0) return byGameMode;
+      const byBelt = compareNaturalText(a.belt, b.belt);
+      if (byBelt !== 0) return byBelt;
+      return compareNaturalText(a.question, b.question);
+    })
+    .flatMap((group) =>
+      group.rows
+        .sort((a, b) => {
+          const aTime = dateIndex >= 0 ? new Date(a.row[dateIndex]).getTime() : NaN;
+          const bTime = dateIndex >= 0 ? new Date(b.row[dateIndex]).getTime() : NaN;
+          if (Number.isFinite(aTime) && Number.isFinite(bTime) && aTime !== bTime) {
+            return bTime - aTime;
+          }
+          return a.originalIndex - b.originalIndex;
+        })
+        .slice(0, safeLimit)
+        .map((entry) => entry.row)
+    );
+
+  const csv = `${stringifyCsvRows([headers, ...groupedRows])}\r\n`;
+  return new Blob([csv], { type: "text/csv;charset=utf-8" });
+};
+
 const MAX_ANALYTICS_LEVEL = 19;
 
 const getAnalyticsOperationMaxLevel = (operation) => {
@@ -570,7 +703,8 @@ export default function AnalyticsScreen() {
 
     try {
       const { blob, filename } = await exportUserLatestAttemptsPerQuestionCsv(adminPin, pin, 30);
-      downloadBlob(blob, filename);
+      const groupedBlob = await buildGroupedLatestAttemptsCsvBlob(blob, 30);
+      downloadBlob(groupedBlob, filename);
     } catch (e) {
       setError(e?.message || "Failed to export latest 30 attempts per question.");
     } finally {
