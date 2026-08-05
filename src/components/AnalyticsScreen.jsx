@@ -326,13 +326,14 @@ const buildGroupedLatestAttemptsCsvBlob = async (blob, limitPerQuestion = 30) =>
 
   const groupedRows = Array.from(groups.values())
     .sort((a, b) => {
+      const byQuestion = compareNaturalText(a.question, b.question);
+      if (byQuestion !== 0) return byQuestion;
       const byOperation = compareNaturalText(a.operation, b.operation);
       if (byOperation !== 0) return byOperation;
       const byGameMode = compareNaturalText(a.gameMode, b.gameMode);
       if (byGameMode !== 0) return byGameMode;
       const byBelt = compareNaturalText(a.belt, b.belt);
-      if (byBelt !== 0) return byBelt;
-      return compareNaturalText(a.question, b.question);
+      return byBelt;
     })
     .flatMap((group) =>
       group.rows
