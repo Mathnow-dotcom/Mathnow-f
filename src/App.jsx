@@ -45,6 +45,7 @@ import PretestResultScreen from './components/PretestResultScreen.jsx';
 import SettingsModal from './components/SettingsModal.jsx';
 import StatusModal from './components/StatusModal.jsx';
 import ScreenStatsDock from './components/ui/ScreenStatsDock.jsx';
+import InactivityLogout from './components/InactivityLogout.jsx';
 
 import { clearShootingStars } from './utils/mathGameLogic.js';
 import audioManager from './utils/audioUtils.js';
@@ -459,6 +460,7 @@ const App = () => {
           onSecondary={() => ctx.clearUiMessage()}
         />
       )}
+      <InactivityLogout active={ctx.isLoggedIn} onLogout={ctx.handleConfirmQuit} />
     </MathGameContext.Provider>
   );
 };

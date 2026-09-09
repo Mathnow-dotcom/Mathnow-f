@@ -250,6 +250,7 @@ const useMathGame = () => {
     if (shouldStartWithEmptyIdentity()) return '';
     return localStorage.getItem('math-child-pin') || '';
   });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const {
     selectedOperation,
     setSelectedOperation,
@@ -814,6 +815,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       } else {
         localStorage.removeItem('math-child-pin');
         setChildPin('');
+        setIsLoggedIn(false);
         setChildName('');
         navigate('/');
       }
@@ -909,11 +911,11 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         oldPin === pinValue || storedGameModePin === pinValue;
       localStorage.setItem('math-child-pin', pinValue);
       setChildPin(pinValue);
-
       try {
         setIsLoginLoading(true);
 
         const loginResponse = await authLogin(pinValue, nameValue.trim());
+        setIsLoggedIn(true);
         loginResponse.preserveGameModeContext = shouldPreserveGameModeContext;
         try {
           const operationsPayload = await userGetOperations(pinValue);
@@ -961,6 +963,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         setIsLoginLoading(false);
         localStorage.removeItem('math-child-pin');
         setChildPin('');
+        setIsLoggedIn(false);
         setChildName('');
         throw new Error(e.message || 'Login failed.');
       }
@@ -3176,6 +3179,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   // ---------------- QUIT/RESET ----------------
   const handleConfirmQuit = useCallback(() => {
     setShowQuitModal(false);
+    setIsLoggedIn(false);
     hardResetQuizState({ preserveGameModeContext: true });
     isQuittingRef.current = true;
     navigate('/', { replace: true });
@@ -3201,6 +3205,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     }
 
     localStorage.clear();
+    setIsLoggedIn(false);
     hardResetQuizState();
     setChildPin('');
     setChildName('');
@@ -3376,6 +3381,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     setChildAge,
     handleAgeChange,
     childPin,
+    isLoggedIn,
     setChildPin,
     handlePinChange,
     handlePinSubmit,

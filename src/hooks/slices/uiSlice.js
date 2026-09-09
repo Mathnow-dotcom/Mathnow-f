@@ -6,6 +6,7 @@ export const buildUiSlice = (d) => ({
   setChildAge: d.setChildAge,
   handleAgeChange: d.handleAgeChange,
   childPin: d.childPin,
+  isLoggedIn: d.isLoggedIn,
   setChildPin: d.setChildPin,
   handlePinChange: d.handlePinChange,
   handlePinSubmit: d.handlePinSubmit,
