@@ -17,6 +17,9 @@ import {
   userGetProgress,
   userResetProgress,
   userUpdateTheme,
+  userUsageHeartbeat,
+  userUsageStop,
+  userUsageStopOnPageHide,
 } from '../api/mathApi.js';
 import {
   DEFAULT_OPERATION,
@@ -251,6 +254,34 @@ const useMathGame = () => {
     return localStorage.getItem('math-child-pin') || '';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const usageSessionRef = useRef(null);
+  const usageBaseMsRef = useRef(0);
+  const usageSyncedAtRef = useRef(0);
+  const usageDateRef = useRef(null);
+
+  const applyAppUsage = useCallback((usage) => {
+    const todayUsageMs = Number(usage?.todayUsageMs);
+    if (!Number.isFinite(todayUsageMs)) return;
+    usageBaseMsRef.current = Math.max(0, todayUsageMs);
+    usageSyncedAtRef.current = Date.now();
+    usageDateRef.current = usage?.date || null;
+    setTotalTimeToday(Math.floor(usageBaseMsRef.current / 1000));
+  }, []);
+
+  const stopAppUsage = useCallback(async () => {
+    const sessionId = usageSessionRef.current;
+    if (!sessionId || !childPin) return;
+    try {
+      const usage = await userUsageStop(sessionId, childPin);
+      applyAppUsage(usage);
+    } catch (error) {
+      // Logout remains available when the network is unavailable; the next
+      // successful checkpoint can only settle the server's last known interval.
+      console.warn('Failed to persist app usage on logout:', error?.message || error);
+    } finally {
+      usageSessionRef.current = null;
+    }
+  }, [applyAppUsage, childPin]);
   const {
     selectedOperation,
     setSelectedOperation,
@@ -731,12 +762,56 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     }
   }, [clearStoredGameModeContext]);
 
-  // Ensure totalTimeToday reflects the daily base time when no quiz is running.
+  // Application usage is global to this hook (and therefore survives every route
+  // change). Quiz/game timers continue to use their own state below.
   useEffect(() => {
-    if (!quizStartTime) {
-      setTotalTimeToday(Math.floor(dailyTotalMs / 1000));
-    }
-  }, [quizStartTime, dailyTotalMs]);
+    if (!isLoggedIn || !usageSessionRef.current || !childPin) return undefined;
+
+    let cancelled = false;
+    let syncing = false;
+    const pacificDate = () => {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit',
+      }).formatToParts(new Date());
+      const value = Object.fromEntries(parts.filter(({ type }) => type !== 'literal').map(({ type, value }) => [type, value]));
+      return `${value.year}-${value.month}-${value.day}`;
+    };
+    const sync = async () => {
+      if (syncing || !usageSessionRef.current) return;
+      syncing = true;
+      try {
+        const usage = await userUsageHeartbeat(usageSessionRef.current, childPin);
+        if (!cancelled) applyAppUsage(usage);
+      } catch (error) {
+        // A later heartbeat retries; never let usage telemetry interrupt play.
+        console.warn('Failed to sync app usage:', error?.message || error);
+      } finally {
+        syncing = false;
+      }
+    };
+    const tick = () => {
+      if (usageDateRef.current && usageDateRef.current !== pacificDate()) {
+        usageBaseMsRef.current = 0;
+        usageSyncedAtRef.current = Date.now();
+        setTotalTimeToday(0);
+        void sync();
+        return;
+      }
+      setTotalTimeToday(Math.floor((usageBaseMsRef.current + Math.max(0, Date.now() - usageSyncedAtRef.current)) / 1000));
+    };
+    const onPageHide = () => userUsageStopOnPageHide(usageSessionRef.current, childPin);
+
+    const displayTimer = window.setInterval(tick, 1000);
+    const checkpointTimer = window.setInterval(() => void sync(), 15000);
+    window.addEventListener('pagehide', onPageHide);
+    tick();
+    return () => {
+      cancelled = true;
+      window.clearInterval(displayTimer);
+      window.clearInterval(checkpointTimer);
+      window.removeEventListener('pagehide', onPageHide);
+    };
+  }, [applyAppUsage, childPin, isLoggedIn]);
 
   // Calculate Streak Position whenever quizProgress changes
   useEffect(() => {
@@ -813,6 +888,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       if (isConfirmed && loginPendingResponse) {
         processLoginFinal(loginPendingResponse);
       } else {
+        void stopAppUsage();
         localStorage.removeItem('math-child-pin');
         setChildPin('');
         setIsLoggedIn(false);
@@ -822,7 +898,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       setLoginPendingName(null);
       setLoginPendingResponse(null);
     },
-    [navigate, processLoginFinal, loginPendingResponse]
+    [navigate, processLoginFinal, loginPendingResponse, stopAppUsage]
   );
 
   // Load videos/thumbs (lightning + surf)
@@ -915,6 +991,8 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         setIsLoginLoading(true);
 
         const loginResponse = await authLogin(pinValue, nameValue.trim());
+        usageSessionRef.current = loginResponse?.user?.appUsage?.sessionId || null;
+        applyAppUsage(loginResponse?.user?.appUsage);
         setIsLoggedIn(true);
         loginResponse.preserveGameModeContext = shouldPreserveGameModeContext;
         try {
@@ -962,6 +1040,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       } catch (e) {
         setIsLoginLoading(false);
         localStorage.removeItem('math-child-pin');
+        usageSessionRef.current = null;
         setChildPin('');
         setIsLoggedIn(false);
         setChildName('');
@@ -975,6 +1054,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       applyOperationMeta,
       selectedOperation,
       hardResetQuizState,
+      applyAppUsage,
     ]
   );
 
@@ -3164,9 +3244,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   useQuizTimerEffect({
     isTimerPaused,
     quizStartTime,
-    dailyTotalMs,
     setElapsedTime,
-    setTotalTimeToday,
   });
 
   usePretestCountdownEffect({
@@ -3179,6 +3257,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   // ---------------- QUIT/RESET ----------------
   const handleConfirmQuit = useCallback(() => {
     setShowQuitModal(false);
+    void stopAppUsage();
     setIsLoggedIn(false);
     hardResetQuizState({ preserveGameModeContext: true });
     isQuittingRef.current = true;
@@ -3187,7 +3266,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     setTimeout(() => {
       isQuittingRef.current = false;
     }, 3000);
-  }, [navigate, hardResetQuizState]);
+  }, [navigate, hardResetQuizState, stopAppUsage]);
 
   const handleCancelQuit = useCallback(() => setShowQuitModal(false), []);
 
@@ -3196,6 +3275,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   const handleCancelReset = useCallback(() => setShowResetModal(false), []);
 
   const handleConfirmReset = useCallback(async () => {
+    void stopAppUsage();
     if (childPin) {
       try {
         await userResetProgress(childPin);
@@ -3215,7 +3295,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     setSelectedOperation(DEFAULT_OPERATION);
     setShowResetModal(false);
     navigate('/', { replace: true });
-  }, [navigate, hardResetQuizState, childPin]);
+  }, [navigate, hardResetQuizState, childPin, stopAppUsage]);
 
   const handleNameChange = useCallback((e) => setChildName(e.target.value), []);
   const handleAgeChange = useCallback((e) => setChildAge(e.target.value), []);

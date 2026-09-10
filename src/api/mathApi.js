@@ -126,6 +126,26 @@ export const userGetDailyStats = async (pin) => {
   return callApi('/user/daily', 'GET', null, pin);
 };
 
+export const userUsageHeartbeat = async (sessionId, pin) => {
+  return callApi('/user/usage/heartbeat', 'POST', { sessionId }, pin);
+};
+
+export const userUsageStop = async (sessionId, pin) => {
+  return callApi('/user/usage/stop', 'POST', { sessionId }, pin);
+};
+
+// A page may disappear before React can await logout. keepalive lets that final
+// checkpoint survive navigation/refresh without making background polling activity.
+export const userUsageStopOnPageHide = (sessionId, pin) => {
+  if (!sessionId || !pin) return;
+  void fetch(`${API_BASE_URL}/user/usage/stop`, {
+    method: 'POST',
+    keepalive: true,
+    headers: { 'Content-Type': 'application/json', 'x-pin': pin },
+    body: JSON.stringify({ sessionId }),
+  });
+};
+
 export const userGetProgress = async (pin) => {
   return callApi('/user/progress', 'GET', null, pin);
 };
@@ -573,5 +593,4 @@ export const updateBlackBeltTimer = async (adminPin, degree, payload) => {
 export const updateAdminPin = async (adminPin, currentPin, newPin) => {
   return callApi('/config/admin-pin', 'PUT', { currentPin, newPin }, adminPin);
 };
-
 

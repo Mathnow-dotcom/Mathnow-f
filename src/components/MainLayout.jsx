@@ -13,21 +13,13 @@ const MainLayout = ({ hideStats }) => {
   const {
     showSettings,
     setShowSettings,
-    isTimerPaused,
-    quizStartTime,
-    pausedTime,
     totalTimeToday,
-    elapsedTime,
     handleQuit,
     handleResetProgress,
   } = useMathGamePick((ctx) => ({
     showSettings: Boolean(ctx.showSettings),
     setShowSettings: ctx.setShowSettings || (() => {}),
-    isTimerPaused: Boolean(ctx.isTimerPaused),
-    quizStartTime: ctx.quizStartTime || null,
-    pausedTime: ctx.pausedTime || 0,
     totalTimeToday: Number.isFinite(ctx.totalTimeToday) ? ctx.totalTimeToday : 0,
-    elapsedTime: Number.isFinite(ctx.elapsedTime) ? ctx.elapsedTime : 0,
     handleQuit: ctx.handleQuit || (() => {}),
     handleResetProgress: ctx.handleResetProgress || (() => {}),
   }));
@@ -38,9 +30,6 @@ const MainLayout = ({ hideStats }) => {
   const shouldRenderStats = showStats && !hideStats;
   const hideSettingsButton = location.pathname === '/way-to-go';
 
-  // Fallback so we always pass a number down to SessionTimer
-  const effectiveAccumulatedTime =
-    typeof totalTimeToday === 'number' ? totalTimeToday : elapsedTime || 0;
 
   return (
     <div
@@ -98,11 +87,7 @@ const MainLayout = ({ hideStats }) => {
               }}
             />
             <SessionTimer
-              isActive={!!quizStartTime}
-              startTime={quizStartTime}
-              isPaused={isTimerPaused}
-              pauseStartTime={pausedTime}
-              accumulatedTime={effectiveAccumulatedTime}
+              accumulatedTime={totalTimeToday}
               style={{
                 width: '100%',
                 maxWidth: '280px',

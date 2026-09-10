@@ -182,7 +182,7 @@ const UserInfoBadge = () => {
   }, [remoteDaily, grandTotalCorrect]);
 
   const totalTime = useMemo(() => {
-    const backendTotalMs = Number(remoteDaily?.grandTotalActiveMs);
+    const backendTotalMs = Number(remoteDaily?.grandTotalAppUsageMs);
     if (Number.isFinite(backendTotalMs) && backendTotalMs >= 0) {
       return formatTime(backendTotalMs);
     }
