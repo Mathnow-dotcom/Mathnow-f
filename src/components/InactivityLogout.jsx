@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 const IDLE_AFTER_MS = 30_000;
-const LOGOUT_AFTER_MS = 2 * 60_000;
+const LOGOUT_AFTER_MS = 5 * 60_000;
 const WARNING_AFTER_MS = LOGOUT_AFTER_MS - 60_000;
 
 // Client-only inactivity guard. It starts only after a successful login and

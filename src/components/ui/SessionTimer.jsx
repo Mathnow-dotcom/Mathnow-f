@@ -11,7 +11,7 @@ const SessionTimer = ({ style, accumulatedTime = 0 }) => {
   return (
     <StatsCardShell
       style={style}
-      icon="\u23F0"
+      icon="⏰"
       label="Today's Total Time"
       value={`${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs
         .toString()
