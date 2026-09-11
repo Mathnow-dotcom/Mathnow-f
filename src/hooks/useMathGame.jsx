@@ -268,11 +268,11 @@ const useMathGame = () => {
     setTotalTimeToday(Math.floor(usageBaseMsRef.current / 1000));
   }, []);
 
-  const stopAppUsage = useCallback(async () => {
+  const stopAppUsage = useCallback(async (inactiveDurationMs = null) => {
     const sessionId = usageSessionRef.current;
     if (!sessionId || !childPin) return;
     try {
-      const usage = await userUsageStop(sessionId, childPin);
+      const usage = await userUsageStop(sessionId, childPin, inactiveDurationMs);
       applyAppUsage(usage);
     } catch (error) {
       // Logout remains available when the network is unavailable; the next
@@ -3255,9 +3255,11 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   });
 
   // ---------------- QUIT/RESET ----------------
-  const handleConfirmQuit = useCallback(() => {
+  const handleConfirmQuit = useCallback((logoutReason = null) => {
     setShowQuitModal(false);
-    void stopAppUsage();
+    const inactiveDurationMs =
+      logoutReason?.reason === 'inactivity' ? logoutReason.inactiveDurationMs : null;
+    void stopAppUsage(inactiveDurationMs);
     setIsLoggedIn(false);
     hardResetQuizState({ preserveGameModeContext: true });
     isQuittingRef.current = true;

@@ -130,8 +130,12 @@ export const userUsageHeartbeat = async (sessionId, pin) => {
   return callApi('/user/usage/heartbeat', 'POST', { sessionId }, pin);
 };
 
-export const userUsageStop = async (sessionId, pin) => {
-  return callApi('/user/usage/stop', 'POST', { sessionId }, pin);
+export const userUsageStop = async (sessionId, pin, inactiveDurationMs = null) => {
+  const body = { sessionId };
+  if (Number.isFinite(inactiveDurationMs) && inactiveDurationMs > 0) {
+    body.inactiveDurationMs = inactiveDurationMs;
+  }
+  return callApi('/user/usage/stop', 'POST', body, pin);
 };
 
 // A page may disappear before React can await logout. keepalive lets that final

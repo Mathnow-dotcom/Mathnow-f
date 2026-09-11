@@ -27,7 +27,7 @@ export default function InactivityLogout({ active, onLogout }) {
     loggedOutRef.current = true;
     clearTimers();
     setShowWarning(false);
-    onLogout?.();
+    onLogout?.({ reason: 'inactivity', inactiveDurationMs: LOGOUT_AFTER_MS });
   }, [clearTimers, onLogout]);
 
   const check = useCallback(() => {
