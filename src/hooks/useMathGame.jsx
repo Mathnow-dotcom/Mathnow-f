@@ -1986,7 +1986,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       const localLightningFastAnswer =
         isLightningModeAnswer &&
         isCorrect &&
-        responseMs <= lightningFastThresholdMs;
+        responseMs < lightningFastThresholdMs;
       const optimisticLightningTotal =
         localLightningFastAnswer
           ? (Number.isFinite(lightningCount) ? lightningCount : 0) + 1
@@ -2466,7 +2466,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     // Determine fast/slow using backend lightning counter when available.
     // Backend increments totalCorrect only for "fast" answers.
     const backendMarkedFast = isCorrect && nextTotal > prevTotal;
-    const isFastAnswer = backendMarkedFast || responseMs <= lightningFastThresholdMs;
+    const isFastAnswer = backendMarkedFast || responseMs < lightningFastThresholdMs;
 
     //  Symbol + sound logic (lightning mode only shows lightning)
     let symbol = null;
@@ -2704,7 +2704,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         newQuizStreak += 1;
         const isStreakMilestoneHit = !isPretest && streakMilestones.includes(newQuizStreak);
 
-        if (timeTaken <= 2.0) {
+        if (responseMs < lightningFastThresholdMs) {
           symbol = '⚡';
           if (!isStreakMilestoneHit) audioManager.playLightningSound();
         } else {
