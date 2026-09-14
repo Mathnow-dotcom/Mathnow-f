@@ -12,6 +12,8 @@ export default function InactivityLogout({ active, onLogout }) {
   const intervalRef = useRef(null);
   const loggedOutRef = useRef(false);
   const isIdleRef = useRef(false);
+  const countedIdleMsRef = useRef(0);
+  const visibleIdleStartedAtRef = useRef(null);
   const [showWarning, setShowWarning] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(60);
 
@@ -22,13 +24,32 @@ export default function InactivityLogout({ active, onLogout }) {
     intervalRef.current = null;
   }, []);
 
+  const pauseVisibleIdleClock = useCallback(() => {
+    if (visibleIdleStartedAtRef.current == null) return;
+    countedIdleMsRef.current += Math.max(0, Date.now() - visibleIdleStartedAtRef.current);
+    visibleIdleStartedAtRef.current = null;
+  }, []);
+
+  const resetIdleClock = useCallback(() => {
+    countedIdleMsRef.current = 0;
+    visibleIdleStartedAtRef.current = document.visibilityState === 'visible' ? Date.now() : null;
+  }, []);
+
+  const countedIdleDuration = useCallback(() => {
+    pauseVisibleIdleClock();
+    return Math.max(0, Math.round(countedIdleMsRef.current));
+  }, [pauseVisibleIdleClock]);
+
   const logout = useCallback(() => {
     if (loggedOutRef.current) return;
     loggedOutRef.current = true;
     clearTimers();
     setShowWarning(false);
-    onLogout?.({ reason: 'inactivity', inactiveDurationMs: LOGOUT_AFTER_MS });
-  }, [clearTimers, onLogout]);
+    // Only deduct idle time that was actually counted by the visible-tab app
+    // timer. Time in a background/suspended tab was never added, so it must not
+    // remove previously earned usage.
+    onLogout?.({ reason: 'inactivity', inactiveDurationMs: countedIdleDuration() });
+  }, [clearTimers, countedIdleDuration, onLogout]);
 
   const check = useCallback(() => {
     window.clearTimeout(timeoutRef.current);
@@ -55,19 +76,27 @@ export default function InactivityLogout({ active, onLogout }) {
     if (!active || loggedOutRef.current) return;
     lastActivityRef.current = Date.now();
     isIdleRef.current = false;
+    resetIdleClock();
     setShowWarning(false);
     clearTimers();
     check();
-  }, [active, check, clearTimers]);
+  }, [active, check, clearTimers, resetIdleClock]);
 
   useEffect(() => {
     if (!active) return undefined;
     loggedOutRef.current = false;
     lastActivityRef.current = Date.now();
+    resetIdleClock();
     const events = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
     events.forEach((eventName) => window.addEventListener(eventName, recordActivity, { passive: true }));
     const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') check();
+      if (document.visibilityState === 'hidden') {
+        pauseVisibleIdleClock();
+      } else {
+        // Resume measuring only the visible part of the existing idle period.
+        visibleIdleStartedAtRef.current = Date.now();
+        check();
+      }
     };
     document.addEventListener('visibilitychange', onVisibilityChange);
     check();
@@ -76,8 +105,9 @@ export default function InactivityLogout({ active, onLogout }) {
       clearTimers();
       events.forEach((eventName) => window.removeEventListener(eventName, recordActivity));
       document.removeEventListener('visibilitychange', onVisibilityChange);
+      pauseVisibleIdleClock();
     };
-  }, [active, check, clearTimers, recordActivity]);
+  }, [active, check, clearTimers, pauseVisibleIdleClock, recordActivity, resetIdleClock]);
 
   if (!active || !showWarning) return null;
 
