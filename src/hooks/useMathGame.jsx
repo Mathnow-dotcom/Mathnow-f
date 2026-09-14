@@ -769,6 +769,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
     let cancelled = false;
     let syncing = false;
+    let resetPending = false;
     const pacificDate = () => {
       const parts = new Intl.DateTimeFormat('en-US', {
         timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -776,20 +777,29 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       const value = Object.fromEntries(parts.filter(({ type }) => type !== 'literal').map(({ type, value }) => [type, value]));
       return `${value.year}-${value.month}-${value.day}`;
     };
-    const sync = async () => {
-      if (syncing || !usageSessionRef.current) return;
+    const sync = async (resetElapsed = false) => {
+      if (syncing) {
+        resetPending ||= resetElapsed;
+        return;
+      }
+      if (!usageSessionRef.current) return;
       syncing = true;
       try {
-        const usage = await userUsageHeartbeat(usageSessionRef.current, childPin);
+        const usage = await userUsageHeartbeat(usageSessionRef.current, childPin, resetElapsed);
         if (!cancelled) applyAppUsage(usage);
       } catch (error) {
         // A later heartbeat retries; never let usage telemetry interrupt play.
         console.warn('Failed to sync app usage:', error?.message || error);
       } finally {
         syncing = false;
+        if (resetPending && !cancelled) {
+          resetPending = false;
+          void sync(true);
+        }
       }
     };
     const tick = () => {
+      if (document.visibilityState !== 'visible') return;
       if (usageDateRef.current && usageDateRef.current !== pacificDate()) {
         usageBaseMsRef.current = 0;
         usageSyncedAtRef.current = Date.now();
@@ -799,17 +809,36 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       }
       setTotalTimeToday(Math.floor((usageBaseMsRef.current + Math.max(0, Date.now() - usageSyncedAtRef.current)) / 1000));
     };
+    const freezeVisibleTime = () => {
+      usageBaseMsRef.current += Math.max(0, Date.now() - usageSyncedAtRef.current);
+      usageSyncedAtRef.current = Date.now();
+      setTotalTimeToday(Math.floor(usageBaseMsRef.current / 1000));
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        freezeVisibleTime();
+        void sync();
+      } else {
+        // Do not bridge the hidden interval in the local display or on the server.
+        usageSyncedAtRef.current = Date.now();
+        void sync(true);
+      }
+    };
     const onPageHide = () => userUsageStopOnPageHide(usageSessionRef.current, childPin);
 
     const displayTimer = window.setInterval(tick, 1000);
-    const checkpointTimer = window.setInterval(() => void sync(), 15000);
+    const checkpointTimer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') void sync();
+    }, 15000);
     window.addEventListener('pagehide', onPageHide);
+    document.addEventListener('visibilitychange', onVisibilityChange);
     tick();
     return () => {
       cancelled = true;
       window.clearInterval(displayTimer);
       window.clearInterval(checkpointTimer);
       window.removeEventListener('pagehide', onPageHide);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [applyAppUsage, childPin, isLoggedIn]);
 

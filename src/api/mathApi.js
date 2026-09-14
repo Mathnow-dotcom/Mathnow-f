@@ -126,8 +126,8 @@ export const userGetDailyStats = async (pin) => {
   return callApi('/user/daily', 'GET', null, pin);
 };
 
-export const userUsageHeartbeat = async (sessionId, pin) => {
-  return callApi('/user/usage/heartbeat', 'POST', { sessionId }, pin);
+export const userUsageHeartbeat = async (sessionId, pin, resetElapsed = false) => {
+  return callApi('/user/usage/heartbeat', 'POST', { sessionId, resetElapsed }, pin);
 };
 
 export const userUsageStop = async (sessionId, pin, inactiveDurationMs = null) => {
@@ -597,4 +597,3 @@ export const updateBlackBeltTimer = async (adminPin, degree, payload) => {
 export const updateAdminPin = async (adminPin, currentPin, newPin) => {
   return callApi('/config/admin-pin', 'PUT', { currentPin, newPin }, adminPin);
 };
-
