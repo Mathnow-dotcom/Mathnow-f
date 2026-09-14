@@ -61,6 +61,11 @@ const DEFAULT_LIGHTNING_FAST_MS = 2000;
 const DEFAULT_PRETEST_QUESTION_COUNT = 20;
 const DEFAULT_PRETEST_TIME_LIMIT_MS = 50000;
 const DEFAULT_BONUS_VIDEO_INTERVAL_CORRECT = 4;
+// A background tab may be throttled or suspended. Short tab switches are part
+// of the same authenticated session; a longer gap is not safe to credit.
+// Keep this aligned with the five-minute application inactivity logout, with a
+// small allowance for browser timer scheduling.
+const MAX_BACKGROUND_USAGE_GAP_MS = 5 * 60_000 + 15_000;
 const GAME_MODE_PRE_REWARD_PREVIEW_MS = 250;
 const ROCKET_VIDEO_FALLBACKS = [
   {
@@ -816,12 +821,24 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     };
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
+        // Checkpoint the session before the browser throttles this tab. A short
+        // switch away can be retained if the user returns and continues.
         freezeVisibleTime();
         void sync();
-      } else {
-        // Do not bridge the hidden interval in the local display or on the server.
+        return;
+      }
+
+      const hiddenGapMs = Math.max(0, Date.now() - usageSyncedAtRef.current);
+      if (hiddenGapMs > MAX_BACKGROUND_USAGE_GAP_MS) {
+        // Never bridge a long suspended/background period. This is the guard
+        // that prevents stale timestamps from producing multi-hour jumps.
         usageSyncedAtRef.current = Date.now();
         void sync(true);
+      } else {
+        // Retain a short tab switch. If the user remains inactive, the normal
+        // five-minute auto-logout subsequently removes that idle window.
+        tick();
+        void sync();
       }
     };
     const onPageHide = () => userUsageStopOnPageHide(usageSessionRef.current, childPin);
