@@ -820,7 +820,9 @@ useEffect(() => {
               <button
                 onClick={handleSubmitTypedAnswer}
                 disabled={isSubmitting || typedInput === ''}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition col-span-1"
+                className={`bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition col-span-1 ${
+                  Number.isFinite(practiceQ?.answerScale) ? 'col-start-2' : ''
+                }`}
               >
                 Submit
               </button>

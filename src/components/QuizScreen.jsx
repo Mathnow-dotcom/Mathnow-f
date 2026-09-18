@@ -330,7 +330,9 @@ const QuizScreen = () => {
                       isAwaitingInactivityResponse ||
                       typedInput === ''
                     }
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition"
+                    className={`bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition ${
+                      Number.isFinite(currentQuestion?.answerScale) ? 'col-start-2' : ''
+                    }`}
                   >
                     Submit
                   </button>

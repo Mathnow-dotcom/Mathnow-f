@@ -420,7 +420,9 @@ const GameModeScreen = () => {
                   <button
                     onClick={handleSubmitTyped}
                     disabled={isAnimating || isTimerPaused || isAnswerSubmitted || typedInput === ''}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition col-span-1 disabled:opacity-55 disabled:cursor-default"
+                    className={`bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition col-span-1 disabled:opacity-55 disabled:cursor-default ${
+                      Number.isFinite(currentQuestion?.answerScale) ? 'col-start-2' : ''
+                    }`}
                   >
                     Submit
                   </button>
