@@ -32,6 +32,11 @@ const OPERATION_UI = {
     textClass: 'text-rose-100',
     badgeClass: 'bg-rose-300 text-rose-900 border-rose-100',
   },
+  frac: {
+    symbol: '½',
+    textClass: 'text-violet-100',
+    badgeClass: 'bg-violet-300 text-violet-900 border-violet-100',
+  },
 };
 
 const OperationPicker = () => {

@@ -87,6 +87,13 @@ const buildSpokenFact = (q) => {
   if (!q) return '';
   const expr = String(q.question ?? '').trim();
   const cleaned = expr.replace(/\s+/g, '');
+  const displayAnswer = q?.answerLabels?.[q?.correctAnswer] ?? q.correctAnswer;
+
+  if (Number.isFinite(q?.answerScale) || q?.operation === 'frac') {
+    const fraction = cleaned.replace(/=\?$/, '');
+    const match = fraction.match(/^(\d+)\/(\d+)$/);
+    if (match) return `${match[1]} over ${match[2]} equals ${displayAnswer}`;
+  }
 
   // Accept + - x × * / ÷
   const m = cleaned.match(/^(-?\d+)\s*([+\-x×*/÷])\s*(-?\d+)$/i);
@@ -99,11 +106,11 @@ const buildSpokenFact = (q) => {
       op === '-' ? 'minus' :
       (op === 'x' || op === '×' || op === '*') ? 'times' :
       (op === '/' || op === '÷') ? 'divided by' : '';
-    return `${a} ${opWord} ${b} equals ${q.correctAnswer}`;
+    return `${a} ${opWord} ${b} equals ${displayAnswer}`;
   }
 
   // Fallback
-  return `${expr} equals ${q.correctAnswer}`;
+  return `${expr} equals ${displayAnswer}`;
 };
 
 const stopSpeaking = () => {
@@ -350,11 +357,12 @@ useEffect(() => {
   // --- HELPERS ---
   const extractQuestion = (q) => {
     if (!q) return '—';
+    const question = String(q.question ?? '—');
     // If the question field is just a digit (for L1 white belt), display it clearly
-    if (!isNaN(Number(q.question)) && q.question.length === 1 && q.question !== '0') {
-         return q.question;
+    if (!isNaN(Number(question)) && question.length === 1 && question !== '0') {
+         return question;
     }
-    return q.question;
+    return q.operation === 'frac' ? question.replace(/\s*=\s*\?\s*$/, '') : question;
   }
   
   const extractFactDisplay = (q) => {
@@ -370,7 +378,8 @@ useEffect(() => {
         return expression ? `${questionPart} = ${expression}` : questionPart;
       }
       const questionPart = extractQuestion(q);
-      return `${questionPart} = ${q.correctAnswer}`;
+      const displayAnswer = q?.answerLabels?.[q?.correctAnswer] ?? q?.correctAnswer;
+      return `${questionPart} = ${displayAnswer}`;
   }
 
   const handleNext = () => {
@@ -414,8 +423,12 @@ useEffect(() => {
     setPracticeStatus(null);
     setTypedInput((prev) => {
       const raw = String(digit);
-      const digitCount = prev.length;
-      if (digitCount >= 4) return prev;
+      if (raw === '.') {
+        if (!Number.isFinite(practiceQ?.answerScale) || prev.includes('.')) return prev;
+        return prev === '' ? '0.' : `${prev}.`;
+      }
+      const digitCount = prev.replace('.', '').length;
+      if (digitCount >= (Number.isFinite(practiceQ?.answerScale) ? 4 : 4)) return prev;
       return `${prev}${raw}`;
     });
   };
@@ -438,7 +451,14 @@ useEffect(() => {
 
     setIsSubmitting(true);
 
-    const isCorrect = answerNumber === practiceQ.correctAnswer;
+    const displayedCorrectAnswer = practiceQ?.answerLabels?.[practiceQ?.correctAnswer];
+    const answerToSubmit =
+      Number.isFinite(practiceQ?.answerScale) && String(answerNumber) === String(displayedCorrectAnswer)
+        ? practiceQ.correctAnswer
+        : Number.isFinite(practiceQ?.answerScale)
+          ? Math.round(answerNumber * practiceQ.answerScale)
+          : answerNumber;
+    const isCorrect = answerToSubmit === practiceQ.correctAnswer;
 
     if (!isCorrect) {
       audioManager.playWrongSound?.();
@@ -456,7 +476,7 @@ useEffect(() => {
     setPracticeStatus('success');
 
     if (isGameMode && isGameModePractice) {
-      const out = await handlePracticeAnswer(practiceQ.id, answerNumber);
+      const out = await handlePracticeAnswer(practiceQ.id, answerToSubmit);
 
       if (out.resume || out.surfQuizRestarted || out.rocketQuizRestarted || out.bonusQuizRestarted) {
         setIsClosing(true);
@@ -477,7 +497,7 @@ useEffect(() => {
     }
 
     try {
-      const out = await handlePracticeAnswer(practiceQ.id, answerNumber);
+      const out = await handlePracticeAnswer(practiceQ.id, answerToSubmit);
 
       if (isPreQuizFlow) {
         const nextIndex = currentPracticeIndex + 1;
@@ -788,6 +808,15 @@ useEffect(() => {
               >
                 0
               </button>
+              {Number.isFinite(practiceQ?.answerScale) && (
+                <button
+                  onClick={() => handleDigitPress('.')}
+                  disabled={isSubmitting}
+                  className="bg-gray-100 text-gray-800 font-bold text-2xl py-2 rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition border border-gray-200"
+                >
+                  .
+                </button>
+              )}
               <button
                 onClick={handleSubmitTypedAnswer}
                 disabled={isSubmitting || typedInput === ''}
@@ -837,7 +866,7 @@ useEffect(() => {
                   disabled={isSubmitting}
                   className="w-full bg-gray-100 text-gray-900 font-bold py-4 sm:py-5 rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition select-none border border-gray-200 text-2xl"
                 >
-                  {ans}
+                  {practiceQ?.answerLabels?.[ans] ?? ans}
                 </button>
               ))}
             </div>

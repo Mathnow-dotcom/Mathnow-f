@@ -51,7 +51,7 @@ const DEFAULT_NUMBERS = {
   pretestDefaultTimer: 50,
 };
 const PRETEST_LEVEL_COUNT = 19;
-const RESTORE_OPERATION_KEYS = ['add', 'sub', 'mul', 'div'];
+const RESTORE_OPERATION_KEYS = ['add', 'sub', 'mul', 'div', 'frac'];
 const TOAST_DURATION_MS = 1500;
 
 const toInt = (value, fallback) => {

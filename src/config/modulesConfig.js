@@ -1,4 +1,4 @@
-export const MODULE_SEQUENCE = ['add', 'sub', 'mul', 'div'];
+export const MODULE_SEQUENCE = ['add', 'sub', 'mul', 'div', 'frac'];
 
 export const MODULE_META = {
   add: {
@@ -28,10 +28,18 @@ export const MODULE_META = {
   div: {
     id: 'div',
     label: 'Division',
-    maxLevel: 4,
+    maxLevel: 13,
     enabled: true,
     unlockedByDefault: false,
     prerequisite: 'mul',
+  },
+  frac: {
+    id: 'frac',
+    label: 'Fractions',
+    maxLevel: 6,
+    enabled: true,
+    unlockedByDefault: false,
+    prerequisite: 'div',
   },
 };
 

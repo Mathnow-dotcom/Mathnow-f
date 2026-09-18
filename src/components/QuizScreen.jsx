@@ -108,8 +108,12 @@ const QuizScreen = () => {
     if (isAnswerSubmitted || isAnimating || showResult || isTimerPaused || !currentQuestion || isAwaitingInactivityResponse) return;
     setTypedInput((prev) => {
       const raw = String(digit);
-      const digitCount = prev.length;
-      if (digitCount >= 3) return prev;
+      if (raw === '.') {
+        if (!Number.isFinite(currentQuestion?.answerScale) || prev.includes('.')) return prev;
+        return prev === '' ? '0.' : `${prev}.`;
+      }
+      const digitCount = prev.replace('.', '').length;
+      if (digitCount >= (Number.isFinite(currentQuestion?.answerScale) ? 4 : 3)) return prev;
       return `${prev}${raw}`;
     });
   };
@@ -123,7 +127,14 @@ const QuizScreen = () => {
     if (!typedInput || isAnswerSubmitted || isAnimating || showResult || isTimerPaused || !currentQuestion || isAwaitingInactivityResponse) return;
     const numericAnswer = Number(typedInput);
     if (!Number.isFinite(numericAnswer)) return;
-    handleAnswerClick(numericAnswer);
+    const displayedCorrectAnswer = currentQuestion?.answerLabels?.[currentQuestion?.correctAnswer];
+    const submittedAnswer =
+      Number.isFinite(currentQuestion?.answerScale) && String(numericAnswer) === String(displayedCorrectAnswer)
+        ? currentQuestion.correctAnswer
+        : Number.isFinite(currentQuestion?.answerScale)
+          ? Math.round(numericAnswer * currentQuestion.answerScale)
+          : numericAnswer;
+    handleAnswerClick(submittedAnswer);
   };
 
   const visibleAnswerSymbols = answerSymbols.filter(
@@ -258,7 +269,7 @@ const QuizScreen = () => {
                       className="text-xl sm:text-2xl md:text-3xl font-baloo text-gray-800 drop-shadow-md"
                       style={{ fontFamily: 'Baloo 2, Comic Neue, cursive', letterSpacing: 2 }}
                     >
-                      {answer}
+                      {currentQuestion?.answerLabels?.[answer] ?? answer}
                     </div>
                   </button>
                 ))}
@@ -300,6 +311,15 @@ const QuizScreen = () => {
                   >
                     0
                   </button>
+                  {Number.isFinite(currentQuestion?.answerScale) && (
+                    <button
+                      onClick={() => handleDigitPress('.')}
+                      disabled={isAnimating || showResult || isTimerPaused || isAnswerSubmitted || isAwaitingInactivityResponse}
+                      className="bg-gray-100 text-gray-900 font-bold text-2xl py-2 rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition border border-gray-200"
+                    >
+                      .
+                    </button>
+                  )}
                   <button
                     onClick={handleSubmitTyped}
                     disabled={
@@ -310,7 +330,7 @@ const QuizScreen = () => {
                       isAwaitingInactivityResponse ||
                       typedInput === ''
                     }
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition col-span-1"
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition"
                   >
                     Submit
                   </button>

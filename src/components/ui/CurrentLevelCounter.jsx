@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMathGamePick } from '../../store/mathGameBridgeStore.js';
 import StatsCardShell from './StatsCardShell.jsx';
 
-const OPERATION_ORDER = ['add', 'sub', 'mul', 'div'];
+const OPERATION_ORDER = ['add', 'sub', 'mul', 'div', 'frac'];
 const OP_LABEL = {
   add: 'Addition',
   sub: 'Subtraction',
   mul: 'Multiplication',
   div: 'Division',
+  frac: 'Fractions',
 };
 
 const parseLevelsFromNode = (node = {}) =>

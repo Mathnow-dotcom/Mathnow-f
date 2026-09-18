@@ -109,7 +109,11 @@ const GameModeScreen = () => {
     if (isAnswerSubmitted || isAnimating || isTimerPaused || !currentQuestion) return;
     setTypedInput((prev) => {
       const raw = String(digit);
-      if (prev.length >= 4) return prev;
+      if (raw === '.') {
+        if (!Number.isFinite(currentQuestion?.answerScale) || prev.includes('.')) return prev;
+        return prev === '' ? '0.' : `${prev}.`;
+      }
+      if (prev.replace('.', '').length >= (Number.isFinite(currentQuestion?.answerScale) ? 4 : 4)) return prev;
       return `${prev}${raw}`;
     });
   };
@@ -126,8 +130,16 @@ const GameModeScreen = () => {
     const numericAnswer = Number(typedInput);
     if (!Number.isFinite(numericAnswer)) return;
 
+    const displayedCorrectAnswer = currentQuestion?.answerLabels?.[currentQuestion?.correctAnswer];
+    const submittedAnswer =
+      Number.isFinite(currentQuestion?.answerScale) && String(numericAnswer) === String(displayedCorrectAnswer)
+        ? currentQuestion.correctAnswer
+        : Number.isFinite(currentQuestion?.answerScale)
+          ? Math.round(numericAnswer * currentQuestion.answerScale)
+          : numericAnswer;
+
     setIsAnswerSubmitted(true);
-    Promise.resolve(handleAnswer(numericAnswer)).finally(() => {
+    Promise.resolve(handleAnswer(submittedAnswer)).finally(() => {
       setTimeout(() => setIsAnswerSubmitted(false), 200);
     });
   };
@@ -396,6 +408,15 @@ const GameModeScreen = () => {
                   >
                     0
                   </button>
+                  {Number.isFinite(currentQuestion?.answerScale) && (
+                    <button
+                      onClick={() => handleDigitPress('.')}
+                      disabled={isAnimating || isTimerPaused || isAnswerSubmitted}
+                      className={surfKeypadButtonClassName}
+                    >
+                      .
+                    </button>
+                  )}
                   <button
                     onClick={handleSubmitTyped}
                     disabled={isAnimating || isTimerPaused || isAnswerSubmitted || typedInput === ''}

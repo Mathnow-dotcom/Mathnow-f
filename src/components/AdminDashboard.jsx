@@ -42,7 +42,7 @@ const formatCompactTime = (ms) => {
   return `${minutes}m`;
 };
 
-const OPERATION_ORDER = ['add', 'sub', 'mul', 'div'];
+const OPERATION_ORDER = ['add', 'sub', 'mul', 'div', 'frac'];
 
 const toSafeNumber = (value) => {
   const parsed = Number(value);

@@ -212,6 +212,20 @@ export function mapQuestionToFrontend(backendQuestion) {
   const operation =
     typeof backendQuestion?.operation === 'string' ? backendQuestion.operation : 'add';
 
+  // Fraction answers are stored as thousandths for integer-safe API scoring.
+  // Keep that implementation detail out of every learner-facing game-mode UI,
+  // including older in-progress questions created before answer labels existed.
+  const formatFractionAnswer = (scaledAnswer) => {
+    const value = Number(scaledAnswer);
+    if (!Number.isFinite(value)) return String(scaledAnswer ?? '');
+    if (value === 333) return '0.33';
+    return String(value / 1000);
+  };
+  const displayedTextChoices =
+    operation === 'frac'
+      ? textChoices.map((choice) => choice.replace(/\s*=\s*\?\s*$/, ''))
+      : textChoices;
+
   const computeByOperation = (left, right, op) => {
     if (!Number.isFinite(left) || !Number.isFinite(right)) return undefined;
     if (op === 'sub') return left - right;
@@ -243,6 +257,18 @@ export function mapQuestionToFrontend(backendQuestion) {
     questionString = `${a} ${symbolByOperation(operation)} ${b}`;
   }
 
+  // Fractions are displayed like the other operations: the expression only.
+  // Trim the suffix here as well so an already-created question from before
+  // this display change is rendered consistently when it is resumed.
+  if (operation === 'frac' && typeof questionString === 'string') {
+    questionString = questionString.replace(/\s*=\s*\?\s*$/, '');
+    // Rocket asks the reverse question. Reconstruct a decimal label for an
+    // older saved Rocket question whose prompt still contains the scaled value.
+    if (isRocketQuestion && Number.isFinite(a) && Number.isFinite(b)) {
+      questionString = formatFractionAnswer(Math.round((a * 1000) / b));
+    }
+  }
+
   // 2) Correct answer
   const computed = computeByOperation(a, b, operation);
   const rawCorrect =
@@ -254,7 +280,7 @@ export function mapQuestionToFrontend(backendQuestion) {
   // 3) Choices
   let answers = [];
   if (isRocketQuestion) {
-    answers = textChoices.map((_, idx) => idx);
+    answers = displayedTextChoices.map((_, idx) => idx);
   } else {
     const choicesProvided = Array.isArray(backendQuestion.choices);
     answers = choicesProvided
@@ -307,13 +333,25 @@ export function mapQuestionToFrontend(backendQuestion) {
     }
   }
 
+  const fractionAnswerScale =
+    Number.isFinite(backendQuestion.answerScale)
+      ? backendQuestion.answerScale
+      : operation === 'frac'
+        ? 1000
+        : null;
+  const fractionAnswerLabels =
+    operation === 'frac'
+      ? (backendQuestion.answerLabels || Object.fromEntries(answers.map((answer) => [answer, formatFractionAnswer(answer)])))
+      : null;
+
   return {
     id: backendQuestion._id || backendQuestion.id,
     question: questionString || String(backendQuestion.question || ''),
     operation,
     correctAnswer: correct,
     answers,
-    answerLabels: isRocketQuestion ? textChoices : null,
+    answerLabels: isRocketQuestion ? displayedTextChoices : fractionAnswerLabels,
+    answerScale: fractionAnswerScale,
     isRocketQuestion,
   };
 }

@@ -175,6 +175,7 @@ const TablePicker = () => {
     sub: 'Subtraction',
     mul: 'Multiplication',
     div: 'Division',
+    frac: 'Fractions',
   };
   const operationShortLabel = operationShortLabelMap[selectedOperation] || getOperationLabel(selectedOperation);
 

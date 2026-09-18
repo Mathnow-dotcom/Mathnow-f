@@ -3,7 +3,7 @@ import { userGetDailyStats, userGetProgress } from '../../api/mathApi.js';
 import { normalizeOperation } from '../../config/modulesConfig.js';
 import { useMathGamePick } from '../../store/mathGameBridgeStore.js';
 
-const OPERATION_ORDER = ['add', 'sub', 'mul', 'div'];
+const OPERATION_ORDER = ['add', 'sub', 'mul', 'div', 'frac'];
 const MS_PER_SEC = 1000;
 
 const formatTime = (ms) => {
@@ -69,6 +69,7 @@ const getOperationLabel = (operation) => {
     sub: 'Subtraction',
     mul: 'Multiplication',
     div: 'Division',
+    frac: 'Fractions',
   };
   return opLabelMap[operation] || operation;
 };
