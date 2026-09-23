@@ -198,7 +198,7 @@ const useMathGame = () => {
   const [rocketCorrectStreak, setRocketCorrectStreak] = useState(0);
   const [completedRocketQuizzes, setCompletedRocketQuizzes] = useState(0);
   const [rocketQuizzesRequired, setRocketQuizzesRequired] = useState(5);
-  const [rocketQuestionsPerQuiz, setRocketQuestionsPerQuiz] = useState(4);
+  const [rocketQuestionsPerQuiz, setRocketQuestionsPerQuiz] = useState(5);
   const [bonusCorrectStreak, setBonusCorrectStreak] = useState(0);
   const [bonusLightningCount, setBonusLightningCount] = useState(0);
   const [bonusStarCount, setBonusStarCount] = useState(0);
@@ -479,7 +479,14 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     if (typeof payload.rocketCorrectStreak === 'number') setRocketCorrectStreak(payload.rocketCorrectStreak);
     if (typeof payload.completedRocketQuizzes === 'number') setCompletedRocketQuizzes(payload.completedRocketQuizzes);
     if (typeof payload.rocketQuizzesRequired === 'number') setRocketQuizzesRequired(payload.rocketQuizzesRequired);
-    if (typeof payload.rocketQuestionsPerQuiz === 'number') setRocketQuestionsPerQuiz(payload.rocketQuestionsPerQuiz);
+    // Rocket start responses use the shared `questionsPerQuiz` field, while
+    // some Rocket-specific responses use `rocketQuestionsPerQuiz`.
+    // Accept both so the displayed rockets always follow admin configuration.
+    const configuredQuestions =
+      typeof payload.rocketQuestionsPerQuiz === 'number'
+        ? payload.rocketQuestionsPerQuiz
+        : payload.questionsPerQuiz;
+    if (typeof configuredQuestions === 'number') setRocketQuestionsPerQuiz(configuredQuestions);
   }, []);
 
   const normalizeBonusDisplayStreak = useCallback((rawStreak, rawInterval) => {
