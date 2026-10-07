@@ -3,7 +3,11 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { assessmentReports, assessmentExport } from '../api/mathApi.js';
 import '../styles/Assessment.css';
 
-const duration = (ms) => `${(ms / 1000).toFixed(1)}s`;
+const duration = (ms) => {
+  const seconds = Math.round(ms / 1000);
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+  return `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
+};
 const queryDates = ({ student, type, from, to }) => {
   const result = { student: student.trim(), type };
   if (from) result.from = new Date(`${from}T00:00:00`).toISOString();
