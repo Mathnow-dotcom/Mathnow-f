@@ -1,0 +1,77 @@
+.assessment-page { min-height:100dvh; padding:24px 20px 130px; background:linear-gradient(145deg,#061528e8,#123f55d9),url('/night_sky_landscape.jpg') center/cover; color:#fff; display:flex; flex-direction:column; align-items:center; gap:32px; }
+.assessment-toolbar { display:flex; justify-content:space-between; align-items:center; width:100%; max-width:1100px; gap:16px; }
+.assessment-card { margin:auto; width:min(100%,600px); padding:32px; background:linear-gradient(135deg,#e1edff,#f4eaff); color:#18253a; border-radius:26px; box-shadow:0 16px 50px #0003; text-align:center; }
+.assessment-card h1 { font-size:clamp(1.5rem,4vw,2rem); font-weight:700; margin:0 0 20px; }
+.assessment-card h2 { font-size:1.5rem; font-weight:700; }
+.assessment-card p { margin:12px 0 20px; }
+.assessment-page button { border-radius:12px; padding:12px 20px; font-weight:700; background:#159d54; color:white; box-shadow:0 3px 6px #0002; }
+.assessment-page button:disabled { opacity:.5; cursor:not-allowed; }
+.assessment-page button:focus-visible,.assessment-page input:focus-visible { outline:3px solid #f5c542; outline-offset:3px; }
+.assessment-page .assessment-secondary { background:#d8e1ec; color:#23334d; margin:12px; }
+.assessment-choices { display:grid; gap:20px; }
+.assessment-card .assessment-problem { font-size:clamp(2.5rem,8vw,4.5rem); color:#17b55c; }
+.assessment-card input { width:100%; padding:16px; background:#fff; border:3px solid #86efac; border-radius:16px; text-align:center; font-size:1.8rem; color:#18253a; }
+.assessment-keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:22px; }
+.assessment-keypad button[type=button] { background:#f3f4f6; color:#253044; }
+.assessment-keypad button.assessment-submit { opacity:1; }
+.assessment-keypad .assessment-submit--empty { background:#f3f4f6; color:#253044; }
+.assessment-timer { align-self:flex-end; margin-top:24px; }
+.assessment-error { margin-top:16px; color:#9b2525; }
+.assessment-modal { position:fixed; inset:0; z-index:90; background:#0009; display:grid; place-items:center; padding:20px; }
+.assessment-report { width:min(100%,1200px); }
+.assessment-filters { display:flex; flex-wrap:wrap; gap:16px; align-items:end; margin-bottom:24px; }
+.assessment-filters label { display:flex; flex-direction:column; gap:6px; }
+.assessment-filters input,.assessment-filters select { color:#17253b; padding:10px; border-radius:8px; }
+.assessment-results { overflow-x:auto; }
+.assessment-results table { width:100%; border-collapse:collapse; background:#10223ed9; }
+.assessment-results th,.assessment-results td { padding:12px; border-bottom:1px solid #ffffff22; text-align:left; }
+.assessment-results summary { cursor:pointer; }
+@media(max-width:480px) { .assessment-card { padding:24px 18px; } .assessment-keypad { gap:12px; } .assessment-page button { padding:12px; } }
+
+/* Selection screens only: keep assessment questions, keypad and reports unchanged. */
+.assessment-selection-page { padding-bottom:32px; gap:clamp(20px,4vh,40px); }
+.assessment-selection-page .assessment-toolbar > span { min-width:0; overflow-wrap:anywhere; }
+.assessment-selection-page .assessment-toolbar > button { flex-shrink:0; }
+.assessment-selection-card {
+  width:min(100%,580px);
+  padding:clamp(24px,4vw,40px);
+  border-radius:24px;
+  box-shadow:0 18px 48px #0003;
+  flex-shrink:0;
+}
+.assessment-selection-card h1 {
+  margin:0 0 24px;
+  font-size:clamp(1.5rem,3vw,1.9rem);
+  line-height:1.2;
+  letter-spacing:-.025em;
+  text-wrap:balance;
+}
+.assessment-selection-card h1 + p { margin:-10px 0 28px; line-height:1.5; }
+.assessment-selection-card .assessment-choices { gap:12px; }
+.assessment-selection-card .assessment-mode-choices { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.assessment-selection-card .assessment-choices button {
+  min-width:0;
+  min-height:60px;
+  padding:16px 20px;
+  border-radius:14px;
+  font-size:clamp(1rem,2vw,1.125rem);
+  line-height:1.4;
+  text-wrap:balance;
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+.assessment-selection-card .assessment-choices small { display:inline-block; margin-top:4px; font-size:.875rem; line-height:1.4; }
+.assessment-selection-card .assessment-secondary { min-height:44px; margin:24px 0 0; padding:10px 24px; }
+@media(hover:hover) {
+  .assessment-selection-card .assessment-choices button:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 6px 12px #0002; }
+}
+@media(max-width:480px) {
+  .assessment-selection-page { padding:16px 12px 24px; }
+  .assessment-selection-card { border-radius:20px; }
+  .assessment-selection-card .assessment-mode-choices { grid-template-columns:1fr; }
+  .assessment-selection-card .assessment-choices button { min-height:52px; padding:14px 16px; }
+  .assessment-selection-card h1 + p { margin-bottom:22px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .assessment-selection-card .assessment-choices button { transition:none; }
+  .assessment-selection-card .assessment-choices button:not(:disabled):hover { transform:none; }
+}

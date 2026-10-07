@@ -2,6 +2,32 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api';
 
+// Assessment requests use the same PIN authentication as the existing learning APIs.
+export const assessmentCurrent = (pin) => callApi('/assessments/current', 'GET', null, pin);
+export const assessmentStart = (pin, beginKey, session) =>
+  callApi('/assessments/start', 'POST', { beginKey, session }, pin);
+export const assessmentUpdate = async (pin, id, body) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/assessments/${encodeURIComponent(id)}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-pin': pin },
+      body: JSON.stringify(body), keepalive: true, signal: controller.signal,
+    });
+    if (!response.ok) throw new Error('Unable to save the test. Please retry, or resume if it was opened in another tab.');
+    return await response.json();
+  } finally { clearTimeout(timeout); }
+};
+export const assessmentReports = (pin, filters) =>
+  callApi(`/admin/assessments?${new URLSearchParams(filters)}`, 'GET', null, pin);
+export const assessmentExport = async (pin, filters) => {
+  const response = await fetch(`${API_BASE_URL}/admin/assessments/export?${new URLSearchParams(filters)}`, {
+    headers: { 'x-pin': pin },
+  });
+  if (!response.ok) throw new Error('Could not export test results.');
+  return response.blob();
+};
+
 /**
  * Helper function for authenticated API calls.
  * @param {string} endpoint The API endpoint (e.g., '/auth/login-pin').

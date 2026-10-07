@@ -138,7 +138,7 @@ const OperationPicker = () => {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <FloatingBackButton onClick={() => navigate('/theme')} ariaLabel="Back to theme" />
+      <FloatingBackButton onClick={() => navigate('/mode')} ariaLabel="Back to mode selection" />
 
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 sm:gap-8 lg:gap-10 pt-20 sm:pt-24 lg:pt-28 pb-24">
         <h1 className="z-10 text-white text-3xl sm:text-4xl lg:text-5xl font-extrabold drop-shadow text-center animate-fade-in">

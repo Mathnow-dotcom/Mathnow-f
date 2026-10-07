@@ -914,11 +914,8 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         setShowDailyStreakAnimation(true);
       }
 
-      if (themeKeyFromBackend && themeKeyFromBackend.length > 0 && themeKeyFromBackend !== 'null') {
-        navigate('/operations');
-      } else {
-        navigate('/theme');
-      }
+      // The streak overlay remains first; its Next button reveals the mode choice.
+      navigate('/mode');
     },
     [
       navigate,
@@ -1085,11 +1082,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         setGrandTotalCorrect(stats?.grandTotal || 0);
         setCurrentStreak(loginResponse.user.currentStreak || 0);
 
-        if (themeKeyFromBackend && themeKeyFromBackend.length > 0 && themeKeyFromBackend !== 'null') {
-          navigate('/operations');
-        } else {
-          navigate('/theme');
-        }
+        navigate('/mode');
       } catch (e) {
         setIsLoginLoading(false);
         localStorage.removeItem('math-child-pin');

@@ -6,6 +6,8 @@ import GetReadyScreen from './components/GetReadyScreen.jsx';
 // NEW: Lazy loading imports for Code Splitting
 import SiblingCheckModal from './components/SiblingCheckModal.jsx';
 const StartScreen = lazy(() => import('./components/StartScreen.jsx'));
+const AssessmentScreen = lazy(() => import('./components/AssessmentScreen.jsx'));
+const AssessmentReports = lazy(() => import('./components/AssessmentReports.jsx'));
 const NameForm = lazy(() => import('./components/NameForm.jsx'));
 const ThemePicker = lazy(() => import('./components/ThemePicker.jsx'));
 const OperationPicker = lazy(() => import('./components/OperationPicker.jsx'));
@@ -259,6 +261,10 @@ const App = () => {
       {/* NEW: Use Suspense to show a fallback while waiting for code to load */}
       <Suspense fallback={<InitialLoadingScreen />}>
       <Routes>
+        <Route path="/mode" element={<AssessmentScreen />} />
+        <Route path="/test-selection" element={<AssessmentScreen />} />
+        <Route path="/test-a" element={<AssessmentScreen />} />
+        <Route path="/admin/tests" element={<AssessmentReports />} />
         <Route path="/" element={<StartScreen />} />
         <Route path="/name" element={<NameForm />} />
         
