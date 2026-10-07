@@ -165,7 +165,6 @@ export default function AssessmentScreen() {
           <h1>Choose a test</h1>
           <div className="assessment-choices">
             <button onClick={() => navigate('/test-a')}>TEST A — Addition</button>
-            <button disabled>TEST B — Addition &amp; Subtraction<br /><small>Coming soon</small></button>
           </div>
           <button className="assessment-secondary" onClick={() => navigate('/mode')}>Back</button>
         </> : complete ? <>
