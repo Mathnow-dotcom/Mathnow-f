@@ -7,7 +7,7 @@ import GetReadyScreen from './components/GetReadyScreen.jsx';
 import SiblingCheckModal from './components/SiblingCheckModal.jsx';
 const StartScreen = lazy(() => import('./components/StartScreen.jsx'));
 const AssessmentScreen = lazy(() => import('./components/AssessmentScreen.jsx'));
-//const AssessmentReports = lazy(() => import('./components/AssessmentReports.jsx'));
+const AssessmentReports = lazy(() => import('./components/AssessmentReports.jsx'));
 const NameForm = lazy(() => import('./components/NameForm.jsx'));
 const ThemePicker = lazy(() => import('./components/ThemePicker.jsx'));
 const OperationPicker = lazy(() => import('./components/OperationPicker.jsx'));

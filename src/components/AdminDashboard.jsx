@@ -472,6 +472,8 @@ const AdminDashboard = () => {
           </div>
 
           <div className="admin-dashboard__actions">
+            <button onClick={() => navigate('/admin/tests')} type="button"
+              className="admin-dashboard__btn admin-dashboard__btn--settings">Test Results</button>
             <button
               onClick={() => navigate('/admin-settings')}
               type="button"
