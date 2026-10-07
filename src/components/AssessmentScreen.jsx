@@ -181,7 +181,7 @@ export default function AssessmentScreen() {
           <h1 className="assessment-problem">{attempt.problem}</h1>
           <form onSubmit={submit}>
             <label className="sr-only" htmlFor="test-answer">Your answer</label>
-            <input key={attempt.position} id="test-answer" autoFocus inputMode="numeric" pattern="[0-9]*" autoComplete="off"
+            <input key={attempt.position} id="test-answer" autoFocus inputMode="none" pattern="[0-9]*" autoComplete="off"
               value={answer} onChange={(e) => edit(e.target.value)} disabled={(busy && !savingNext) || quit} placeholder="Type answer" />
             <div className="assessment-keypad">
               {[1,2,3,4,5,6,7,8,9,'Clear',0].map(key => <button type="button" key={key} disabled={(busy && !savingNext) || quit}

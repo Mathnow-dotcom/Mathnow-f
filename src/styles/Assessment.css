@@ -14,6 +14,7 @@
 .assessment-keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:22px; }
 .assessment-keypad button[type=button] { background:#f3f4f6; color:#253044; }
 .assessment-keypad button.assessment-submit { opacity:1; }
+.assessment-keypad button.assessment-submit:disabled { cursor:default; }
 .assessment-keypad .assessment-submit--empty { background:#f3f4f6; color:#253044; }
 .assessment-timer { align-self:flex-end; margin-top:24px; }
 .assessment-error { margin-top:16px; color:#9b2525; }

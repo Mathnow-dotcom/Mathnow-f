@@ -134,7 +134,7 @@ try {
       assert(layout.buttons.every(b => b.height >= 44 && b.color === 'rgb(21, 157, 84)'), 'Touch targets and existing green preserved');
       if (page === 'mode') assert(layout.buttons.every(b => b.height <= 80), 'Mode buttons stay compact');
       else {
-        assert(await evaluate('document.querySelectorAll(".assessment-choices button")[1].disabled'), 'Test B stays disabled');
+        assert(await evaluate('document.querySelector(".assessment-choices button").textContent === "TEST A — Addition"'), 'Test A remains available');
         await click('Back');
       }
     }
@@ -151,6 +151,8 @@ try {
   await openTest();
   assert.equal(calls.filter(c => c.path === '/assessments/start').length, 0, 'Instructions must not start timing');
   await click('Begin'); await see('Question 1 of 3');
+  assert.equal(await evaluate('document.querySelector("#test-answer").inputMode'), 'none', 'Use the app keypad without requesting a device keyboard');
+  assert.equal(await evaluate('getComputedStyle(document.querySelector("button[type=submit]")).cursor'), 'default', 'Disabled Submit has no prohibited cursor');
   assert(!(await text()).includes('Correct'), 'No correctness feedback');
   await evaluate(`{
     const input = document.querySelector('#test-answer');
