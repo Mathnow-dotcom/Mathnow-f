@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMathGamePick } from '../../store/mathGameBridgeStore.js';
 import StatsCardShell from './StatsCardShell.jsx';
+import { getBeltLabel, formatBeltDisplay } from './UserInfoBadge.jsx';
 
 const OPERATION_ORDER = ['add', 'sub', 'mul', 'div', 'frac'];
 const OP_LABEL = {
@@ -48,6 +49,11 @@ const pickCurrentLevelFromLevels = (levelsAsc = []) => {
   return highestUnlockedIncomplete || unlockedLevels[unlockedLevels.length - 1] || levelsAsc[0];
 };
 
+const withCurrentBelt = (label, levelData) => {
+  const belt = formatBeltDisplay(getBeltLabel(levelData));
+  return belt && belt !== '--' ? `${label} ${belt}` : label;
+};
+
 const resolveCurrentLevel = (progressByOperation = {}, selectedOperation = 'add') => {
   const progress =
     progressByOperation && typeof progressByOperation === 'object'
@@ -63,13 +69,13 @@ const resolveCurrentLevel = (progressByOperation = {}, selectedOperation = 'add'
   if (!hasScopedOps && hasFlatLevelKeys(progress)) {
     const flatLevels = parseLevelsFromNode(progress);
     const current = pickCurrentLevelFromLevels(flatLevels);
-    return current ? `Level ${current.level}` : '--';
+    return current ? withCurrentBelt(`Level ${current.level}`, current.data) : '--';
   }
 
   if (!hasScopedOps && progress?.[selectedOperation] && typeof progress[selectedOperation] === 'object') {
     const flatLevels = parseLevelsFromNode(progress[selectedOperation]);
     const current = pickCurrentLevelFromLevels(flatLevels);
-    return current ? `${OP_LABEL[selectedOperation] || selectedOperation} Level ${current.level}` : '--';
+    return current ? withCurrentBelt(`${OP_LABEL[selectedOperation] || selectedOperation} Level ${current.level}`, current.data) : '--';
   }
 
   const snapshots = OPERATION_ORDER.map((op) => {
@@ -86,7 +92,7 @@ const resolveCurrentLevel = (progressByOperation = {}, selectedOperation = 'add'
     .reverse()
     .find((entry) => !entry.current.data?.completed);
   const active = highestUnlockedIncompleteOp || snapshots[snapshots.length - 1];
-  return `${OP_LABEL[active.op] || active.op} Level ${active.current.level}`;
+  return withCurrentBelt(`${OP_LABEL[active.op] || active.op} Level ${active.current.level}`, active.current.data);
 };
 
 const CurrentLevelCounter = ({ style }) => {

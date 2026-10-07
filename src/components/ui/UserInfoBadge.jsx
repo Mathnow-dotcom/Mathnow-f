@@ -18,7 +18,7 @@ const formatTime = (ms) => {
   return `${seconds}s`;
 };
 
-const getBeltLabel = (levelData = {}) => {
+export const getBeltLabel = (levelData = {}) => {
   const beltsOrder = ['white', 'yellow', 'green', 'blue', 'red', 'brown'];
   let currentBelt = '--';
 
@@ -125,7 +125,7 @@ const getCurrentProgressFromBackend = (progress, selectedOperation) => {
   };
 };
 
-const formatBeltDisplay = (belt) => {
+export const formatBeltDisplay = (belt) => {
   if (!belt || belt === '--' || belt === 'Level Mastered') return belt;
   if (String(belt).startsWith('Black Belt Degree')) return belt;
   return `${belt} Belt`;
