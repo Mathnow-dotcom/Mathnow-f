@@ -155,29 +155,26 @@ export default function AssessmentScreen() {
       </header>
       <section className={`assessment-card${isSelectionPage ? ' assessment-selection-card' : ''}`} aria-busy={busy}>
         {pathname === '/mode' ? <>
-          <h1>What would you like to do?</h1>
-          <p>Choose your next activity.</p>
+          <h1>What would you like to do?</h1>        
           <div className="assessment-choices assessment-mode-choices">
             <button onClick={() => navigate(learnRoute)}>LEARN</button>
             <button onClick={() => navigate('/test-selection')}>TAKE A TEST</button>
           </div>
-        </> : pathname === '/test-selection' ? <>
-          <h1>Choose a test</h1>
+        </> : pathname === '/test-selection' ? <>         
           <div className="assessment-choices">
-            <button onClick={() => navigate('/test-a')}>TEST A — Addition</button>
+            <button onClick={() => navigate('/test-a')}>Addition</button>
           </div>
           <button className="assessment-secondary" onClick={() => navigate('/mode')}>Back</button>
         </> : complete ? <>
           <h1 role="status">Test complete</h1><p>Returning to your activity choices…</p>
         </> : !running ? <>
-          <h1>Test A — Addition</h1>
-          <p>Type an answer, then press Submit. There are no hints or answer reveals. You cannot go back after submitting.</p>
+          <h1>Addition</h1>
           <p>Your time is recorded from Begin. You can quit and resume your unfinished test later.</p>
           {attempt && <p>Saved progress: {attempt.position} of {attempt.count} questions answered.</p>}
           <button disabled={busy || !loaded} onClick={begin}>{busy ? 'Loading…' : attempt ? 'Resume test' : 'Begin'}</button>
           <button className="assessment-secondary" disabled={busy} onClick={() => navigate('/test-selection')}>Back</button>
         </> : <>
-          <p>Question {attempt.position + 1} of {attempt.count}</p>
+          {/* <p>Question {attempt.position + 1} of {attempt.count}</p> */}
           <h1 className="assessment-problem">{attempt.problem}</h1>
           <form onSubmit={submit}>
             <label className="sr-only" htmlFor="test-answer">Your answer</label>

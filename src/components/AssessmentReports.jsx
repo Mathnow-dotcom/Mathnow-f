@@ -72,11 +72,14 @@ export default function AssessmentReports() {
       {error && <p role="alert">{error}</p>}
       {busy ? <p role="status">Loading results…</p> : <div className="assessment-results">
         {rows.length === 0 ? <p>No completed tests found.</p> : <table><thead><tr>
-          <th>Student</th><th>Test</th><th>Completed</th><th>Accuracy</th><th>Total time</th><th>Per-item detail</th>
+          <th>Student</th><th>Test</th><th>Completed</th><th>Accuracy</th><th>Total time</th>
+          <th>Average time per item</th><th title="Percentage of all test items answered correctly in less than 2 seconds">Correct under 2 seconds</th><th>Per-item detail</th>
         </tr></thead><tbody>{rows.map(row => <tr key={row.id}>
           <td>{row.student}<br /><small>#{row.pin}</small></td><td>{row.type}</td>
           <td>{new Date(row.completedAt).toLocaleString()}</td>
-          <td>{row.correct}/{row.count} ({row.percent.toFixed(1)}%)</td><td>{duration(row.totalMs)}</td>
+          <td>{row.percent.toFixed(1)}%</td><td>{duration(row.totalMs)}</td>
+          <td>{Number.isFinite(row.averageTimeMs) ? `${(row.averageTimeMs / 1000).toFixed(2)} s` : '—'}</td>
+          <td>{Number.isFinite(row.correctUnderTwoSecondsPercent) ? `${row.correctUnderTwoSecondsPercent.toFixed(1)}%` : '—'}</td>
           <td><details><summary>View {row.count} items</summary><table><thead><tr>
             <th>Problem</th><th>Answer</th><th>Result</th><th>Time</th>
           </tr></thead><tbody>{row.answers.map((a, i) => <tr key={i}><td>{a.problem}</td><td>{a.answer}</td>
