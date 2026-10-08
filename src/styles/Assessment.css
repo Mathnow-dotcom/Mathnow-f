@@ -6,6 +6,8 @@
 .assessment-card p { margin:12px 0 20px; }
 .assessment-page button { border-radius:12px; padding:12px 20px; font-weight:700; background:#159d54; color:white; box-shadow:0 3px 6px #0002; }
 .assessment-page button:disabled { opacity:.5; cursor:not-allowed; }
+.assessment-student-toolbar button:disabled,
+.assessment-card button:disabled { cursor:default; }
 .assessment-page button:focus-visible,.assessment-page input:focus-visible { outline:3px solid #f5c542; outline-offset:3px; }
 .assessment-page .assessment-secondary { background:#d8e1ec; color:#23334d; margin:12px; }
 .assessment-choices { display:grid; gap:20px; }
@@ -102,4 +104,48 @@
 @media(prefers-reduced-motion:reduce) {
   .assessment-selection-card .assessment-choices button { transition:none; }
   .assessment-selection-card .assessment-choices button:not(:disabled):hover { transform:none; }
+}
+
+/* Student choice, start and quit cards only; question and report layouts stay unchanged. */
+.assessment-selection-card,.assessment-start-card,.assessment-quit-card {
+  border:1px solid #ffffff99;
+  border-radius:28px;
+  padding:clamp(24px,4vw,36px);
+  box-shadow:0 18px 48px #0003,inset 0 1px 0 #ffffffaa;
+}
+.assessment-selection-card { width:min(100%,520px); }
+.assessment-selection-card .assessment-choices { gap:16px; }
+.assessment-selection-card .assessment-choices button {
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  padding:20px 16px; border-radius:18px; min-height:76px;
+}
+.assessment-selection-card .assessment-mode-choices button { flex-direction:column; gap:12px; }
+.assessment-choice-icon {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:44px; height:44px; flex-shrink:0; border-radius:14px;
+  background:#ffffff20; font-size:1.7rem; line-height:1;
+}
+.assessment-start-card,.assessment-quit-card { width:min(100%,480px); }
+.assessment-card-symbol {
+  display:flex; align-items:center; justify-content:center;
+  width:56px; height:56px; margin:0 auto 18px; border-radius:18px;
+  background:#d8e1ec; color:#23334d; font-size:2rem; font-weight:700;
+}
+.assessment-start-card h1 { margin-bottom:16px; }
+.assessment-progress-badge {
+  display:inline-flex; align-items:center; justify-content:center; flex-wrap:wrap;
+  gap:8px; max-width:100%; padding:10px 16px; border-radius:999px;
+  background:#d8e1ec; color:#23334d; font-size:.95rem;
+}
+.assessment-progress-badge strong { font-variant-numeric:tabular-nums; }
+.assessment-start-card p { line-height:1.6; margin:0 0 18px; text-wrap:pretty; }
+.assessment-card-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+.assessment-card-actions > button { flex:1 1 140px; min-height:48px; border-radius:14px; }
+.assessment-card-actions > .assessment-secondary { margin:0; }
+.assessment-quit-card .assessment-card-actions { margin-top:0; }
+.assessment-modal { overflow-y:auto; }
+@media(max-width:480px) {
+  .assessment-selection-card .assessment-mode-choices button { flex-direction:row; justify-content:flex-start; padding:16px; }
+  .assessment-card-actions { flex-direction:column; }
+  .assessment-card-actions > button { flex:auto; width:100%; }
 }
