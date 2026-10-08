@@ -16,6 +16,33 @@
 .assessment-keypad button.assessment-submit { opacity:1; }
 .assessment-keypad button.assessment-submit:disabled { cursor:default; }
 .assessment-keypad .assessment-submit--empty { background:#f3f4f6; color:#253044; }
+.assessment-student-toolbar { justify-content:flex-end; }
+/* Match the learning/Surf keypad without changing assessment input or save handling. */
+.assessment-question-card { width:min(100%,448px); }
+.assessment-question-card form { max-width:384px; margin-inline:auto; }
+.assessment-question-card #test-answer {
+  height:96px; border:4px solid #86efac; font-size:clamp(1.75rem,6vw,2.25rem);
+  font-weight:800; color:#1f2937; box-shadow:0 10px 15px -3px #0001,0 4px 6px -4px #0001;
+}
+.assessment-question-card #test-answer:focus-visible { outline:none; border-color:#4ade80; }
+.assessment-question-card .assessment-keypad { gap:12px; margin-top:20px; }
+.assessment-question-card .assessment-keypad button {
+  padding:8px; min-height:44px; border:1px solid #e5e7eb; font-size:1.5rem;
+  line-height:1.333; color:#111827; user-select:none; transition:background-color .15s,transform .15s;
+  box-shadow:0 4px 6px -1px #0001,0 2px 4px -2px #0001;
+}
+.assessment-question-card .assessment-keypad .assessment-clear {
+  background:#e5e7eb; border-color:#d1d5db; color:#1f2937; font-size:1rem; font-weight:600;
+}
+.assessment-question-card .assessment-keypad .assessment-submit {
+  background:linear-gradient(to right,#22c55e,#059669); color:#fff; font-size:1rem;
+}
+.assessment-question-card .assessment-keypad .assessment-submit--empty { background:#f3f4f6; color:#253044; }
+.assessment-question-card .assessment-keypad button:not(:disabled):active { transform:scale(.95); }
+@media(hover:hover) {
+  .assessment-question-card .assessment-keypad button[type=button]:not(:disabled):hover { background:#e5e7eb; }
+  .assessment-question-card .assessment-keypad .assessment-clear:not(:disabled):hover { background:#d1d5db; }
+}
 .assessment-timer { align-self:flex-end; margin-top:24px; }
 .assessment-error { margin-top:16px; color:#9b2525; }
 .assessment-modal { position:fixed; inset:0; z-index:90; background:#0009; display:grid; place-items:center; padding:20px; }

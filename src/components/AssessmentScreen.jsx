@@ -147,15 +147,14 @@ export default function AssessmentScreen() {
   const isSelectionPage = pathname === '/mode' || pathname === '/test-selection';
   return (
     <main className={`assessment-page${isSelectionPage ? ' assessment-selection-page' : ''}`}>
-      <header className="assessment-toolbar">
-        <span>{ctx.childName}</span>
+      <header className="assessment-toolbar assessment-student-toolbar">
         {running && !complete
           ? <button type="button" onClick={() => setQuit(true)}>⚙ Quit test</button>
           : <button type="button" onClick={ctx.handleQuit}>Sign out</button>}
       </header>
-      <section className={`assessment-card${isSelectionPage ? ' assessment-selection-card' : ''}`} aria-busy={busy}>
+      <section className={`assessment-card${isSelectionPage ? ' assessment-selection-card' : ''}${running && !complete ? ' assessment-question-card' : ''}`} aria-busy={busy}>
         {pathname === '/mode' ? <>
-          <h1>What would you like to do?</h1>        
+          {/* <h1>What would you like to do?</h1>         */}
           <div className="assessment-choices assessment-mode-choices">
             <button onClick={() => navigate(learnRoute)}>LEARN</button>
             <button onClick={() => navigate('/test-selection')}>TAKE A TEST</button>
@@ -181,7 +180,7 @@ export default function AssessmentScreen() {
             <input key={attempt.position} id="test-answer" autoFocus inputMode="none" pattern="[0-9]*" autoComplete="off"
               value={answer} onChange={(e) => edit(e.target.value)} disabled={(busy && !savingNext) || quit} placeholder="Type answer" />
             <div className="assessment-keypad">
-              {[1,2,3,4,5,6,7,8,9,'Clear',0].map(key => <button type="button" key={key} disabled={(busy && !savingNext) || quit}
+              {[1,2,3,4,5,6,7,8,9,'Clear',0].map(key => <button type="button" key={key} className={key === 'Clear' ? 'assessment-clear' : undefined} disabled={(busy && !savingNext) || quit}
                 onClick={() => edit(key === 'Clear' ? '' : answer + key)}>{key}</button>)}
               <button type="submit" className={answer ? 'assessment-submit' : 'assessment-submit assessment-submit--empty'}
                 disabled={busy || quit || !answer}>Submit</button>
