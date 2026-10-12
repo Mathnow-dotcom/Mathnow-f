@@ -10,6 +10,7 @@ export default function AssessmentScreen() {
   const ctx = useContext(MathGameContext);
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const testType = pathname === '/test-b' ? 'B' : 'A';
   const [attempt, setAttempt] = useState(null);
   const [running, setRunning] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -24,7 +25,7 @@ export default function AssessmentScreen() {
   const locked = useRef(false);
   const queue = useRef(Promise.resolve());
   const pin = ctx.childPin;
-  const beginKey = `math-assessment-begin-${pin}`;
+  const beginKey = `math-assessment-begin-${pin}${testType === 'B' ? '-B' : ''}`;
   const draftKey = (a) => `math-assessment-draft-${pin}-${a.id}-${a.position}`;
 
   const apply = (a) => {
@@ -54,11 +55,11 @@ export default function AssessmentScreen() {
     alive.current = true;
     if (!ctx.isLoggedIn) return;
     let cancelled = false;
-    assessmentCurrent(pin).then(({ attempt: a }) => {
+    assessmentCurrent(pin, testType).then(({ attempt: a }) => {
       if (!cancelled) { apply(a); setLoaded(true); }
     }).catch(() => { if (!cancelled) { setError('Could not load your test. Please try again.'); setLoaded(true); } });
     return () => { cancelled = true; alive.current = false; };
-  }, [pin, ctx.isLoggedIn]);
+  }, [pin, ctx.isLoggedIn, testType]);
 
   useEffect(() => {
     if (!running || attempt?.completed) return;
@@ -89,7 +90,7 @@ export default function AssessmentScreen() {
 
   // Browser Back also leaves a persisted, resumable test rather than exposing previous items.
   useEffect(() => {
-    if (pathname !== '/test-a' && running) {
+    if (pathname !== '/test-a' && pathname !== '/test-b' && running) {
       setRunning(false);
       if (current.current?.completed) apply(null);
     }
@@ -101,7 +102,7 @@ export default function AssessmentScreen() {
     let key = localStorage.getItem(beginKey);
     if (!key) { key = crypto.randomUUID(); localStorage.setItem(beginKey, key); }
     try {
-      const a = await enqueue(() => assessmentStart(pin, key, session.current));
+      const a = await enqueue(() => assessmentStart(pin, key, session.current, testType));
       apply(a); setRunning(true);
     } catch (e) { setError(e.message); }
     finally { locked.current = false; setBusy(false); }
@@ -162,13 +163,14 @@ export default function AssessmentScreen() {
         </> : pathname === '/test-selection' ? <>         
           <div className="assessment-choices">
             <button onClick={() => navigate('/test-a')}><span className="assessment-choice-icon" aria-hidden="true">＋</span><span>Addition</span></button>
+            <button onClick={() => navigate('/test-b')}><span className="assessment-choice-icon" aria-hidden="true">−</span><span>Subtraction</span></button>
           </div>
           <button className="assessment-secondary" onClick={() => navigate('/mode')}>Back</button>
         </> : complete ? <>
           <h1 role="status">Test complete</h1><p>Returning to your activity choices…</p>
         </> : !running ? <>
-          <span className="assessment-card-symbol" aria-hidden="true">＋</span>
-          <h1>Addition</h1>
+          <span className="assessment-card-symbol" aria-hidden="true">{testType === 'B' ? '−' : '＋'}</span>
+          <h1>{testType === 'B' ? 'Subtraction' : 'Addition'}</h1>
           {attempt && <div className="assessment-progress-badge">
             <strong>{attempt.position} / {attempt.count}</strong><span>answered</span>
           </div>}

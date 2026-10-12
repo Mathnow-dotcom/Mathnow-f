@@ -3,9 +3,9 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api';
 
 // Assessment requests use the same PIN authentication as the existing learning APIs.
-export const assessmentCurrent = (pin) => callApi('/assessments/current', 'GET', null, pin);
-export const assessmentStart = (pin, beginKey, session) =>
-  callApi('/assessments/start', 'POST', { beginKey, session }, pin);
+export const assessmentCurrent = (pin, type = 'A') => callApi(`/assessments/current?type=${encodeURIComponent(type)}`, 'GET', null, pin);
+export const assessmentStart = (pin, beginKey, session, type = 'A') =>
+  callApi('/assessments/start', 'POST', { beginKey, session, type }, pin);
 export const assessmentUpdate = async (pin, id, body) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);

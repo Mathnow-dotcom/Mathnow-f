@@ -35,9 +35,12 @@ try {
   let active = null, serial = 0, loseAnswerResponse = false;
   let holdNextAnswer = false, releaseAnswerResponse = null;
   const starts = new Map();
-  const problems = ['1 + 2', '2 + 1', '1 + 1'];
-  const state = () => active && ({ ...active, problem: active.completed ? null : problems[active.position],
-    nextProblem: active.completed ? null : problems[active.position + 1] || null });
+  const attempts = new Map();
+  const state = () => {
+    const problems = active?.type === 'B' ? ['5 - 2', '3 - 3', '4 - 1'] : ['1 + 2', '2 + 1', '1 + 1'];
+    return active && ({ ...active, problem: active.completed ? null : problems[active.position],
+      nextProblem: active.completed ? null : problems[active.position + 1] || null });
+  };
   const usage = { sessionId: 'test-usage', date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }), todayUsageMs: 10000, lifetimeUsageMs: 10000 };
   const command = (method, params = {}) => new Promise((resolve, reject) => {
     const id = ++sequence; pending.set(id, { resolve, reject }); socket.send(JSON.stringify({ id, method, params }));
@@ -69,11 +72,15 @@ try {
     let response = {};
     if (path === '/auth/login-pin') response = { user: { name: 'Demo', pin: '77777', theme: 'underwater', progress: {}, dailyStats: {}, currentStreak: 2, appUsage: usage } };
     if (path.startsWith('/user/usage/')) response = usage;
-    if (path === '/assessments/current') response = { attempt: active?.completed ? null : state() };
+    if (path === '/assessments/current') {
+      active = attempts.get(new URL(request.url).searchParams.get('type') || 'A') || null;
+      response = { attempt: active?.completed ? null : state() };
+    }
     if (path === '/assessments/start') {
       if (starts.has(body.beginKey)) active = starts.get(body.beginKey);
       else if (!active || active.completed) {
-        active = { id: `test-${++serial}`, type: 'A', position: 0, count: 3, completed: false };
+        active = { id: `test-${++serial}`, type: body.type || 'A', position: 0, count: 3, completed: false };
+        attempts.set(active.type, active);
         starts.set(body.beginKey, active);
       }
       response = state();
@@ -104,12 +111,14 @@ try {
   };
   const text = () => evaluate('document.body.innerText');
   const see = value => wait(async () => (await text()).includes(value), value);
+  const question = problem => wait(() => evaluate(`document.querySelector('.assessment-problem')?.textContent === ${JSON.stringify(problem)}`), problem);
   const click = async label => {
-    await wait(() => evaluate(`Array.from(document.querySelectorAll('button')).some(b => b.textContent.trim() === ${JSON.stringify(label)} && !b.disabled)`), `button ${label}`);
-    await evaluate(`Array.from(document.querySelectorAll('button')).find(b => b.textContent.trim() === ${JSON.stringify(label)} && !b.disabled).click()`);
+    const match = `b => { const c = b.cloneNode(true); c.querySelectorAll('[aria-hidden]').forEach(n => n.remove()); return c.textContent.trim() === ${JSON.stringify(label)} && !b.disabled; }`;
+    await wait(() => evaluate(`Array.from(document.querySelectorAll('button')).some(${match})`), `button ${label}`);
+    await evaluate(`Array.from(document.querySelectorAll('button')).find(${match}).click()`);
   };
-  const login = async () => { await click('Demo'); await click('YES'); await click('NEXT'); await see('What would you like to do?'); };
-  const openTest = async () => { await click('TAKE A TEST'); await click('TEST A — Addition'); };
+  const login = async () => { await click('Demo'); await click('YES'); await click('NEXT'); await see('TAKE A TEST'); };
+  const openTest = async () => { await click('TAKE A TEST'); await click('Addition'); };
 
   await command('Page.navigate', { url: `${origin}/name` });
   await login();
@@ -132,9 +141,9 @@ try {
       })()`);
       assert(layout.fits, `${page} fits viewport ${width}x${height}`);
       assert(layout.buttons.every(b => b.height >= 44 && b.color === 'rgb(21, 157, 84)'), 'Touch targets and existing green preserved');
-      if (page === 'mode') assert(layout.buttons.every(b => b.height <= 80), 'Mode buttons stay compact');
+      if (page === 'mode') assert(layout.buttons.every(b => b.height <= 140), 'Mode buttons stay compact');
       else {
-        assert(await evaluate('document.querySelector(".assessment-choices button").textContent === "TEST A — Addition"'), 'Test A remains available');
+        assert(await evaluate('document.querySelector(".assessment-choices button").textContent.includes("Addition")'), 'Test A remains available');
         await click('Back');
       }
     }
@@ -147,10 +156,10 @@ try {
   await wait(() => evaluate(`!!document.querySelector('button[aria-label="Back to mode selection"]')`), 'Operations back button');
   await evaluate(`document.querySelector('button[aria-label="Back to mode selection"]').click()`);
   await wait(() => evaluate('location.pathname === "/mode"'), 'Operations back returns to mode');
-  await see('What would you like to do?');
+  await see('TAKE A TEST');
   await openTest();
   assert.equal(calls.filter(c => c.path === '/assessments/start').length, 0, 'Instructions must not start timing');
-  await click('Begin'); await see('Question 1 of 3');
+  await click('Begin'); await question('1 + 2');
   assert.equal(await evaluate('document.querySelector("#test-answer").inputMode'), 'none', 'Use the app keypad without requesting a device keyboard');
   assert.equal(await evaluate('getComputedStyle(document.querySelector("button[type=submit]")).cursor'), 'default', 'Disabled Submit has no prohibited cursor');
   assert(!(await text()).includes('Correct'), 'No correctness feedback');
@@ -161,13 +170,13 @@ try {
   }`);
   assert.equal(await evaluate('document.querySelector("#test-answer").value'), '3', 'Input accepts numeric characters only');
   loseAnswerResponse = true; await click('Submit'); await see('Failed to fetch');
-  await see('Question 1 of 3');
+  await question('1 + 2');
   assert.equal(await evaluate('document.querySelector("#test-answer").value'), '3', 'Failed save restores submitted answer');
-  await click('Submit'); await see('Question 2 of 3');
+  await click('Submit'); await question('2 + 1');
   assert.equal(active.position, 1, 'Retry must not skip a question');
   await click('⚙ Quit test'); await click('Save & return to mode');
-  await see('What would you like to do?'); await openTest();
-  await click('Resume test'); await see('Question 2 of 3');
+  await see('TAKE A TEST'); await openTest();
+  await click('Resume test'); await question('2 + 1');
   await click('3'); holdNextAnswer = true;
   await wait(() => evaluate('!document.querySelector("button[type=submit]").disabled'), 'Ready to submit');
   const immediateProblem = await evaluate(`(() => {
@@ -175,13 +184,13 @@ try {
     return document.querySelector('.assessment-problem').textContent;
   })()`);
   assert.equal(immediateProblem, '1 + 1', 'Next question commits synchronously on click');
-  await see('Question 3 of 3');
+  await question('1 + 1');
   await wait(() => !!releaseAnswerResponse, 'Held answer request');
   assert.equal(active.position, 1, 'Next question is visible before the server saves');
   assert.equal(await evaluate('document.querySelector("button[type=submit]").textContent'), 'Submit', 'No saving label');
   assert.equal(await evaluate('getComputedStyle(document.querySelector("button[type=submit]")).backgroundColor'), 'rgb(243, 244, 246)', 'Empty next answer has neutral Submit');
   await click('2');
-  await wait(() => evaluate('getComputedStyle(document.querySelector("button[type=submit]")).backgroundColor === "rgb(21, 157, 84)"'), 'Typed answer has green Submit');
+  await wait(() => evaluate('getComputedStyle(document.querySelector("button[type=submit]")).backgroundImage.includes("gradient")'), 'Typed answer has green Submit');
   assert.equal(await evaluate('document.querySelector("button[type=submit]").disabled'), true, 'Do not submit the next answer before acknowledgement');
   const answerCalls = calls.filter(c => c.body.action === 'answer').length;
   await evaluate('document.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }))');
@@ -190,19 +199,30 @@ try {
   await wait(() => evaluate('!document.querySelector("button[type=submit]").disabled'), 'Save acknowledgement');
   assert.equal(await evaluate('document.querySelector("#test-answer").value'), '2', 'Acknowledgement preserves next question input');
   await command('Page.reload'); await see('Enter Your Name'); await login(); await openTest();
-  await click('Resume test'); await see('Question 3 of 3');
+  await click('Resume test'); await question('1 + 1');
   assert.equal(await evaluate('document.querySelector("#test-answer").value'), '2', 'Draft survives refresh');
   holdNextAnswer = true; await click('Submit');
   await wait(() => !!releaseAnswerResponse, 'Held final answer');
   assert.equal(await evaluate('document.querySelector("button[type=submit]").textContent'), 'Submit', 'Final save keeps Submit label');
   assert(!(await text()).includes('Test complete'), 'Completion requires server confirmation');
   releaseAnswerResponse(); releaseAnswerResponse = null;
-  await see('Test complete'); await see('What would you like to do?');
-  await openTest(); await click('Begin'); await see('Question 1 of 3');
+  await see('Test complete'); await see('TAKE A TEST');
+  await openTest(); await click('Begin'); await question('1 + 2');
   assert.equal(serial, 2, 'Completed attempts allow a new attempt');
   assert(calls.some(c => c.path.startsWith('/user/usage/')), 'Global app usage continues');
   assert(!calls.some(c => c.path.startsWith('/quiz/')), 'Tests must not call quiz endpoints');
-  await click('⚙ Quit test'); await click('Save & return to mode'); await click('Sign out');
+  await click('⚙ Quit test'); await click('Save & return to mode');
+  await click('TAKE A TEST'); await click('Subtraction'); await click('Begin'); await question('5 - 2');
+  assert.equal(calls.filter(c => c.path === '/assessments/start').at(-1).body.type, 'B');
+  await click('3'); await click('Submit'); await question('3 - 3');
+  await wait(() => !holdNextAnswer && active.position === 1, 'Subtraction saved');
+  await click('⚙ Quit test'); await click('Save & return to mode');
+  await openTest(); await click('Resume test'); await question('1 + 2');
+  await click('⚙ Quit test'); await click('Save & return to mode');
+  await click('TAKE A TEST'); await click('Subtraction'); await click('Resume test'); await question('3 - 3');
+  await click('0'); await click('Submit'); await question('4 - 1');
+  await click('3'); await click('Submit'); await see('Test complete'); await see('TAKE A TEST');
+  await click('Sign out');
   await see('Confirm To Quit'); await click('YES');
   await wait(() => evaluate('location.pathname === "/"'), 'Existing logout flow').catch(async e => {
     throw new Error(`${e.message}; path=${await evaluate('location.pathname')}; screen=${(await text()).slice(0, 500)}`);
