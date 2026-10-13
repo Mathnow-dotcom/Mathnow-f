@@ -142,6 +142,9 @@
 .assessment-card-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
 .assessment-card-actions > button { flex:1 1 140px; min-height:48px; border-radius:14px; }
 .assessment-card-actions > .assessment-secondary { margin:0; }
+.assessment-start-card .assessment-card-actions > button {
+  flex:1 1 0; margin:0; padding:12px 16px; height:48px; min-height:48px; line-height:24px;
+}
 .assessment-quit-card .assessment-card-actions { margin-top:0; }
 .assessment-modal { overflow-y:auto; }
 @media(max-width:480px) {

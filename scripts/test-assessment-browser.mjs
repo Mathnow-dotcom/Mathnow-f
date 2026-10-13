@@ -159,7 +159,9 @@ try {
   await see('TAKE A TEST');
   await openTest();
   assert.equal(calls.filter(c => c.path === '/assessments/start').length, 0, 'Instructions must not start timing');
-  await click('Begin'); await question('1 + 2');
+  await see('THIS TEST IS TIMED. PRESS START WHEN YOU ARE READY TO BEGIN THE TEST.');
+  assert(await evaluate(`(() => { const buttons = [...document.querySelectorAll('.assessment-start-card .assessment-card-actions button')]; const [a,b] = buttons.map(x => x.getBoundingClientRect()); return Math.abs(a.width-b.width)<1 && Math.abs(a.height-b.height)<1; })()`), 'Start and Back have equal dimensions');
+  await click('Start'); await question('1 + 2');
   assert.equal(await evaluate('document.querySelector("#test-answer").inputMode'), 'none', 'Use the app keypad without requesting a device keyboard');
   assert.equal(await evaluate('getComputedStyle(document.querySelector("button[type=submit]")).cursor'), 'default', 'Disabled Submit has no prohibited cursor');
   assert(!(await text()).includes('Correct'), 'No correctness feedback');
@@ -176,6 +178,7 @@ try {
   assert.equal(active.position, 1, 'Retry must not skip a question');
   await click('⚙ Quit test'); await click('Save & return to mode');
   await see('TAKE A TEST'); await openTest();
+  await see('THIS TEST IS TIMED. PRESS RESUME TEST WHEN YOU ARE READY TO CONTINUE.');
   await click('Resume test'); await question('2 + 1');
   await click('3'); holdNextAnswer = true;
   await wait(() => evaluate('!document.querySelector("button[type=submit]").disabled'), 'Ready to submit');
@@ -207,12 +210,12 @@ try {
   assert(!(await text()).includes('Test complete'), 'Completion requires server confirmation');
   releaseAnswerResponse(); releaseAnswerResponse = null;
   await see('Test complete'); await see('TAKE A TEST');
-  await openTest(); await click('Begin'); await question('1 + 2');
+  await openTest(); await click('Start'); await question('1 + 2');
   assert.equal(serial, 2, 'Completed attempts allow a new attempt');
   assert(calls.some(c => c.path.startsWith('/user/usage/')), 'Global app usage continues');
   assert(!calls.some(c => c.path.startsWith('/quiz/')), 'Tests must not call quiz endpoints');
   await click('⚙ Quit test'); await click('Save & return to mode');
-  await click('TAKE A TEST'); await click('Subtraction'); await click('Begin'); await question('5 - 2');
+  await click('TAKE A TEST'); await click('Subtraction'); await click('Start'); await question('5 - 2');
   assert.equal(calls.filter(c => c.path === '/assessments/start').at(-1).body.type, 'B');
   await click('3'); await click('Submit'); await question('3 - 3');
   await wait(() => !holdNextAnswer && active.position === 1, 'Subtraction saved');

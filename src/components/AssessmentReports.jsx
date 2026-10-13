@@ -73,17 +73,20 @@ export default function AssessmentReports() {
       {busy ? <p role="status">Loading results…</p> : <div className="assessment-results">
         {rows.length === 0 ? <p>No completed tests found.</p> : <table><thead><tr>
           <th>Student</th><th>Test</th><th>Completed</th><th>Accuracy</th><th>Total time</th>
-          <th>Average time per item</th><th title="Percentage of all test items answered correctly in less than 2 seconds">Correct under 2 seconds</th><th>Per-item detail</th>
+          <th>Average time per item</th><th title="Percentage of all test items answered correctly in less than 2 seconds">Correct under 2 seconds</th>
+          <th title="Percentage of all test items answered correctly in less than 3 seconds">Correct under 3 seconds</th><th>Per-item detail</th>
         </tr></thead><tbody>{rows.map(row => <tr key={row.id}>
           <td>{row.student}<br /><small>#{row.pin}</small></td><td>{row.type}</td>
           <td>{new Date(row.completedAt).toLocaleString()}</td>
           <td>{row.percent.toFixed(1)}%</td><td>{duration(row.totalMs)}</td>
           <td>{Number.isFinite(row.averageTimeMs) ? `${(row.averageTimeMs / 1000).toFixed(2)} s` : '—'}</td>
           <td>{Number.isFinite(row.correctUnderTwoSecondsPercent) ? `${row.correctUnderTwoSecondsPercent.toFixed(1)}%` : '—'}</td>
+          <td>{Number.isFinite(row.correctUnderThreeSecondsPercent) ? `${row.correctUnderThreeSecondsPercent.toFixed(1)}%` : '—'}</td>
           <td><details><summary>View {row.count} items</summary><table><thead><tr>
-            <th>Problem</th><th>Answer</th><th>Result</th><th>Time</th>
+            <th>Problem</th><th>Answer</th><th>Result</th><th>Time</th><th title="Time the server accepted the answer, in your device timezone">Answered at</th>
           </tr></thead><tbody>{row.answers.map((a, i) => <tr key={i}><td>{a.problem}</td><td>{a.answer}</td>
-            <td>{a.correct ? 'Correct' : 'Incorrect'}</td><td>{duration(a.timeMs)}</td></tr>)}</tbody></table></details></td>
+            <td>{a.correct ? 'Correct' : 'Incorrect'}</td><td>{duration(a.timeMs)}</td>
+            <td>{a.answeredAt ? new Date(a.answeredAt).toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Not recorded'}</td></tr>)}</tbody></table></details></td>
         </tr>)}</tbody></table>}
       </div>}
       <div className="assessment-toolbar mt-6">
