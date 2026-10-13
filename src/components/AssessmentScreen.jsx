@@ -171,11 +171,14 @@ export default function AssessmentScreen() {
         </> : !running ? <>
           <span className="assessment-card-symbol" aria-hidden="true">{testType === 'B' ? '−' : '＋'}</span>
           <h1>{testType === 'B' ? 'Subtraction' : 'Addition'}</h1>
+          <p>{attempt
+            ? 'THIS TEST IS TIMED. PRESS RESUME TEST WHEN YOU ARE READY TO CONTINUE.'
+            : 'THIS TEST IS TIMED. PRESS START WHEN YOU ARE READY TO BEGIN THE TEST.'}</p>
           {attempt && <div className="assessment-progress-badge">
             <strong>{attempt.position} / {attempt.count}</strong><span>answered</span>
           </div>}
           <div className="assessment-card-actions">
-          <button disabled={busy || !loaded} onClick={begin}>{busy ? 'Loading…' : attempt ? 'Resume test' : 'Begin'}</button>
+          <button disabled={busy || !loaded} onClick={begin}>{busy ? 'Loading…' : attempt ? 'Resume test' : 'Start'}</button>
           <button className="assessment-secondary" disabled={busy} onClick={() => navigate('/test-selection')}>Back</button>
           </div>
         </> : <>
