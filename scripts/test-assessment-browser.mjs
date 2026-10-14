@@ -160,6 +160,7 @@ try {
   await openTest();
   assert.equal(calls.filter(c => c.path === '/assessments/start').length, 0, 'Instructions must not start timing');
   await see('THIS TEST IS TIMED. PRESS START WHEN YOU ARE READY TO BEGIN THE TEST.');
+  assert(await evaluate(`(() => { const button = document.querySelector('.assessment-student-toolbar button').getBoundingClientRect(); const timer = document.querySelector('.assessment-timer').getBoundingClientRect(); return Math.abs(button.right - timer.right) < 1; })()`), 'Sign out aligns with the timer right edge');
   assert(await evaluate(`(() => { const buttons = [...document.querySelectorAll('.assessment-start-card .assessment-card-actions button')]; const [a,b] = buttons.map(x => x.getBoundingClientRect()); return Math.abs(a.width-b.width)<1 && Math.abs(a.height-b.height)<1; })()`), 'Start and Back have equal dimensions');
   await click('Start'); await question('1 + 2');
   assert.equal(await evaluate('document.querySelector("#test-answer").inputMode'), 'none', 'Use the app keypad without requesting a device keyboard');

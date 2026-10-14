@@ -18,7 +18,8 @@
 .assessment-keypad button.assessment-submit { opacity:1; }
 .assessment-keypad button.assessment-submit:disabled { cursor:default; }
 .assessment-keypad .assessment-submit--empty { background:#f3f4f6; color:#253044; }
-.assessment-student-toolbar { justify-content:flex-end; }
+.assessment-student-toolbar { justify-content:flex-end; max-width:none; }
+.assessment-student-toolbar > button { margin-right:0; }
 /* Match the learning/Surf keypad without changing assessment input or save handling. */
 .assessment-question-card { width:min(100%,448px); }
 .assessment-question-card form { max-width:384px; margin-inline:auto; }
