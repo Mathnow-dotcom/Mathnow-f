@@ -63,7 +63,7 @@ export default function AssessmentReports() {
       }}>
         <label>Student PIN<input value={filters.student} onChange={e => setFilters({ ...filters, student: e.target.value })} /></label>
         <label>Test<select value={filters.type} onChange={e => setFilters({ ...filters, type: e.target.value })}>
-          <option value="">All tests</option><option value="A">Test A — Addition</option><option value="B">Test B — Subtraction</option><option value="C">Test C — Multiplication</option></select></label>
+          <option value="">All tests</option><option value="A">Test A — Addition</option><option value="B">Test B — Subtraction</option><option value="C">Test C — Multiplication</option><option value="D">Test D — Division</option></select></label>
         <label>From<input type="date" value={filters.from} onChange={e => setFilters({ ...filters, from: e.target.value })} /></label>
         <label>To<input type="date" value={filters.to} onChange={e => setFilters({ ...filters, to: e.target.value })} /></label>
         <button disabled={busy}>Apply filters</button>

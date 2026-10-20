@@ -266,6 +266,7 @@ const App = () => {
         <Route path="/test-a" element={<AssessmentScreen />} />
         <Route path="/test-b" element={<AssessmentScreen key="subtraction-test" />} />
         <Route path="/test-c" element={<AssessmentScreen key="multiplication-test" />} />
+        <Route path="/test-d" element={<AssessmentScreen key="division-test" />} />
         <Route path="/admin/tests" element={<AssessmentReports />} />
         <Route path="/" element={<StartScreen />} />
         <Route path="/name" element={<NameForm />} />

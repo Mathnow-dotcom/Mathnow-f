@@ -10,7 +10,7 @@ export default function AssessmentScreen() {
   const ctx = useContext(MathGameContext);
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const testType = pathname === '/test-c' ? 'C' : pathname === '/test-b' ? 'B' : 'A';
+  const testType = pathname === '/test-d' ? 'D' : pathname === '/test-c' ? 'C' : pathname === '/test-b' ? 'B' : 'A';
   const [attempt, setAttempt] = useState(null);
   const [running, setRunning] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -90,7 +90,7 @@ export default function AssessmentScreen() {
 
   // Browser Back also leaves a persisted, resumable test rather than exposing previous items.
   useEffect(() => {
-    if (pathname !== '/test-a' && pathname !== '/test-b' && pathname !== '/test-c' && running) {
+    if (!['/test-a', '/test-b', '/test-c', '/test-d'].includes(pathname) && running) {
       setRunning(false);
       if (current.current?.completed) apply(null);
     }
@@ -165,13 +165,14 @@ export default function AssessmentScreen() {
             <button onClick={() => navigate('/test-a')}><span className="assessment-choice-icon" aria-hidden="true">＋</span><span>Addition</span></button>
             <button onClick={() => navigate('/test-b')}><span className="assessment-choice-icon" aria-hidden="true">−</span><span>Subtraction</span></button>
             <button onClick={() => navigate('/test-c')}><span className="assessment-choice-icon" aria-hidden="true">×</span><span>Multiplication</span></button>
+            <button onClick={() => navigate('/test-d')}><span className="assessment-choice-icon" aria-hidden="true">÷</span><span>Division</span></button>
           </div>
           <button className="assessment-secondary" onClick={() => navigate('/mode')}>Back</button>
         </> : complete ? <>
           <h1 role="status">Test complete</h1><p>Returning to your activity choices…</p>
         </> : !running ? <>
-          <span className="assessment-card-symbol" aria-hidden="true">{testType === 'C' ? '×' : testType === 'B' ? '−' : '＋'}</span>
-          <h1>{testType === 'C' ? 'Multiplication' : testType === 'B' ? 'Subtraction' : 'Addition'}</h1>
+          <span className="assessment-card-symbol" aria-hidden="true">{{ A: '＋', B: '−', C: '×', D: '÷' }[testType]}</span>
+          <h1>{{ A: 'Addition', B: 'Subtraction', C: 'Multiplication', D: 'Division' }[testType]}</h1>
           <p>{attempt
             ? 'THIS TEST IS TIMED. PRESS RESUME TEST WHEN YOU ARE READY TO CONTINUE.'
             : 'THIS TEST IS TIMED. PRESS START WHEN YOU ARE READY TO BEGIN THE TEST.'}</p>
