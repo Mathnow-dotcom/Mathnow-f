@@ -37,7 +37,7 @@ try {
   const starts = new Map();
   const attempts = new Map();
   const state = () => {
-    const problems = active?.type === 'C' ? ['5 × 7', '0 × 9', '3 × 3'] : active?.type === 'B' ? ['5 - 2', '3 - 3', '4 - 1'] : ['1 + 2', '2 + 1', '1 + 1'];
+    const problems = active?.type === 'D' ? ['35 ÷ 7', '9 ÷ 3', '8 ÷ 2'] : active?.type === 'C' ? ['5 × 7', '0 × 9', '3 × 3'] : active?.type === 'B' ? ['5 - 2', '3 - 3', '4 - 1'] : ['1 + 2', '2 + 1', '1 + 1'];
     return active && ({ ...active, problem: active.completed ? null : problems[active.position],
       nextProblem: active.completed ? null : problems[active.position + 1] || null });
   };
@@ -234,6 +234,14 @@ try {
   await click('TAKE A TEST'); await click('Multiplication'); await click('Resume test'); await question('0 × 9');
   await click('0'); await click('Submit'); await question('3 × 3');
   await click('9'); await click('Submit'); await see('Test complete'); await see('TAKE A TEST');
+  await click('TAKE A TEST'); await click('Division'); await click('Start'); await question('35 ÷ 7');
+  assert.equal(calls.filter(c => c.path === '/assessments/start').at(-1).body.type, 'D');
+  await click('5'); await click('Submit'); await question('9 ÷ 3');
+  await wait(() => active.position === 1, 'Division saved');
+  await click('⚙ Quit test'); await click('Save & return to mode');
+  await click('TAKE A TEST'); await click('Division'); await click('Resume test'); await question('9 ÷ 3');
+  await click('3'); await click('Submit'); await question('8 ÷ 2');
+  await click('4'); await click('Submit'); await see('Test complete'); await see('TAKE A TEST');
   await click('Sign out');
   await see('Confirm To Quit'); await click('YES');
   await wait(() => evaluate('location.pathname === "/"'), 'Existing logout flow').catch(async e => {
