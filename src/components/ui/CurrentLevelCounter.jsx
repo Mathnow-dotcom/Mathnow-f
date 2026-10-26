@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMathGamePick } from '../../store/mathGameBridgeStore.js';
 import StatsCardShell from './StatsCardShell.jsx';
+import { currentProgramProgress } from '../../utils/currentProgress.js';
 import { getBeltLabel, formatBeltDisplay } from './UserInfoBadge.jsx';
 
 const OPERATION_ORDER = ['add', 'sub', 'mul', 'div', 'frac'];
@@ -55,6 +56,8 @@ const withCurrentBelt = (label, levelData) => {
 };
 
 const resolveCurrentLevel = (progressByOperation = {}, selectedOperation = 'add') => {
+  const current = currentProgramProgress(progressByOperation);
+  if (current) return withCurrentBelt(`${OP_LABEL[current.operation]} Level ${current.level}`, current.data);
   const progress =
     progressByOperation && typeof progressByOperation === 'object'
       ? progressByOperation
@@ -91,7 +94,7 @@ const resolveCurrentLevel = (progressByOperation = {}, selectedOperation = 'add'
   const highestUnlockedIncompleteOp = [...snapshots]
     .reverse()
     .find((entry) => !entry.current.data?.completed);
-  const active = highestUnlockedIncompleteOp || snapshots[snapshots.length - 1];
+  const active = snapshots.find(entry => entry.op === selectedOperation) || highestUnlockedIncompleteOp || snapshots[snapshots.length - 1];
   return withCurrentBelt(`${OP_LABEL[active.op] || active.op} Level ${active.current.level}`, active.current.data);
 };
 

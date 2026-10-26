@@ -75,6 +75,7 @@ export const normalizeProgressTree = (payload, fallbackOperation = DEFAULT_OPERA
   }
 
   const tree = {};
+  if (source._current) tree._current = source._current;
   MODULE_SEQUENCE.forEach((op) => {
     if (source?.[op] && typeof source[op] === 'object') {
       tree[op] = source[op];

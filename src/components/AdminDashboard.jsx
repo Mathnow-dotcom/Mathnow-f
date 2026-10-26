@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 import { getAdminStats, userGetProgress } from '../api/mathApi.js';
 import '../styles/AdminDashboard.css';
+import { currentProgramProgress } from '../utils/currentProgress.js';
 
 const MS_PER_SEC = 1000;
 const PROGRESS_PLACEHOLDER = 'Loading...';
@@ -131,6 +132,8 @@ const pickCurrentLevelFromLevels = (levelsAsc = []) => {
 };
 
 const getCurrentProgress = (progress) => {
+  const current = currentProgramProgress(progress);
+  if (current) return { level: `${current.operation.toUpperCase()} L${current.level}`, belt: getBeltLabel(current.data) };
   if (!progress) return { level: 'N/A', belt: 'N/A' };
 
   const hasScopedOps = OPERATION_ORDER.some(

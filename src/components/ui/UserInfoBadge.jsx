@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { userGetDailyStats, userGetProgress } from '../../api/mathApi.js';
 import { normalizeOperation } from '../../config/modulesConfig.js';
+import { currentProgramProgress } from '../../utils/currentProgress.js';
 import { useMathGamePick } from '../../store/mathGameBridgeStore.js';
 
 const OPERATION_ORDER = ['add', 'sub', 'mul', 'div', 'frac'];
@@ -99,6 +100,8 @@ const buildOperationProgressViews = (progress, selectedOperation) => {
 };
 
 const getCurrentProgressFromBackend = (progress, selectedOperation) => {
+  const current = currentProgramProgress(progress);
+  if (current) return { level: `${getOperationLabel(current.operation)} Level ${current.level}`, belt: getBeltLabel(current.data) };
   if (!progress || typeof progress !== 'object') return { level: '--', belt: '--' };
 
   const opViews = buildOperationProgressViews(progress, selectedOperation);
@@ -116,7 +119,7 @@ const getCurrentProgressFromBackend = (progress, selectedOperation) => {
   const highestUnlockedIncompleteOp = [...snapshots]
     .reverse()
     .find((entry) => !entry.current.data?.completed);
-  const active = highestUnlockedIncompleteOp || snapshots[snapshots.length - 1];
+  const active = snapshots.find(entry => entry.operation === selectedOperation) || highestUnlockedIncompleteOp || snapshots[snapshots.length - 1];
   const opLabel = getOperationLabel(active.operation);
 
   return {
@@ -132,11 +135,12 @@ export const formatBeltDisplay = (belt) => {
 };
 
 const UserInfoBadge = () => {
-  const { childName, childPin, grandTotalCorrect, selectedOperation } = useMathGamePick((ctx) => ({
+  const { childName, childPin, grandTotalCorrect, selectedOperation, progressByOperation } = useMathGamePick((ctx) => ({
     childName: ctx.childName || '',
     childPin: ctx.childPin || '',
     grandTotalCorrect: Number.isFinite(ctx.grandTotalCorrect) ? ctx.grandTotalCorrect : 0,
     selectedOperation: ctx.selectedOperation || 'add',
+    progressByOperation: ctx.progressByOperation,
   }));
   const [isOpen, setIsOpen] = useState(false);
   const [remoteDaily, setRemoteDaily] = useState(null);
@@ -173,8 +177,9 @@ const UserInfoBadge = () => {
   }, [isOpen, childPin]);
 
   const progressInfo = useMemo(() => {
-    return getCurrentProgressFromBackend(remoteProgress, selectedOperation);
-  }, [remoteProgress, selectedOperation]);
+    const live = progressByOperation && Object.keys(progressByOperation).length ? progressByOperation : remoteProgress;
+    return getCurrentProgressFromBackend(live, selectedOperation);
+  }, [remoteProgress, progressByOperation, selectedOperation]);
 
   const totalScore = useMemo(() => {
     const backendTotal = Number(remoteDaily?.grandTotal);
