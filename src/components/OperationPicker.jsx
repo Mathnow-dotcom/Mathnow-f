@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { startTransition, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   DEFAULT_OPERATION,
@@ -9,7 +9,7 @@ import {
   normalizeOperation,
 } from '../config/modulesConfig.js';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
-import FloatingBackButton from './ui/FloatingBackButton.jsx';
+import { programProgress } from '../api/mathApi.js';
 
 const OPERATION_UI = {
   add: {
@@ -41,6 +41,8 @@ const OPERATION_UI = {
 
 const OperationPicker = () => {
   const navigate = useNavigate();
+  const [program, setProgram] = useState(null);
+  const [error, setError] = useState('');
   const {
     operationsMeta,
     progressByOperation,
@@ -48,6 +50,8 @@ const OperationPicker = () => {
     setSelectedOperation,
     refreshOperationAndProgress,
     childName,
+    childPin,
+    userSavedThemeKey,
   } =
     useMathGamePick((ctx) => ({
       operationsMeta: ctx.operationsMeta || {},
@@ -56,12 +60,25 @@ const OperationPicker = () => {
       setSelectedOperation: ctx.setSelectedOperation || (() => {}),
       refreshOperationAndProgress: ctx.refreshOperationAndProgress || (() => Promise.resolve()),
       childName: ctx.childName || '',
+      childPin: ctx.childPin,
+      userSavedThemeKey: ctx.userSavedThemeKey,
     }));
   const childNameDisplay = (childName || '').toUpperCase();
 
   useEffect(() => {
-    refreshOperationAndProgress?.();
-  }, [refreshOperationAndProgress]);
+    let cancelled = false;
+    setProgram(null); setError('');
+    // Load independent requests together instead of adding their round-trip times.
+    if (childPin) Promise.all([programProgress(childPin), refreshOperationAndProgress()]).then(([p]) => {
+      if (!cancelled) {
+        if (p.subject) setSelectedOperation(p.subject);
+        setProgram(p);
+      }
+    }).catch(e => { if (!cancelled) setError(e.message); });
+    return () => { cancelled = true; };
+    // Refresh on entry/account change, not when choosing the server-selected subject.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childPin]);
 
   const isOperationComplete = (operation) => {
     const op = normalizeOperation(operation);
@@ -73,6 +90,7 @@ const OperationPicker = () => {
   };
 
   const visibleOperations = useMemo(() => {
+    if (program?.subject) return [program.subject];
     const hasUnlockedProgressForOperation = (op) => {
       const opProgress = progressByOperation?.[op];
       if (!opProgress || typeof opProgress !== 'object') return false;
@@ -107,11 +125,19 @@ const OperationPicker = () => {
       .find((op) => !isOperationComplete(op));
     const fallback = enabledUnlocked[enabledUnlocked.length - 1];
     return [highestUnlockedIncomplete || fallback];
-  }, [operationsMeta, flowMode, progressByOperation]);
+  }, [operationsMeta, flowMode, progressByOperation, program]);
 
   const handleSelect = (operation) => {
+    if (!program || error) return;
     setSelectedOperation(operation);
-    navigate('/levels');
+    if (program.subject === operation && program.status === 'ASSESSMENT_READY') {
+      startTransition(() => navigate({ add: '/test-a', sub: '/test-b', mul: '/test-c', div: '/test-d' }[operation]));
+      return;
+    }
+    if (program.subject === operation && program.status === 'INTERVENTION_REQUIRED') return;
+    startTransition(() => navigate(userSavedThemeKey && userSavedThemeKey !== 'null' ? '/levels' : '/theme', {
+      state: { programEntry: { pin: childPin, operation, program, checkedAt: Date.now() } },
+    }));
   };
 
   const isMultiOperation = visibleOperations.length > 1;
@@ -138,22 +164,28 @@ const OperationPicker = () => {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <FloatingBackButton onClick={() => navigate('/mode')} ariaLabel="Back to mode selection" />
 
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 sm:gap-8 lg:gap-10 pt-20 sm:pt-24 lg:pt-28 pb-24">
         <h1 className="z-10 text-white text-3xl sm:text-4xl lg:text-5xl font-extrabold drop-shadow text-center animate-fade-in">
           WELCOME, {childNameDisplay}
         </h1>
 
+        {error && <p role="alert" className="text-white text-center">{error}</p>}
+        {!program && !error && <p role="status" className="text-white">Loading…</p>}
+        {program?.status === 'PROGRAM_COMPLETED' && <p role="status" className="text-white text-center">Mathematics Program Completed</p>}
+        {program?.status === 'INTERVENTION_REQUIRED' && <p role="status" className="text-white text-center">Intervention Required</p>}
         <div className={`grid ${gridClass}`}>
-          {visibleOperations.map((operation) => (
+          {program && visibleOperations.map((operation) => (
             <button
               key={operation}
+              data-operation={operation}
+              disabled={!!error || (program.subject === operation && program.status === 'INTERVENTION_REQUIRED')}
               onClick={() => handleSelect(operation)}
               className={`bg-green-600 hover:bg-green-700 rounded-2xl shadow-xl border-2 border-green-400 transition-all duration-200 hover:scale-[1.01] ${cardSizeClass} flex items-center justify-center text-center`}
             >
               <div className="flex flex-col items-center gap-4 lg:gap-5 px-3">
                 <div
+                  aria-hidden="true"
                   className={`${badgeSizeClass} rounded-full border-2 shadow-md flex items-center justify-center font-black ${OPERATION_UI[operation]?.badgeClass || 'bg-white text-green-700 border-green-100'}`}
                   style={{ textShadow: '0 1px 0 rgba(0,0,0,0.18)' }}
                 >
@@ -165,6 +197,7 @@ const OperationPicker = () => {
                 >
                   {getOperationLabel(operation).toUpperCase()}
                 </div>
+                {program.subject === operation && program.status === 'ASSESSMENT_READY' && <span className="text-white text-sm">Assessment ready</span>}
               </div>
             </button>
           ))}

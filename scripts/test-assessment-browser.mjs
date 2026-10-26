@@ -33,6 +33,9 @@ try {
   const calls = [];
   const exceptions = [];
   let active = null, serial = 0, loseAnswerResponse = false;
+  let loginTheme = 'underwater';
+  let programState = { subject: 'add', status: 'ASSESSMENT_READY', level: 19, batch: 1,
+    subjects: { add: { status: 'ASSESSMENT_READY', completedLevels: [1,2] } }, grandfatheredAccess: ['add'] };
   let holdNextAnswer = false, releaseAnswerResponse = null;
   const starts = new Map();
   const attempts = new Map();
@@ -70,13 +73,22 @@ try {
       await new Promise(resolve => { releaseAnswerResponse = resolve; });
     }
     let response = {};
-    if (path === '/auth/login-pin') response = { user: { name: 'Demo', pin: '77777', theme: 'underwater', progress: {}, dailyStats: {}, currentStreak: 2, appUsage: usage } };
+    if (path === '/auth/login-pin') response = { user: { name: 'Demo', pin: '77777', theme: loginTheme, progress: {}, dailyStats: {}, currentStreak: 2, appUsage: usage } };
     if (path.startsWith('/user/usage/')) response = usage;
+    if (path === '/user/program') response = programState;
+    if (path === '/user/operations') response = { operations: { add: { enabled: true, unlocked: true, maxLevel: 38, batchSize: 19 },
+      sub: { enabled: true, unlocked: false, maxLevel: 11, batchSize: 11 },
+      mul: { enabled: true, unlocked: false, maxLevel: 10, batchSize: 10 },
+      div: { enabled: true, unlocked: false, maxLevel: 13, batchSize: 13 } } };
+    if (path === '/admin/assessments/progress') response = { students: [], statuses: {}, modules: {}, passes: 0, failures: 0, passRate: 0 };
     if (path === '/assessments/current') {
+      const previous = active;
       active = attempts.get(new URL(request.url).searchParams.get('type') || 'A') || null;
       response = { attempt: active?.completed ? null : state() };
+      active = previous;
     }
     if (path === '/assessments/start') {
+      active = attempts.get(body.type || 'A') || null;
       if (starts.has(body.beginKey)) active = starts.get(body.beginKey);
       else if (!active || active.completed) {
         active = { id: `test-${++serial}`, type: body.type || 'A', position: 0, count: 3, completed: false };
@@ -114,49 +126,50 @@ try {
   const question = problem => wait(() => evaluate(`document.querySelector('.assessment-problem')?.textContent === ${JSON.stringify(problem)}`), problem);
   const click = async label => {
     const match = `b => { const c = b.cloneNode(true); c.querySelectorAll('[aria-hidden]').forEach(n => n.remove()); return c.textContent.trim() === ${JSON.stringify(label)} && !b.disabled; }`;
-    await wait(() => evaluate(`Array.from(document.querySelectorAll('button')).some(${match})`), `button ${label}`);
+    await wait(() => evaluate(`Array.from(document.querySelectorAll('button')).some(${match})`), `button ${label}`)
+      .catch(async e => { throw new Error(e.message + '; ' + await evaluate('location.pathname') + '; ' + (await text()).slice(0,600)); });
     await evaluate(`Array.from(document.querySelectorAll('button')).find(${match}).click()`);
   };
-  const login = async () => { await click('Demo'); await click('YES'); await click('NEXT'); await see('TAKE A TEST'); };
-  const openTest = async () => { await click('TAKE A TEST'); await click('Addition'); };
+  const login = async () => { await click('Demo'); await click('YES'); await click('NEXT'); await see('Assessment ready'); };
+  const openTest = async () => {
+    await wait(() => evaluate('!!document.querySelector("[data-operation=add]")'), 'Addition operation');
+    await evaluate('document.querySelector("[data-operation=add]").click()');
+  };
+  const openSubject = async type => {
+    await wait(() => evaluate('location.pathname === "/operations"'), 'Return to program before changing subject');
+    await evaluate(`history.pushState({}, '', '/test-${type}'); window.dispatchEvent(new PopStateEvent('popstate'));`);
+    await see('THIS TEST IS TIMED.');
+  };
 
   await command('Page.navigate', { url: `${origin}/name` });
   await login();
   for (const [width, height] of [[320,568], [390,844], [844,390], [768,1024], [1440,900]]) {
     await command('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor:1, mobile:false });
-    for (const page of ['mode', 'test-selection']) {
+    for (const page of ['operations']) {
       if (page === 'test-selection') await click('TAKE A TEST');
-      await wait(() => evaluate(`location.pathname === '/${page}' && !!document.querySelector('.assessment-selection-card')`), `Selection page ${page}`);
+      await wait(() => evaluate(`location.pathname === '/${page}' && !!document.querySelector('[data-operation]')`), `Selection page ${page}`);
       // Wait for layout after a viewport/route change, including responsive font sizing.
       await delay(100);
       const layout = await evaluate(`(() => {
-        const card = document.querySelector('.assessment-selection-card');
+        const card = document.querySelector('[data-operation]');
         const bounds = card.getBoundingClientRect();
         return {
           fits: document.documentElement.scrollWidth <= innerWidth && bounds.left >= 0 && bounds.right <= innerWidth,
-          buttons: Array.from(card.querySelectorAll('.assessment-choices button')).map(b => ({
+          buttons: [card].map(b => ({
             height:b.getBoundingClientRect().height, color:getComputedStyle(b).backgroundColor
           }))
         };
       })()`);
       assert(layout.fits, `${page} fits viewport ${width}x${height}`);
-      assert(layout.buttons.every(b => b.height >= 44 && b.color === 'rgb(21, 157, 84)'), 'Touch targets and existing green preserved');
-      if (page === 'mode') assert(layout.buttons.every(b => b.height <= 140), 'Mode buttons stay compact');
-      else {
-        assert(await evaluate('document.querySelector(".assessment-choices button").textContent.includes("Addition")'), 'Test A remains available');
-        await click('Back');
-      }
+      assert(layout.buttons.every(b => b.height >= 44), 'Touch targets preserved');
     }
   }
   await command('Emulation.clearDeviceMetricsOverride');
-  await click('LEARN');
   await wait(() => evaluate('location.pathname === "/operations"'), 'Existing LEARN route').catch(async e => {
     throw new Error(`${e.message}; path=${await evaluate('location.pathname')}; screen=${(await text()).slice(0, 500)}`);
   });
-  await wait(() => evaluate(`!!document.querySelector('button[aria-label="Back to mode selection"]')`), 'Operations back button');
-  await evaluate(`document.querySelector('button[aria-label="Back to mode selection"]').click()`);
-  await wait(() => evaluate('location.pathname === "/mode"'), 'Operations back returns to mode');
-  await see('TAKE A TEST');
+  await wait(() => evaluate('location.pathname === "/operations"'), 'Operations back returns to mode');
+  await see('Assessment ready');
   await openTest();
   assert.equal(calls.filter(c => c.path === '/assessments/start').length, 0, 'Instructions must not start timing');
   await see('THIS TEST IS TIMED. PRESS START WHEN YOU ARE READY TO BEGIN THE TEST.');
@@ -177,8 +190,8 @@ try {
   assert.equal(await evaluate('document.querySelector("#test-answer").value'), '3', 'Failed save restores submitted answer');
   await click('Submit'); await question('2 + 1');
   assert.equal(active.position, 1, 'Retry must not skip a question');
-  await click('⚙ Quit test'); await click('Save & return to mode');
-  await see('TAKE A TEST'); await openTest();
+  await click('⚙ Quit test'); await click('Save & return to subjects');
+  await see('Assessment ready'); await openTest();
   await see('THIS TEST IS TIMED. PRESS RESUME TEST WHEN YOU ARE READY TO CONTINUE.');
   await click('Resume test'); await question('2 + 1');
   await click('3'); holdNextAnswer = true;
@@ -210,43 +223,78 @@ try {
   assert.equal(await evaluate('document.querySelector("button[type=submit]").textContent'), 'Submit', 'Final save keeps Submit label');
   assert(!(await text()).includes('Test complete'), 'Completion requires server confirmation');
   releaseAnswerResponse(); releaseAnswerResponse = null;
-  await see('Test complete'); await see('TAKE A TEST');
+  await see('Test complete'); await see('Assessment ready');
   await openTest(); await click('Start'); await question('1 + 2');
   assert.equal(serial, 2, 'Completed attempts allow a new attempt');
   assert(calls.some(c => c.path.startsWith('/user/usage/')), 'Global app usage continues');
   assert(!calls.some(c => c.path.startsWith('/quiz/')), 'Tests must not call quiz endpoints');
-  await click('⚙ Quit test'); await click('Save & return to mode');
-  await click('TAKE A TEST'); await click('Subtraction'); await click('Start'); await question('5 - 2');
+  await click('⚙ Quit test'); await click('Save & return to subjects');
+  await openSubject('b'); await click('Start'); await question('5 - 2');
   assert.equal(calls.filter(c => c.path === '/assessments/start').at(-1).body.type, 'B');
   await click('3'); await click('Submit'); await question('3 - 3');
   await wait(() => !holdNextAnswer && active.position === 1, 'Subtraction saved');
-  await click('⚙ Quit test'); await click('Save & return to mode');
+  await click('⚙ Quit test'); await click('Save & return to subjects');
   await openTest(); await click('Resume test'); await question('1 + 2');
-  await click('⚙ Quit test'); await click('Save & return to mode');
-  await click('TAKE A TEST'); await click('Subtraction'); await click('Resume test'); await question('3 - 3');
+  await click('⚙ Quit test'); await click('Save & return to subjects');
+  await openSubject('b'); await click('Resume test'); await question('3 - 3');
   await click('0'); await click('Submit'); await question('4 - 1');
-  await click('3'); await click('Submit'); await see('Test complete'); await see('TAKE A TEST');
-  await click('TAKE A TEST'); await click('Multiplication'); await click('Start'); await question('5 × 7');
+  await click('3'); await click('Submit'); await see('Test complete'); await see('Assessment ready');
+  await openSubject('c'); await click('Start'); await question('5 × 7');
   assert.equal(calls.filter(c => c.path === '/assessments/start').at(-1).body.type, 'C');
   await click('3'); await click('5'); await click('Submit'); await question('0 × 9');
   await wait(() => active.position === 1, 'Multiplication saved');
-  await click('⚙ Quit test'); await click('Save & return to mode');
-  await click('TAKE A TEST'); await click('Multiplication'); await click('Resume test'); await question('0 × 9');
+  await click('⚙ Quit test'); await click('Save & return to subjects');
+  await openSubject('c'); await click('Resume test'); await question('0 × 9');
   await click('0'); await click('Submit'); await question('3 × 3');
-  await click('9'); await click('Submit'); await see('Test complete'); await see('TAKE A TEST');
-  await click('TAKE A TEST'); await click('Division'); await click('Start'); await question('35 ÷ 7');
+  programState = { ...programState, subject: 'div', status: 'LEARNING', level: 1, batch: 1,
+    subjects: { div: { status: 'LEARNING', completedLevels: [] } } };
+  await click('9'); await click('Submit'); await see('Test complete');
+  await wait(() => evaluate('location.pathname === "/operations" && !!document.querySelector("[data-operation=div]")'), 'Pass returns to next subject');
+  await openSubject('d'); await click('Start'); await question('35 ÷ 7');
   assert.equal(calls.filter(c => c.path === '/assessments/start').at(-1).body.type, 'D');
   await click('5'); await click('Submit'); await question('9 ÷ 3');
   await wait(() => active.position === 1, 'Division saved');
-  await click('⚙ Quit test'); await click('Save & return to mode');
-  await click('TAKE A TEST'); await click('Division'); await click('Resume test'); await question('9 ÷ 3');
+  await click('⚙ Quit test'); await click('Save & return to subjects');
+  await openSubject('d'); await click('Resume test'); await question('9 ÷ 3');
   await click('3'); await click('Submit'); await question('8 ÷ 2');
-  await click('4'); await click('Submit'); await see('Test complete'); await see('TAKE A TEST');
-  await click('Sign out');
+  programState = { ...programState, level: 14, batch: 2 };
+  await click('4'); await click('Submit'); await see('Test complete');
+  await wait(() => evaluate('location.pathname === "/operations" && !!document.querySelector("[data-operation=div]")'), 'Fail returns to same subject');
+  attempts.clear();
+  const reloadProgram = async () => {
+    await openSubject('a'); await click('Back');
+    await wait(() => evaluate('!!document.querySelector("[data-operation]")'), 'Operations loaded');
+  };
+  programState = { ...programState, subject: 'add', status: 'LEARNING', level: 20, batch: 2,
+    subjects: { add: { status: 'LEARNING', completedLevels: [1,2] } } };
+  await reloadProgram();
+  const programChecksBeforeLevels = calls.filter(c => c.path === '/user/program').length;
+  await openTest();
+  await wait(() => evaluate('location.pathname === "/levels"'), 'Learning follows program');
+  await see('Addition Level 20');
+  assert.equal(calls.filter(c => c.path === '/user/program').length, programChecksBeforeLevels,
+    'Operations hands its fresh program check to levels without another loading request');
+  assert(!(await text()).includes('Assessment ready'), 'Learning does not offer an early assessment');
+  await evaluate(`history.pushState({}, '', '/mode'); window.dispatchEvent(new PopStateEvent('popstate'));`);
+  await wait(() => evaluate('!!document.querySelector("[data-operation]")'), 'Legacy mode URL redirects to operations');
+  programState = { ...programState, status: 'INTERVENTION_REQUIRED', level: 95, batch: 5 };
+  await reloadProgram(); await see('Intervention Required');
+  assert(!(await text()).includes('Assessment ready'), 'Final intervention does not offer a retake');
+  programState = { ...programState, subject: null, status: 'PROGRAM_COMPLETED', level: null, batch: null };
+  await reloadProgram(); await see('Mathematics Program Completed');
+  await openSubject('a'); await click('Sign out');
   await see('Confirm To Quit'); await click('YES');
   await wait(() => evaluate('location.pathname === "/"'), 'Existing logout flow').catch(async e => {
     throw new Error(`${e.message}; path=${await evaluate('location.pathname')}; screen=${(await text()).slice(0, 500)}`);
   });
+  loginTheme = null;
+  await command('Page.navigate', { url: `${origin}/name` });
+  await click('Demo'); await click('YES');
+  await click('NEXT');
+  await wait(() => evaluate('location.pathname === "/theme"'), 'New student sees theme after confirmation and streak');
+  await see('Choose Your Adventure!');
+  await click('Choose');
+  await wait(() => evaluate('location.pathname === "/operations"'), 'Theme selection leads to Operations');
   await evaluate('localStorage.setItem("math-admin-pin", "mock-admin")');
   await command('Page.navigate', { url: `${origin}/admin/tests` });
   await see('66.7%'); await see('View 3 items');
@@ -263,7 +311,7 @@ try {
   await click('Export CSV');
   await wait(() => calls.some(c => c.path === '/admin/assessments/export' && c.query.includes('student=77777')), 'Filtered CSV export');
   assert.equal(exceptions.length, 0, `Browser exceptions: ${exceptions.join(', ')}`);
-  console.log('PASS: login/streak/mode, Begin, numeric input, retry, quit/resume, refresh/draft, completion, reattempt, usage continuity, admin report/filters/export.');
+  console.log('PASS: responsive program screen, learning Level 20, assessment-ready, intervention, program completion, all four tests, retry, quit/resume, refresh/draft, usage continuity, admin report/filters/export.');
 } finally {
   socket?.close(); chrome.kill(); vite.kill();
   console.log(`Isolated browser profile: ${profile}`);

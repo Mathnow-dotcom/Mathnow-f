@@ -914,8 +914,9 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         setShowDailyStreakAnimation(true);
       }
 
-      // The streak overlay remains first; its Next button reveals the mode choice.
-      navigate('/mode');
+      // Confirmation and the streak overlay precede theme onboarding. Returning
+      // students retain their saved theme and go straight to their subjects.
+      navigate(themeConfigs[themeKeyFromBackend] ? '/operations' : '/theme');
     },
     [
       navigate,
@@ -1082,7 +1083,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         setGrandTotalCorrect(stats?.grandTotal || 0);
         setCurrentStreak(loginResponse.user.currentStreak || 0);
 
-        navigate('/mode');
+        navigate(themeConfigs[themeKeyFromBackend] ? '/operations' : '/theme');
       } catch (e) {
         setIsLoginLoading(false);
         localStorage.removeItem('math-child-pin');

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { assessmentReports, assessmentExport } from '../api/mathApi.js';
+import { assessmentReports, assessmentExport, programReports } from '../api/mathApi.js';
 import '../styles/Assessment.css';
+
+const subjectNames = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', completed: 'Completed' };
 
 const duration = (ms) => {
   const seconds = Math.round(ms / 1000);
@@ -29,6 +31,13 @@ export default function AssessmentReports() {
   const [busy, setBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
+  const [program, setProgram] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (pin) programReports(pin, query.student).then(p => { if (!cancelled) setProgram(p); })
+      .catch(e => { if (!cancelled) setError(e.message); });
+    return () => { cancelled = true; };
+  }, [pin, query.student]);
   useEffect(() => {
     if (!pin) return;
     let ignore = false;
@@ -55,7 +64,22 @@ export default function AssessmentReports() {
     <header className="assessment-toolbar"><h1 className="text-2xl font-bold">Test Results</h1>
       <button onClick={() => navigate('/admin-dashboard')}>Student Stats</button></header>
     <section className="assessment-report">
-      <p className="mb-6">Completed assessment history. Learning scores and belts are unaffected.</p>
+      <p className="mb-6">Assessment history and learning progression.</p>
+      {program && <section className="assessment-results">
+        <h2>Program progress</h2>
+        <p>Passes: {program.passes} · Failures: {program.failures} · Pass rate: {program.passRate?.toFixed(1)}%
+          {' · '}Interventions: {program.statuses?.INTERVENTION_REQUIRED || 0} ({(program.interventionRate || 0).toFixed(1)}%)</p>
+        <p>{Object.entries(program.modules || {}).map(([op, count]) => `${subjectNames[op] || op}: ${count} (${(program.moduleRates?.[op] || 0).toFixed(1)}%)`).join(' · ')}</p>
+        <table><thead><tr><th>Student</th><th>Subject</th><th>Level</th><th>Batch</th><th>Status</th><th>Details</th></tr></thead>
+          <tbody>{program.students?.map(s => <tr key={s.pin}>
+            <td>{s.student} #{s.pin}</td><td>{subjectNames[s.subject] || 'Completed'}</td><td>{s.level || '—'}</td><td>{s.batch || '—'}</td>
+            <td>{s.status.replaceAll('_', ' ')}</td><td><details><summary>Progress</summary>
+              {s.migrationPending && <p>Migration preview — existing progress unchanged.</p>}
+              {['add','sub','mul','div'].map(op => <p key={op}>{subjectNames[op]}: {s.subjects[op]?.status?.replaceAll('_', ' ') || (s.grandfatheredAccess.includes(op) ? 'Legacy access' : 'Locked')}
+                {' · '}Completed levels: {s.completedLevels?.[op]?.join(', ') || '—'}</p>)}
+            </details></td>
+          </tr>)}</tbody></table>
+      </section>}
       <form className="assessment-filters" onSubmit={e => {
         e.preventDefault();
         if (filters.from && filters.to && filters.from > filters.to) { setError('Start date must be before end date.'); return; }
@@ -72,11 +96,12 @@ export default function AssessmentReports() {
       {error && <p role="alert">{error}</p>}
       {busy ? <p role="status">Loading results…</p> : <div className="assessment-results">
         {rows.length === 0 ? <p>No completed tests found.</p> : <table><thead><tr>
-          <th>Student</th><th>Test</th><th>Completed</th><th>Accuracy</th><th>Total time</th>
+          <th>Student</th><th>Test</th><th>Batch / attempt</th><th>Result</th><th>Completed</th><th>Accuracy</th><th>Total time</th>
           <th>Average time per item</th><th title="Percentage of all test items answered correctly in less than 2 seconds">Correct under 2 seconds</th>
           <th title="Percentage of all test items answered correctly in less than 3 seconds">Correct under 3 seconds</th><th>Per-item detail</th>
         </tr></thead><tbody>{rows.map(row => <tr key={row.id}>
           <td>{row.student}<br /><small>#{row.pin}</small></td><td>{row.type}</td>
+          <td>{row.batch ?? 'Legacy'}</td><td>{row.passed == null ? 'Legacy' : row.passed ? 'Pass' : 'Fail'}</td>
           <td>{new Date(row.completedAt).toLocaleString()}</td>
           <td>{row.percent.toFixed(1)}%</td><td>{duration(row.totalMs)}</td>
           <td>{Number.isFinite(row.averageTimeMs) ? `${(row.averageTimeMs / 1000).toFixed(2)} s` : '—'}</td>

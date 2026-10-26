@@ -7,6 +7,7 @@ import GetReadyScreen from './components/GetReadyScreen.jsx';
 import SiblingCheckModal from './components/SiblingCheckModal.jsx';
 const StartScreen = lazy(() => import('./components/StartScreen.jsx'));
 const AssessmentScreen = lazy(() => import('./components/AssessmentScreen.jsx'));
+const ProgramLearningGate = lazy(() => import('./components/ProgramLearningGate.jsx'));
 const AssessmentReports = lazy(() => import('./components/AssessmentReports.jsx'));
 const NameForm = lazy(() => import('./components/NameForm.jsx'));
 const ThemePicker = lazy(() => import('./components/ThemePicker.jsx'));
@@ -53,7 +54,7 @@ import { clearShootingStars } from './utils/mathGameLogic.js';
 import audioManager from './utils/audioUtils.js';
 import { syncMathGameBridgeStore } from './store/mathGameBridgeStore.js';
 
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 const AdminDashboard = lazy(() => import('./components/AdminDashboard.jsx'));
 
 export const MathGameContext = createContext({});
@@ -261,8 +262,8 @@ const App = () => {
       {/* NEW: Use Suspense to show a fallback while waiting for code to load */}
       <Suspense fallback={<InitialLoadingScreen />}>
       <Routes>
-        <Route path="/mode" element={<AssessmentScreen />} />
-        <Route path="/test-selection" element={<AssessmentScreen />} />
+        <Route path="/mode" element={<Navigate to="/operations" replace />} />
+        <Route path="/test-selection" element={<Navigate to="/operations" replace />} />
         <Route path="/test-a" element={<AssessmentScreen />} />
         <Route path="/test-b" element={<AssessmentScreen key="subtraction-test" />} />
         <Route path="/test-c" element={<AssessmentScreen key="multiplication-test" />} />
@@ -307,7 +308,7 @@ const App = () => {
 
 
         <Route element={<MainLayout hideStats={showSiblingCheck || ctx.hideStatsUI} />}> 
-          <Route path="/levels" element={<TablePicker />} />
+          <Route path="/levels" element={<ProgramLearningGate><TablePicker /></ProgramLearningGate>} />
           <Route path="/belts" element={<DifficultyPicker />} />
           <Route path="/black" element={<BlackBeltPicker />} /> {/* ✅ BLACK ROUTE */}
           <Route path="/quiz" element={<QuizScreen />} />

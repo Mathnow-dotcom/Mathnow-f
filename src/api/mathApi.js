@@ -1,6 +1,8 @@
 // src/api/mathApi.js
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api';
+export const programProgress = pin => callApi('/user/program', 'GET', null, pin);
+export const programReports = (pin, student = '') => callApi('/admin/assessments/progress?' + new URLSearchParams({ student }), 'GET', null, pin);
 
 // Assessment requests use the same PIN authentication as the existing learning APIs.
 export const assessmentCurrent = (pin, type = 'A') => callApi(`/assessments/current?type=${encodeURIComponent(type)}`, 'GET', null, pin);

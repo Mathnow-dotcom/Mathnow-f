@@ -84,7 +84,7 @@ export default function AssessmentScreen() {
 
   useEffect(() => {
     if (!attempt?.completed || !running) return;
-    const timeout = setTimeout(() => navigate('/mode', { replace: true }), 5000);
+    const timeout = setTimeout(() => navigate('/operations', { replace: true }), 5000);
     return () => clearTimeout(timeout);
   }, [attempt?.completed, running, navigate]);
 
@@ -138,38 +138,22 @@ export default function AssessmentScreen() {
     try { await update('pause'); }
     catch { setError('Could not sync the latest timing. Your test will resume from the last saved answer.'); }
     finally {
-      locked.current = false; setBusy(false); setRunning(false); setQuit(false); navigate('/mode');
+      locked.current = false; setBusy(false); setRunning(false); setQuit(false); navigate('/operations');
     }
   };
 
   if (!ctx.isLoggedIn) return <Navigate to={ctx.isQuittingRef?.current ? '/' : '/name'} replace />;
   const complete = running && attempt?.completed;
-  const learnRoute = ctx.userSavedThemeKey && ctx.userSavedThemeKey !== 'null' ? '/operations' : '/theme';
-  const isSelectionPage = pathname === '/mode' || pathname === '/test-selection';
   return (
-    <main className={`assessment-page${isSelectionPage ? ' assessment-selection-page' : ''}`}>
+    <main className="assessment-page">
       <header className="assessment-toolbar assessment-student-toolbar">
         {running && !complete
           ? <button type="button" onClick={() => setQuit(true)}>⚙ Quit test</button>
           : <button type="button" onClick={ctx.handleQuit}>Sign out</button>}
       </header>
-      <section className={`assessment-card${isSelectionPage ? ' assessment-selection-card' : ''}${!isSelectionPage && !running ? ' assessment-start-card' : ''}${running && !complete ? ' assessment-question-card' : ''}`} aria-busy={busy}>
-        {pathname === '/mode' ? <>
-          {/* <h1>What would you like to do?</h1>         */}
-          <div className="assessment-choices assessment-mode-choices">
-            <button onClick={() => navigate(learnRoute)}><span className="assessment-choice-icon" aria-hidden="true">📖</span><span>LEARN</span></button>
-            <button onClick={() => navigate('/test-selection')}><span className="assessment-choice-icon" aria-hidden="true">✏️</span><span>TAKE A TEST</span></button>
-          </div>
-        </> : pathname === '/test-selection' ? <>         
-          <div className="assessment-choices">
-            <button onClick={() => navigate('/test-a')}><span className="assessment-choice-icon" aria-hidden="true">＋</span><span>Addition</span></button>
-            <button onClick={() => navigate('/test-b')}><span className="assessment-choice-icon" aria-hidden="true">−</span><span>Subtraction</span></button>
-            <button onClick={() => navigate('/test-c')}><span className="assessment-choice-icon" aria-hidden="true">×</span><span>Multiplication</span></button>
-            <button onClick={() => navigate('/test-d')}><span className="assessment-choice-icon" aria-hidden="true">÷</span><span>Division</span></button>
-          </div>
-          <button className="assessment-secondary" onClick={() => navigate('/mode')}>Back</button>
-        </> : complete ? <>
-          <h1 role="status">Test complete</h1><p>Returning to your activity choices…</p>
+      <section className={`assessment-card${!running ? ' assessment-start-card' : ''}${running && !complete ? ' assessment-question-card' : ''}`} aria-busy={busy}>
+        {complete ? <>
+          <h1 role="status">Test complete</h1><p>Returning to your subjects…</p>
         </> : !running ? <>
           <span className="assessment-card-symbol" aria-hidden="true">{{ A: '＋', B: '−', C: '×', D: '÷' }[testType]}</span>
           <h1>{{ A: 'Addition', B: 'Subtraction', C: 'Multiplication', D: 'Division' }[testType]}</h1>
@@ -181,7 +165,7 @@ export default function AssessmentScreen() {
           </div>}
           <div className="assessment-card-actions">
           <button disabled={busy || !loaded} onClick={begin}>{busy ? 'Loading…' : attempt ? 'Resume test' : 'Start'}</button>
-          <button className="assessment-secondary" disabled={busy} onClick={() => navigate('/test-selection')}>Back</button>
+          <button className="assessment-secondary" disabled={busy} onClick={() => navigate('/operations')}>Back</button>
           </div>
         </> : <>
           {/* <p>Question {attempt.position + 1} of {attempt.count}</p> */}
@@ -206,7 +190,7 @@ export default function AssessmentScreen() {
         <section className="assessment-card assessment-quit-card">
           <span className="assessment-card-symbol" aria-hidden="true">Ⅱ</span>
           <div className="assessment-card-actions">
-          <button disabled={busy} onClick={leave}>Save &amp; return to mode</button>
+          <button disabled={busy} onClick={leave}>Save &amp; return to subjects</button>
           <button className="assessment-secondary" disabled={busy} onClick={() => setQuit(false)}>Keep going</button>
           </div>
           {error && <p role="alert">{error}</p>}

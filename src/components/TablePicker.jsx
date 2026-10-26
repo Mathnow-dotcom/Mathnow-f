@@ -138,7 +138,7 @@ const getFactVideoPath = (operation, level) => {
 };
 
 /* ----------------- Component ----------------- */
-const TablePicker = () => {
+const TablePicker = ({ programLevel = null }) => {
   const navigate = useNavigate();
   const {
     startLevelEntry,
@@ -194,7 +194,9 @@ const TablePicker = () => {
   const maxUnlockedIndex = unlockedLevelsList.length > 0 ? unlockedLevelsList.length - 1 : 0;
   // State variables for sliding animation and index selection are removed.
   // The effective level is always the highest unlocked one.
-  const levelNumber = unlockedLevelsList[maxUnlockedIndex] || 1; // Default to Level 1
+  const levelNumber = programLevel || unlockedLevelsList[maxUnlockedIndex] || 1;
+  const batchSize = operationsMeta?.[selectedOperation]?.batchSize;
+  const contentLevel = batchSize ? ((levelNumber - 1) % batchSize) + 1 : levelNumber;
   const unlocked = !!levelNumber; 
 
   const [showFactVideo, setShowFactVideo] = useState(false);
@@ -227,7 +229,7 @@ const TablePicker = () => {
   const completedBelts = countCompletedBelts(levelNumber, tableProgress);
   const starDisplay = '⭐'.repeat(completedBelts) + '☆'.repeat(ALL_BELTS_FOR_DISPLAY.length - completedBelts);
   // Theme-driven visuals for THIS level (index is levelNumber - 1)
-  const themeIdx = levelNumber > 0 ? levelNumber - 1 : 0;
+  const themeIdx = contentLevel > 0 ? contentLevel - 1 : 0;
   const emojiForLevel = currentTheme?.tableEmojis?.[themeIdx] ?? '⭐';
   const nameForLevel  = currentTheme?.tableNames?.[themeIdx]  ?? 'Level';
   const colorForLevel = currentTheme?.tableColors?.[themeIdx] ?? 'bg-white border-gray-300';
@@ -252,7 +254,7 @@ const TablePicker = () => {
     startLevelEntry(levelNumber, { isBlackBeltUnlocked });
   };
 
-  const factVideoSrc = getFactVideoPath(selectedOperation, levelNumber);
+  const factVideoSrc = getFactVideoPath(selectedOperation, contentLevel);
   const closeFactVideo = useCallback(() => {
     setShowFactVideo(false);
     setHideStatsUI(false);
