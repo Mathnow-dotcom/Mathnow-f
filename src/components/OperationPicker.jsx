@@ -172,7 +172,6 @@ const OperationPicker = () => {
 
         {error && <p role="alert" className="text-white text-center">{error}</p>}
         {!program && !error && <p role="status" className="text-white">Loading…</p>}
-        {program?.status === 'PROGRAM_COMPLETED' && <p role="status" className="text-white text-center">Mathematics Program Completed</p>}
         {program?.status === 'INTERVENTION_REQUIRED' && <p role="status" className="text-white text-center">Intervention Required</p>}
         <div className={`grid ${gridClass}`}>
           {program && visibleOperations.map((operation) => (

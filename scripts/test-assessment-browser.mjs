@@ -281,7 +281,8 @@ try {
   await reloadProgram(); await see('Intervention Required');
   assert(!(await text()).includes('Assessment ready'), 'Final intervention does not offer a retake');
   programState = { ...programState, subject: null, status: 'PROGRAM_COMPLETED', level: null, batch: null };
-  await reloadProgram(); await see('Mathematics Program Completed');
+  await reloadProgram();
+  assert(!(await text()).includes('Mathematics Program Completed'), 'Do not claim mathematics is complete before Fractions');
   await openSubject('a'); await click('Sign out');
   await see('Confirm To Quit'); await click('YES');
   await wait(() => evaluate('location.pathname === "/"'), 'Existing logout flow').catch(async e => {
