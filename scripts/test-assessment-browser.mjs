@@ -141,6 +141,7 @@ try {
     await see('THIS TEST IS TIMED.');
   };
 
+  if (!process.env.REPORT_ONLY) {
   await command('Page.navigate', { url: `${origin}/name` });
   await login();
   for (const [width, height] of [[320,568], [390,844], [844,390], [768,1024], [1440,900]]) {
@@ -296,9 +297,19 @@ try {
   await see('Choose Your Adventure!');
   await click('Choose');
   await wait(() => evaluate('location.pathname === "/operations"'), 'Theme selection leads to Operations');
+  }
+  await command('Page.navigate', { url: `${origin}/` });
+  await wait(() => evaluate('location.origin === ' + JSON.stringify(origin)), 'App origin for admin storage');
   await evaluate('localStorage.setItem("math-admin-pin", "mock-admin")');
   await command('Page.navigate', { url: `${origin}/admin/tests` });
   await see('66.7%'); await see('View 3 items');
+  assert.equal(calls.filter(c => c.path === '/admin/assessments/progress').length, 0,
+    'Test history must not load an unsolicited program table above its filters');
+  assert(await evaluate(`(() => {
+    const form = document.querySelector('.assessment-filters');
+    const summary = [...document.querySelectorAll('summary')].find(s => s.textContent.includes('student summary'));
+    return !!form && !!summary && !summary.parentElement.open && form.getBoundingClientRect().top < summary.getBoundingClientRect().top;
+  })()`), 'Filters and attempt history stay above the collapsed program summary');
   await evaluate('document.querySelector("summary").click()'); await see('1 + 2');
   await evaluate(`{
     const input = document.querySelector('.assessment-filters input');
@@ -312,7 +323,9 @@ try {
   await click('Export CSV');
   await wait(() => calls.some(c => c.path === '/admin/assessments/export' && c.query.includes('student=77777')), 'Filtered CSV export');
   assert.equal(exceptions.length, 0, `Browser exceptions: ${exceptions.join(', ')}`);
-  console.log('PASS: responsive program screen, learning Level 20, assessment-ready, intervention, program completion, all four tests, retry, quit/resume, refresh/draft, usage continuity, admin report/filters/export.');
+  console.log(process.env.REPORT_ONLY
+    ? 'PASS: admin test history, collapsed summary, per-item details, filters and CSV export.'
+    : 'PASS: responsive program screen, learning Level 20, assessment-ready, intervention, program completion, all four tests, retry, quit/resume, refresh/draft, usage continuity, admin report/filters/export.');
 } finally {
   socket?.close(); chrome.kill(); vite.kill();
   console.log(`Isolated browser profile: ${profile}`);

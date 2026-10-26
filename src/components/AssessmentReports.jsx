@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { assessmentReports, assessmentExport, programReports } from '../api/mathApi.js';
 import '../styles/Assessment.css';
 
-const subjectNames = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', completed: 'Completed' };
+const subjectNames = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', frac: 'Fractions', completed: 'Completed' };
 
 const duration = (ms) => {
   const seconds = Math.round(ms / 1000);
@@ -32,12 +32,16 @@ export default function AssessmentReports() {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
   const [program, setProgram] = useState(null);
+  const [showProgram, setShowProgram] = useState(false);
+  const [programError, setProgramError] = useState('');
   useEffect(() => {
     let cancelled = false;
+    if (!showProgram) return;
+    setProgram(null); setProgramError('');
     if (pin) programReports(pin, query.student).then(p => { if (!cancelled) setProgram(p); })
-      .catch(e => { if (!cancelled) setError(e.message); });
+      .catch(e => { if (!cancelled) setProgramError(e.message); });
     return () => { cancelled = true; };
-  }, [pin, query.student]);
+  }, [pin, query.student, showProgram]);
   useEffect(() => {
     if (!pin) return;
     let ignore = false;
@@ -65,21 +69,6 @@ export default function AssessmentReports() {
       <button onClick={() => navigate('/admin-dashboard')}>Student Stats</button></header>
     <section className="assessment-report">
       <p className="mb-6">Assessment history and learning progression.</p>
-      {program && <section className="assessment-results">
-        <h2>Program progress</h2>
-        <p>Passes: {program.passes} · Failures: {program.failures} · Pass rate: {program.passRate?.toFixed(1)}%
-          {' · '}Interventions: {program.statuses?.INTERVENTION_REQUIRED || 0} ({(program.interventionRate || 0).toFixed(1)}%)</p>
-        <p>{Object.entries(program.modules || {}).map(([op, count]) => `${subjectNames[op] || op}: ${count} (${(program.moduleRates?.[op] || 0).toFixed(1)}%)`).join(' · ')}</p>
-        <table><thead><tr><th>Student</th><th>Subject</th><th>Level</th><th>Batch</th><th>Status</th><th>Details</th></tr></thead>
-          <tbody>{program.students?.map(s => <tr key={s.pin}>
-            <td>{s.student} #{s.pin}</td><td>{subjectNames[s.subject] || 'Completed'}</td><td>{s.level || '—'}</td><td>{s.batch || '—'}</td>
-            <td>{s.status.replaceAll('_', ' ')}</td><td><details><summary>Progress</summary>
-              {s.migrationPending && <p>Migration preview — existing progress unchanged.</p>}
-              {['add','sub','mul','div'].map(op => <p key={op}>{subjectNames[op]}: {s.subjects[op]?.status?.replaceAll('_', ' ') || (s.grandfatheredAccess.includes(op) ? 'Legacy access' : 'Locked')}
-                {' · '}Completed levels: {s.completedLevels?.[op]?.join(', ') || '—'}</p>)}
-            </details></td>
-          </tr>)}</tbody></table>
-      </section>}
       <form className="assessment-filters" onSubmit={e => {
         e.preventDefault();
         if (filters.from && filters.to && filters.from > filters.to) { setError('Start date must be before end date.'); return; }
@@ -118,6 +107,29 @@ export default function AssessmentReports() {
         <button disabled={busy || page === 0} onClick={() => setPage(p => p - 1)}>Previous</button>
         <span>Page {page + 1}</span><button disabled={busy || rows.length < 25} onClick={() => setPage(p => p + 1)}>Next</button>
       </div>
+      <details className="mt-6" onToggle={e => {
+        if (e.target === e.currentTarget) setShowProgram(e.currentTarget.open);
+      }}>
+        <summary>Program progress (student summary)</summary>
+        <p>This summary uses the Student PIN filter only.</p>
+        {programError && <p role="alert">{programError}</p>}
+        {showProgram && !program && !programError && <p role="status">Loading program progress…</p>}
+      {program && <section className="assessment-results">
+        <h2>Program progress</h2>
+        <p>Passes: {program.passes} · Failures: {program.failures} · Pass rate: {program.passRate?.toFixed(1)}%
+          {' · '}Interventions: {program.statuses?.INTERVENTION_REQUIRED || 0} ({(program.interventionRate || 0).toFixed(1)}%)</p>
+        <p>{Object.entries(program.modules || {}).map(([op, count]) => `${subjectNames[op] || op}: ${count} (${(program.moduleRates?.[op] || 0).toFixed(1)}%)`).join(' · ')}</p>
+        <table><thead><tr><th>Student</th><th>Subject</th><th>Level</th><th>Batch</th><th>Status</th><th>Details</th></tr></thead>
+          <tbody>{program.students?.map(s => <tr key={s.pin}>
+            <td>{s.student} #{s.pin}</td><td>{subjectNames[s.subject] || 'Completed'}</td><td>{s.level || '—'}</td><td>{s.batch || '—'}</td>
+            <td>{s.status.replaceAll('_', ' ')}</td><td><details><summary>Progress</summary>
+              {s.migrationPending && <p>Migration preview — existing progress unchanged.</p>}
+              {['add','sub','mul','div'].map(op => <p key={op}>{subjectNames[op]}: {s.subjects[op]?.status?.replaceAll('_', ' ') || (s.grandfatheredAccess.includes(op) ? 'Legacy access' : 'Locked')}
+                {' · '}Completed levels: {s.completedLevels?.[op]?.join(', ') || '—'}</p>)}
+            </details></td>
+          </tr>)}</tbody></table>
+      </section>}
+      </details>
     </section>
   </main>;
 }
