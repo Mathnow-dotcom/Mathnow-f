@@ -68,6 +68,7 @@ export const useConfigProgressDomain = ({
         const fromApi = operations?.[op] || {};
         next[op] = {
           batchSize: Number.isFinite(fromApi?.batchSize) ? fromApi.batchSize : next?.[op]?.batchSize,
+          contentLevels: fromApi?.contentLevels || {},
           maxLevel: Number.isFinite(fromApi?.maxLevel)
             ? fromApi.maxLevel
             : next?.[op]?.maxLevel || MODULE_META[op]?.maxLevel || 19,

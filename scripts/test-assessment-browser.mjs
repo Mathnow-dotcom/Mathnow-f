@@ -92,6 +92,9 @@ try {
       if (starts.has(body.beginKey)) active = starts.get(body.beginKey);
       else if (!active || active.completed) {
         active = { id: `test-${++serial}`, type: body.type || 'A', position: 0, count: 3, completed: false };
+        if (active.type === 'A' && programState.part) {
+          active.part = programState.part; active.partBatch = programState.partBatch || 1;
+        }
         attempts.set(active.type, active);
         starts.set(body.beginKey, active);
       }
@@ -141,7 +144,33 @@ try {
     await see('THIS TEST IS TIMED.');
   };
 
-  if (!process.env.REPORT_ONLY) {
+  if (process.env.ADDITION_PARTS_ONLY) {
+    programState = { ...programState, part: 1, partBatch: 1 };
+    await command('Page.navigate', { url: `${origin}/name` });
+    await login(); await see('Part 1'); await openTest(); await see('Addition — Part 1');
+    await click('Start'); await question('1 + 2');
+    assert.equal(active.part, 1);
+    await click('3'); await click('Submit'); await question('2 + 1');
+    await wait(() => active.position === 1, 'Part one answer saved');
+    await click('⚙ Quit test'); await click('Save & return to subjects');
+    await openTest(); await see('Addition — Part 1'); await click('Resume test');
+    await question('2 + 1'); await click('3'); await click('Submit'); await question('1 + 1');
+    programState = { ...programState, part: 2, partBatch: 1, level: 19, batch: 11 };
+    await click('2'); await click('Submit'); await see('Test complete');
+    await wait(() => evaluate('location.pathname === "/operations"'), 'Return after Part one');
+    await see('Part 2'); await openTest(); await see('Addition — Part 2');
+    await click('Start'); await question('1 + 2'); assert.equal(active.part, 2);
+    await click('3'); await click('Submit'); await question('2 + 1');
+    await wait(() => active.position === 1, 'Part two answer saved');
+    await click('⚙ Quit test'); await click('Save & return to subjects');
+    await openTest(); await see('Addition — Part 2'); await click('Resume test');
+    await question('2 + 1'); await click('3'); await click('Submit'); await question('1 + 1');
+    programState = { ...programState, subject: 'sub', status: 'LEARNING', part: 0, level: 1, batch: 1,
+      subjects: { sub: { status: 'LEARNING' } } };
+    await click('2'); await click('Submit'); await see('Test complete');
+    await wait(() => evaluate('location.pathname === "/operations" && !!document.querySelector("[data-operation=sub]")'), 'Subtraction after Part two');
+  }
+  if (!process.env.REPORT_ONLY && !process.env.ADDITION_PARTS_ONLY) {
   await command('Page.navigate', { url: `${origin}/name` });
   await login();
   for (const [width, height] of [[320,568], [390,844], [844,390], [768,1024], [1440,900]]) {
@@ -323,7 +352,9 @@ try {
   await click('Export CSV');
   await wait(() => calls.some(c => c.path === '/admin/assessments/export' && c.query.includes('student=77777')), 'Filtered CSV export');
   assert.equal(exceptions.length, 0, `Browser exceptions: ${exceptions.join(', ')}`);
-  console.log(process.env.REPORT_ONLY
+  console.log(process.env.ADDITION_PARTS_ONLY
+    ? 'PASS: Addition part labels, independent attempts, quit/resume, next-subject navigation, admin report/filters/export (mock API).'
+    : process.env.REPORT_ONLY
     ? 'PASS: admin test history, collapsed summary, per-item details, filters and CSV export.'
     : 'PASS: responsive program screen, learning Level 20, assessment-ready, intervention, program completion, all four tests, retry, quit/resume, refresh/draft, usage continuity, admin report/filters/export.');
 } finally {

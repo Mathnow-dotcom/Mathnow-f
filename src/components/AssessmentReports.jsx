@@ -89,8 +89,8 @@ export default function AssessmentReports() {
           <th>Average time per item</th><th title="Percentage of all test items answered correctly in less than 2 seconds">Correct under 2 seconds</th>
           <th title="Percentage of all test items answered correctly in less than 3 seconds">Correct under 3 seconds</th><th>Per-item detail</th>
         </tr></thead><tbody>{rows.map(row => <tr key={row.id}>
-          <td>{row.student}<br /><small>#{row.pin}</small></td><td>{row.type}</td>
-          <td>{row.batch ?? 'Legacy'}</td><td>{row.passed == null ? 'Legacy' : row.passed ? 'Pass' : 'Fail'}</td>
+          <td>{row.student}<br /><small>#{row.pin}</small></td><td>{row.type}{row.part ? ` — Part ${row.part}` : ''}</td>
+          <td>{row.partBatch ?? row.batch ?? 'Legacy'}</td><td>{row.passed == null ? 'Legacy' : row.passed ? 'Pass' : 'Fail'}</td>
           <td>{new Date(row.completedAt).toLocaleString()}</td>
           <td>{row.percent.toFixed(1)}%</td><td>{duration(row.totalMs)}</td>
           <td>{Number.isFinite(row.averageTimeMs) ? `${(row.averageTimeMs / 1000).toFixed(2)} s` : '—'}</td>
@@ -121,7 +121,7 @@ export default function AssessmentReports() {
         <p>{Object.entries(program.modules || {}).map(([op, count]) => `${subjectNames[op] || op}: ${count} (${(program.moduleRates?.[op] || 0).toFixed(1)}%)`).join(' · ')}</p>
         <table><thead><tr><th>Student</th><th>Subject</th><th>Level</th><th>Batch</th><th>Status</th><th>Details</th></tr></thead>
           <tbody>{program.students?.map(s => <tr key={s.pin}>
-            <td>{s.student} #{s.pin}</td><td>{subjectNames[s.subject] || 'Completed'}</td><td>{s.level || '—'}</td><td>{s.batch || '—'}</td>
+            <td>{s.student} #{s.pin}</td><td>{subjectNames[s.subject] || 'Completed'}{s.part > 0 ? ` — Part ${s.part}` : ''}</td><td>{s.level || '—'}</td><td>{s.partBatch || s.batch || '—'}</td>
             <td>{s.status.replaceAll('_', ' ')}</td><td><details><summary>Progress</summary>
               {s.migrationPending && <p>Migration preview — existing progress unchanged.</p>}
               {['add','sub','mul','div'].map(op => <p key={op}>{subjectNames[op]}: {s.subjects[op]?.status?.replaceAll('_', ' ') || (s.grandfatheredAccess.includes(op) ? 'Legacy access' : 'Locked')}

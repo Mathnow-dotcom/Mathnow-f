@@ -196,7 +196,8 @@ const TablePicker = ({ programLevel = null }) => {
   // The effective level is always the highest unlocked one.
   const levelNumber = programLevel || unlockedLevelsList[maxUnlockedIndex] || 1;
   const batchSize = operationsMeta?.[selectedOperation]?.batchSize;
-  const contentLevel = batchSize ? ((levelNumber - 1) % batchSize) + 1 : levelNumber;
+  const contentLevel = operationsMeta?.[selectedOperation]?.contentLevels?.[levelNumber]
+    ?? (batchSize ? ((levelNumber - 1) % batchSize) + 1 : levelNumber);
   const unlocked = !!levelNumber; 
 
   const [showFactVideo, setShowFactVideo] = useState(false);

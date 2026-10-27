@@ -197,6 +197,7 @@ const OperationPicker = () => {
                   {getOperationLabel(operation).toUpperCase()}
                 </div>
                 {program.subject === operation && program.status === 'ASSESSMENT_READY' && <span className="text-white text-sm">Assessment ready</span>}
+                {operation === 'add' && program.part > 0 && <span className="text-white text-sm">Part {program.part}</span>}
               </div>
             </button>
           ))}

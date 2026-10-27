@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MathGameContext } from '../App.jsx';
-import { assessmentCurrent, assessmentStart, assessmentUpdate } from '../api/mathApi.js';
+import { assessmentCurrent, assessmentStart, assessmentUpdate, programProgress } from '../api/mathApi.js';
 import SessionTimer from './ui/SessionTimer.jsx';
 import '../styles/Assessment.css';
 
@@ -12,6 +12,7 @@ export default function AssessmentScreen() {
   const { pathname } = useLocation();
   const testType = pathname === '/test-d' ? 'D' : pathname === '/test-c' ? 'C' : pathname === '/test-b' ? 'B' : 'A';
   const [attempt, setAttempt] = useState(null);
+  const [additionPart, setAdditionPart] = useState(null);
   const [running, setRunning] = useState(false);
   const [busy, setBusy] = useState(false);
   const [savingNext, setSavingNext] = useState(false);
@@ -55,6 +56,10 @@ export default function AssessmentScreen() {
     alive.current = true;
     if (!ctx.isLoggedIn) return;
     let cancelled = false;
+    setAdditionPart(null);
+    if (testType === 'A') programProgress(pin).then(p => {
+      if (!cancelled && p.subject === 'add') setAdditionPart(p.part || null);
+    }).catch(() => {}); // Label only; eligibility remains enforced by Start.
     assessmentCurrent(pin, testType).then(({ attempt: a }) => {
       if (!cancelled) { apply(a); setLoaded(true); }
     }).catch(() => { if (!cancelled) { setError('Could not load your test. Please try again.'); setLoaded(true); } });
@@ -156,7 +161,7 @@ export default function AssessmentScreen() {
           <h1 role="status">Test complete</h1><p>Returning to your subjects…</p>
         </> : !running ? <>
           <span className="assessment-card-symbol" aria-hidden="true">{{ A: '＋', B: '−', C: '×', D: '÷' }[testType]}</span>
-          <h1>{{ A: 'Addition', B: 'Subtraction', C: 'Multiplication', D: 'Division' }[testType]}</h1>
+          <h1>{{ A: 'Addition', B: 'Subtraction', C: 'Multiplication', D: 'Division' }[testType]}{testType === 'A' && (attempt ? attempt.part : additionPart) ? ` — Part ${attempt ? attempt.part : additionPart}` : ''}</h1>
           <p>{attempt
             ? 'THIS TEST IS TIMED. PRESS RESUME TEST WHEN YOU ARE READY TO CONTINUE.'
             : 'THIS TEST IS TIMED. PRESS START WHEN YOU ARE READY TO BEGIN THE TEST.'}</p>
