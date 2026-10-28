@@ -5,9 +5,9 @@ export const programProgress = pin => callApi('/user/program', 'GET', null, pin)
 export const programReports = (pin, student = '') => callApi('/admin/assessments/progress?' + new URLSearchParams({ student }), 'GET', null, pin);
 
 // Assessment requests use the same PIN authentication as the existing learning APIs.
-export const assessmentCurrent = (pin, type = 'A') => callApi(`/assessments/current?type=${encodeURIComponent(type)}`, 'GET', null, pin);
-export const assessmentStart = (pin, beginKey, session, type = 'A') =>
-  callApi('/assessments/start', 'POST', { beginKey, session, type }, pin);
+export const assessmentCurrent = (pin, type = 'A', flow = 'learning') => callApi(`/assessments/current?type=${encodeURIComponent(type)}&flow=${encodeURIComponent(flow)}`, 'GET', null, pin);
+export const assessmentStart = (pin, beginKey, session, type = 'A', flow = 'learning') =>
+  callApi('/assessments/start', 'POST', { beginKey, session, type, flow }, pin);
 export const assessmentUpdate = async (pin, id, body) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);

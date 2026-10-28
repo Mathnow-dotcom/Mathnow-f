@@ -169,6 +169,7 @@ const OperationPicker = () => {
         <h1 className="z-10 text-white text-3xl sm:text-4xl lg:text-5xl font-extrabold drop-shadow text-center animate-fade-in">
           WELCOME, {childNameDisplay}
         </h1>
+        <button type="button" className="z-10 rounded-xl bg-green-600 px-5 py-3 font-bold text-white" onClick={() => navigate('/mode')}>Learn / Take a test</button>
 
         {error && <p role="alert" className="text-white text-center">{error}</p>}
         {!program && !error && <p role="status" className="text-white">Loading…</p>}

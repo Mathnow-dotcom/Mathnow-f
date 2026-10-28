@@ -6,11 +6,13 @@ import { assessmentCurrent, assessmentStart, assessmentUpdate, programProgress }
 import SessionTimer from './ui/SessionTimer.jsx';
 import '../styles/Assessment.css';
 
-export default function AssessmentScreen() {
+export default function AssessmentScreen({ flow = 'learning', type }) {
   const ctx = useContext(MathGameContext);
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const testType = pathname === '/test-d' ? 'D' : pathname === '/test-c' ? 'C' : pathname === '/test-b' ? 'B' : 'A';
+  const testType = type || (pathname === '/test-d' ? 'D' : pathname === '/test-c' ? 'C' : pathname === '/test-b' ? 'B' : 'A');
+  const legacy = flow === 'legacy';
+  const returnPath = legacy ? '/test-selection' : '/operations';
   const [attempt, setAttempt] = useState(null);
   const [additionPart, setAdditionPart] = useState(null);
   const [running, setRunning] = useState(false);
@@ -26,7 +28,7 @@ export default function AssessmentScreen() {
   const locked = useRef(false);
   const queue = useRef(Promise.resolve());
   const pin = ctx.childPin;
-  const beginKey = `math-assessment-begin-${pin}${testType === 'A' ? '' : `-${testType}`}`;
+  const beginKey = `math-assessment-begin-${pin}-${testType}-${flow}`;
   const draftKey = (a) => `math-assessment-draft-${pin}-${a.id}-${a.position}`;
 
   const apply = (a) => {
@@ -57,14 +59,14 @@ export default function AssessmentScreen() {
     if (!ctx.isLoggedIn) return;
     let cancelled = false;
     setAdditionPart(null);
-    if (testType === 'A') programProgress(pin).then(p => {
+    if (testType === 'A' && !legacy) programProgress(pin).then(p => {
       if (!cancelled && p.subject === 'add') setAdditionPart(p.part || null);
     }).catch(() => {}); // Label only; eligibility remains enforced by Start.
-    assessmentCurrent(pin, testType).then(({ attempt: a }) => {
+    assessmentCurrent(pin, testType, flow).then(({ attempt: a }) => {
       if (!cancelled) { apply(a); setLoaded(true); }
     }).catch(() => { if (!cancelled) { setError('Could not load your test. Please try again.'); setLoaded(true); } });
     return () => { cancelled = true; alive.current = false; };
-  }, [pin, ctx.isLoggedIn, testType]);
+  }, [pin, ctx.isLoggedIn, testType, flow]);
 
   useEffect(() => {
     if (!running || attempt?.completed) return;
@@ -89,13 +91,13 @@ export default function AssessmentScreen() {
 
   useEffect(() => {
     if (!attempt?.completed || !running) return;
-    const timeout = setTimeout(() => navigate('/operations', { replace: true }), 5000);
+    const timeout = setTimeout(() => navigate(returnPath, { replace: true }), 5000);
     return () => clearTimeout(timeout);
-  }, [attempt?.completed, running, navigate]);
+  }, [attempt?.completed, running, navigate, returnPath]);
 
   // Browser Back also leaves a persisted, resumable test rather than exposing previous items.
   useEffect(() => {
-    if (!['/test-a', '/test-b', '/test-c', '/test-d'].includes(pathname) && running) {
+    if (!['/test-a', '/test-b', '/test-c', '/test-d', '/legacy-test-a', '/legacy-test-b', '/legacy-test-c', '/legacy-test-d'].includes(pathname) && running) {
       setRunning(false);
       if (current.current?.completed) apply(null);
     }
@@ -107,7 +109,7 @@ export default function AssessmentScreen() {
     let key = localStorage.getItem(beginKey);
     if (!key) { key = crypto.randomUUID(); localStorage.setItem(beginKey, key); }
     try {
-      const a = await enqueue(() => assessmentStart(pin, key, session.current, testType));
+      const a = await enqueue(() => assessmentStart(pin, key, session.current, testType, flow));
       apply(a); setRunning(true);
     } catch (e) { setError(e.message); }
     finally { locked.current = false; setBusy(false); }
@@ -143,7 +145,7 @@ export default function AssessmentScreen() {
     try { await update('pause'); }
     catch { setError('Could not sync the latest timing. Your test will resume from the last saved answer.'); }
     finally {
-      locked.current = false; setBusy(false); setRunning(false); setQuit(false); navigate('/operations');
+      locked.current = false; setBusy(false); setRunning(false); setQuit(false); navigate(legacy ? '/mode' : returnPath);
     }
   };
 
@@ -158,7 +160,7 @@ export default function AssessmentScreen() {
       </header>
       <section className={`assessment-card${!running ? ' assessment-start-card' : ''}${running && !complete ? ' assessment-question-card' : ''}`} aria-busy={busy}>
         {complete ? <>
-          <h1 role="status">Test complete</h1><p>Returning to your subjects…</p>
+          <h1 role="status">Test complete</h1><p>{legacy ? 'Returning to tests…' : 'Returning to your subjects…'}</p>
         </> : !running ? <>
           <span className="assessment-card-symbol" aria-hidden="true">{{ A: '＋', B: '−', C: '×', D: '÷' }[testType]}</span>
           <h1>{{ A: 'Addition', B: 'Subtraction', C: 'Multiplication', D: 'Division' }[testType]}{testType === 'A' && (attempt ? attempt.part : additionPart) ? ` — Part ${attempt ? attempt.part : additionPart}` : ''}</h1>
@@ -170,7 +172,7 @@ export default function AssessmentScreen() {
           </div>}
           <div className="assessment-card-actions">
           <button disabled={busy || !loaded} onClick={begin}>{busy ? 'Loading…' : attempt ? 'Resume test' : 'Start'}</button>
-          <button className="assessment-secondary" disabled={busy} onClick={() => navigate('/operations')}>Back</button>
+          <button className="assessment-secondary" disabled={busy} onClick={() => navigate(returnPath)}>Back</button>
           </div>
         </> : <>
           {/* <p>Question {attempt.position + 1} of {attempt.count}</p> */}
@@ -195,7 +197,7 @@ export default function AssessmentScreen() {
         <section className="assessment-card assessment-quit-card">
           <span className="assessment-card-symbol" aria-hidden="true">Ⅱ</span>
           <div className="assessment-card-actions">
-          <button disabled={busy} onClick={leave}>Save &amp; return to subjects</button>
+          <button disabled={busy} onClick={leave}>{legacy ? 'Save & return to mode' : 'Save & return to subjects'}</button>
           <button className="assessment-secondary" disabled={busy} onClick={() => setQuit(false)}>Keep going</button>
           </div>
           {error && <p role="alert">{error}</p>}

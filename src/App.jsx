@@ -12,6 +12,7 @@ const AssessmentReports = lazy(() => import('./components/AssessmentReports.jsx'
 const NameForm = lazy(() => import('./components/NameForm.jsx'));
 const ThemePicker = lazy(() => import('./components/ThemePicker.jsx'));
 const OperationPicker = lazy(() => import('./components/OperationPicker.jsx'));
+const AssessmentSelection = lazy(() => import('./components/AssessmentSelection.jsx'));
 const TablePicker = lazy(() => import('./components/TablePicker.jsx'));
 const DifficultyPicker = lazy(() => import('./components/DifficultyPicker.jsx'));
 const BlackBeltPicker = lazy(() => import('./components/BlackBeltPicker.jsx')); 
@@ -262,8 +263,10 @@ const App = () => {
       {/* NEW: Use Suspense to show a fallback while waiting for code to load */}
       <Suspense fallback={<InitialLoadingScreen />}>
       <Routes>
-        <Route path="/mode" element={<Navigate to="/operations" replace />} />
-        <Route path="/test-selection" element={<Navigate to="/operations" replace />} />
+        <Route path="/mode" element={<AssessmentSelection />} />
+        <Route path="/test-selection" element={<AssessmentSelection tests />} />
+        {['A', 'B', 'C', 'D'].map(type => <Route key={type} path={`/legacy-test-${type.toLowerCase()}`}
+          element={<AssessmentScreen key={`legacy-${type}`} type={type} flow="legacy" />} />)}
         <Route path="/test-a" element={<AssessmentScreen />} />
         <Route path="/test-b" element={<AssessmentScreen key="subtraction-test" />} />
         <Route path="/test-c" element={<AssessmentScreen key="multiplication-test" />} />

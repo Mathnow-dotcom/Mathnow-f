@@ -90,7 +90,7 @@ export default function AssessmentReports() {
           <th title="Percentage of all test items answered correctly in less than 3 seconds">Correct under 3 seconds</th><th>Per-item detail</th>
         </tr></thead><tbody>{rows.map(row => <tr key={row.id}>
           <td>{row.student}<br /><small>#{row.pin}</small></td><td>{row.type}{row.part ? ` — Part ${row.part}` : ''}</td>
-          <td>{row.partBatch ?? row.batch ?? 'Legacy'}</td><td>{row.passed == null ? 'Legacy' : row.passed ? 'Pass' : 'Fail'}</td>
+          <td>{row.partBatch ?? row.batch ?? 'Legacy test'}</td><td>{row.passed == null ? '—' : row.passed ? 'Pass' : 'Fail'}</td>
           <td>{new Date(row.completedAt).toLocaleString()}</td>
           <td>{row.percent.toFixed(1)}%</td><td>{duration(row.totalMs)}</td>
           <td>{Number.isFinite(row.averageTimeMs) ? `${(row.averageTimeMs / 1000).toFixed(2)} s` : '—'}</td>

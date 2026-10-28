@@ -83,23 +83,26 @@ try {
     if (path === '/admin/assessments/progress') response = { students: [], statuses: {}, modules: {}, passes: 0, failures: 0, passRate: 0 };
     if (path === '/assessments/current') {
       const previous = active;
-      active = attempts.get(new URL(request.url).searchParams.get('type') || 'A') || null;
+      const params = new URL(request.url).searchParams;
+      active = attempts.get(`${params.get('flow') || 'learning'}:${params.get('type') || 'A'}`) || null;
       response = { attempt: active?.completed ? null : state() };
       active = previous;
     }
     if (path === '/assessments/start') {
-      active = attempts.get(body.type || 'A') || null;
+      const key = `${body.flow || 'learning'}:${body.type || 'A'}`;
+      active = attempts.get(key) || null;
       if (starts.has(body.beginKey)) active = starts.get(body.beginKey);
       else if (!active || active.completed) {
-        active = { id: `test-${++serial}`, type: body.type || 'A', position: 0, count: 3, completed: false };
-        if (active.type === 'A' && programState.part) {
+        active = { id: `test-${++serial}`, type: body.type || 'A', flow: body.flow || 'learning', position: 0, count: 3, completed: false };
+        if (active.flow === 'learning' && active.type === 'A' && programState.part) {
           active.part = programState.part; active.partBatch = programState.partBatch || 1;
         }
-        attempts.set(active.type, active);
+        attempts.set(key, active);
         starts.set(body.beginKey, active);
       }
       response = state();
     } else if (path.startsWith('/assessments/') && path !== '/assessments/current') {
+      active = [...attempts.values()].find(a => a.id === path.split('/').at(-1));
       if (body.action === 'answer' && body.position === active.position && !active.completed) {
         active.position++; active.completed = active.position === active.count;
         if (loseAnswerResponse) {
@@ -133,7 +136,10 @@ try {
       .catch(async e => { throw new Error(e.message + '; ' + await evaluate('location.pathname') + '; ' + (await text()).slice(0,600)); });
     await evaluate(`Array.from(document.querySelectorAll('button')).find(${match}).click()`);
   };
-  const login = async () => { await click('Demo'); await click('YES'); await click('NEXT'); await see('Assessment ready'); };
+  const login = async (learn = true) => {
+    await click('Demo'); await click('YES'); await click('NEXT'); await see('TAKE A TEST');
+    if (learn) { await click('LEARN'); await see('Assessment ready'); }
+  };
   const openTest = async () => {
     await wait(() => evaluate('!!document.querySelector("[data-operation=add]")'), 'Addition operation');
     await evaluate('document.querySelector("[data-operation=add]").click()');
@@ -144,6 +150,55 @@ try {
     await see('THIS TEST IS TIMED.');
   };
 
+  if (process.env.TWO_FLOWS_ONLY) {
+    programState = { ...programState, part: 2, partBatch: 1, batch: 11 };
+    const unchangedProgram = JSON.stringify(programState);
+    await command('Page.navigate', { url: `${origin}/name` });
+    await login(false);
+    for (const [width, height] of [[320,568], [844,390], [1440,900]]) {
+      await command('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor:1, mobile:false });
+      await delay(100);
+      assert(await evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Mode fits viewport');
+      await click('TAKE A TEST'); await see('Division');
+      assert(await evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Test selection fits viewport');
+      await click('Back');
+    }
+    await command('Emulation.clearDeviceMetricsOverride');
+    await click('LEARN'); await see('Assessment ready'); await openTest();
+    await see('Addition — Part 2'); await click('Start'); await question('1 + 2');
+    await click('3'); await click('Submit'); await question('2 + 1');
+    await wait(() => active.position === 1, 'Learning answer saved');
+    const learning = active;
+    await click('⚙ Quit test'); await click('Save & return to subjects');
+    await click('Learn / Take a test'); await click('TAKE A TEST'); await click('Addition');
+    await see('THIS TEST IS TIMED.');
+    assert(!(await text()).includes('Part 2'), 'Independent Addition is a full test, not a part');
+    await click('Start'); await question('1 + 2');
+    assert.notEqual(active.id, learning.id, 'Separate unfinished attempts for same subject');
+    assert.equal(active.flow, 'legacy'); const legacy = active;
+    await click('3'); await click('Submit'); await question('2 + 1');
+    await wait(() => legacy.position === 1, 'Legacy answer saved');
+    await click('⚙ Quit test'); await click('Save & return to mode');
+    await click('LEARN'); await see('Assessment ready'); await openTest();
+    await see('Addition — Part 2'); await click('Resume test'); await question('2 + 1');
+    assert.equal(active.id, learning.id);
+    await click('⚙ Quit test'); await click('Save & return to subjects');
+    await click('Learn / Take a test'); await click('TAKE A TEST'); await click('Addition');
+    await click('Resume test'); await question('2 + 1'); assert.equal(active.id, legacy.id);
+    await click('3'); await click('Submit'); await question('1 + 1');
+    await click('2'); await click('Submit'); await see('Test complete');
+    await wait(() => evaluate('location.pathname === "/test-selection"'), 'Legacy completion returns to tests');
+    assert.equal(learning.position, 1); assert.equal(learning.completed, false);
+    assert.equal(JSON.stringify(programState), unchangedProgram, 'Independent test leaves learning pending');
+    for (const [label, type, problem] of [['Subtraction','B','5 - 2'], ['Multiplication','C','5 × 7'], ['Division','D','35 ÷ 7']]) {
+      await click(label); await click('Start'); await question(problem);
+      assert.equal(active.flow, 'legacy'); assert.equal(active.type, type);
+      await click('⚙ Quit test'); await click('Save & return to mode'); await click('TAKE A TEST');
+    }
+    await click('Back'); await click('LEARN'); await see('Assessment ready'); await openTest();
+    await click('Resume test'); await question('2 + 1'); assert.equal(active.id, learning.id);
+    assert(calls.filter(c => c.path === '/assessments/start').every(c => ['legacy','learning'].includes(c.body.flow)));
+  }
   if (process.env.ADDITION_PARTS_ONLY) {
     programState = { ...programState, part: 1, partBatch: 1 };
     await command('Page.navigate', { url: `${origin}/name` });
@@ -170,7 +225,7 @@ try {
     await click('2'); await click('Submit'); await see('Test complete');
     await wait(() => evaluate('location.pathname === "/operations" && !!document.querySelector("[data-operation=sub]")'), 'Subtraction after Part two');
   }
-  if (!process.env.REPORT_ONLY && !process.env.ADDITION_PARTS_ONLY) {
+  if (!process.env.REPORT_ONLY && !process.env.ADDITION_PARTS_ONLY && !process.env.TWO_FLOWS_ONLY) {
   await command('Page.navigate', { url: `${origin}/name` });
   await login();
   for (const [width, height] of [[320,568], [390,844], [844,390], [768,1024], [1440,900]]) {
@@ -306,7 +361,8 @@ try {
     'Operations hands its fresh program check to levels without another loading request');
   assert(!(await text()).includes('Assessment ready'), 'Learning does not offer an early assessment');
   await evaluate(`history.pushState({}, '', '/mode'); window.dispatchEvent(new PopStateEvent('popstate'));`);
-  await wait(() => evaluate('!!document.querySelector("[data-operation]")'), 'Legacy mode URL redirects to operations');
+  await see('TAKE A TEST'); await click('LEARN');
+  await wait(() => evaluate('!!document.querySelector("[data-operation]")'), 'Mode offers learning');
   programState = { ...programState, status: 'INTERVENTION_REQUIRED', level: 95, batch: 5 };
   await reloadProgram(); await see('Intervention Required');
   assert(!(await text()).includes('Assessment ready'), 'Final intervention does not offer a retake');
@@ -325,7 +381,7 @@ try {
   await wait(() => evaluate('location.pathname === "/theme"'), 'New student sees theme after confirmation and streak');
   await see('Choose Your Adventure!');
   await click('Choose');
-  await wait(() => evaluate('location.pathname === "/operations"'), 'Theme selection leads to Operations');
+  await wait(() => evaluate('location.pathname === "/mode"'), 'Theme selection leads to mode');
   }
   await command('Page.navigate', { url: `${origin}/` });
   await wait(() => evaluate('location.origin === ' + JSON.stringify(origin)), 'App origin for admin storage');
@@ -352,7 +408,9 @@ try {
   await click('Export CSV');
   await wait(() => calls.some(c => c.path === '/admin/assessments/export' && c.query.includes('student=77777')), 'Filtered CSV export');
   assert.equal(exceptions.length, 0, `Browser exceptions: ${exceptions.join(', ')}`);
-  console.log(process.env.ADDITION_PARTS_ONLY
+  console.log(process.env.TWO_FLOWS_ONLY
+    ? 'PASS: responsive mode/test selection, all four independent tests, separate learning/legacy attempts and resume, legacy completion, report filters/export (mock API).'
+    : process.env.ADDITION_PARTS_ONLY
     ? 'PASS: Addition part labels, independent attempts, quit/resume, next-subject navigation, admin report/filters/export (mock API).'
     : process.env.REPORT_ONLY
     ? 'PASS: admin test history, collapsed summary, per-item details, filters and CSV export.'

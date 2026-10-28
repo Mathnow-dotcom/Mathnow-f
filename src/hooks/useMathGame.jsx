@@ -915,8 +915,8 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       }
 
       // Confirmation and the streak overlay precede theme onboarding. Returning
-      // students retain their saved theme and go straight to their subjects.
-      navigate(themeConfigs[themeKeyFromBackend] ? '/operations' : '/theme');
+      // students retain their saved theme and choose learning or independent tests.
+      navigate(themeConfigs[themeKeyFromBackend] ? '/mode' : '/theme');
     },
     [
       navigate,
@@ -1083,7 +1083,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         setGrandTotalCorrect(stats?.grandTotal || 0);
         setCurrentStreak(loginResponse.user.currentStreak || 0);
 
-        navigate(themeConfigs[themeKeyFromBackend] ? '/operations' : '/theme');
+        navigate(themeConfigs[themeKeyFromBackend] ? '/mode' : '/theme');
       } catch (e) {
         setIsLoginLoading(false);
         localStorage.removeItem('math-child-pin');
@@ -1129,11 +1129,11 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         await userUpdateTheme(themeKey, childPin);
         setUserThemeKey(themeKey);
         setSelectedTheme(themeObject);
-        navigate('/operations');
+        navigate('/mode');
       } catch (e) {
         console.error('Failed to save theme:', e.message);
         setSelectedTheme(themeObject);
-        navigate('/operations');
+        navigate('/mode');
       }
     },
     [childPin, navigate]
