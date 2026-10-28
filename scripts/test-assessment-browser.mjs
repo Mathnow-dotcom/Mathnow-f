@@ -131,7 +131,7 @@ try {
   const see = value => wait(async () => (await text()).includes(value), value);
   const question = problem => wait(() => evaluate(`document.querySelector('.assessment-problem')?.textContent === ${JSON.stringify(problem)}`), problem);
   const click = async label => {
-    const match = `b => { const c = b.cloneNode(true); c.querySelectorAll('[aria-hidden]').forEach(n => n.remove()); return c.textContent.trim() === ${JSON.stringify(label)} && !b.disabled; }`;
+    const match = `b => { const c = b.cloneNode(true); c.querySelectorAll('[aria-hidden]').forEach(n => n.remove()); return (b.getAttribute('aria-label') || c.textContent.trim()) === ${JSON.stringify(label)} && !b.disabled; }`;
     await wait(() => evaluate(`Array.from(document.querySelectorAll('button')).some(${match})`), `button ${label}`)
       .catch(async e => { throw new Error(e.message + '; ' + await evaluate('location.pathname') + '; ' + (await text()).slice(0,600)); });
     await evaluate(`Array.from(document.querySelectorAll('button')).find(${match}).click()`);
@@ -170,7 +170,7 @@ try {
     await wait(() => active.position === 1, 'Learning answer saved');
     const learning = active;
     await click('⚙ Quit test'); await click('Save & return to subjects');
-    await click('Learn / Take a test'); await click('TAKE A TEST'); await click('Addition');
+    await click('Back to mode selection'); await click('TAKE A TEST'); await click('Addition');
     await see('THIS TEST IS TIMED.');
     assert(!(await text()).includes('Part 2'), 'Independent Addition is a full test, not a part');
     await click('Start'); await question('1 + 2');
@@ -183,7 +183,7 @@ try {
     await see('Addition — Part 2'); await click('Resume test'); await question('2 + 1');
     assert.equal(active.id, learning.id);
     await click('⚙ Quit test'); await click('Save & return to subjects');
-    await click('Learn / Take a test'); await click('TAKE A TEST'); await click('Addition');
+    await click('Back to mode selection'); await click('TAKE A TEST'); await click('Addition');
     await click('Resume test'); await question('2 + 1'); assert.equal(active.id, legacy.id);
     await click('3'); await click('Submit'); await question('1 + 1');
     await click('2'); await click('Submit'); await see('Test complete');

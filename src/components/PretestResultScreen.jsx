@@ -92,8 +92,17 @@ const PretestResultScreen = () => {
     if (currentIndex === -1) return null;
     return MODULE_SEQUENCE[currentIndex + 1] || null;
   })();
+  // Managed subjects end each batch with their own assessment, not the next subject.
+  // The server's cumulative-to-base mapping identifies Addition's repeated part.
+  const hasAssessment = ['add', 'sub', 'mul', 'div'].includes(resultOperation);
+  const additionBaseLevel = Number(operationsMeta?.add?.contentLevels?.[currentLevel]);
+  const additionPart = resultOperation === 'add' && Number.isFinite(additionBaseLevel)
+    ? ` Part ${additionBaseLevel <= 10 ? 1 : 2}`
+    : '';
   const transitionLabel = isLastLevelInOperation
-    ? nextOperation
+    ? hasAssessment
+      ? `Taking you to assessment of ${getOperationLabel(resultOperation)}${additionPart}`
+      : nextOperation
       ? `Taking you to ${getOperationLabel(nextOperation)}`
       : 'Taking you to the next module'
     : `Taking you to Level ${nextLevel ?? 'next'}`;
