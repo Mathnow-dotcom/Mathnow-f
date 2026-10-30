@@ -98,12 +98,12 @@ try {
     if (path === '/assessments/current') {
       const previous = active;
       const params = new URL(request.url).searchParams;
-      active = attempts.get(`${params.get('flow') || 'learning'}:${params.get('type') || 'A'}`) || null;
+      active = attempts.get(`${params.get('flow') || 'learning'}:${params.get('type') || 'A'}:${params.get('part') || ''}`) || null;
       response = { attempt: active?.completed ? null : state() };
       active = previous;
     }
     if (path === '/assessments/start') {
-      const key = `${body.flow || 'learning'}:${body.type || 'A'}`;
+      const key = `${body.flow || 'learning'}:${body.type || 'A'}:${body.part || ''}`;
       active = attempts.get(key) || null;
       if (starts.has(body.beginKey)) active = starts.get(body.beginKey);
       else if (!active || active.completed) {
@@ -111,6 +111,7 @@ try {
         if (active.flow === 'learning' && active.type === 'A' && programState.part) {
           active.part = programState.part; active.partBatch = programState.partBatch || 1;
         }
+        if (body.part) active.part = body.part;
         attempts.set(key, active);
         starts.set(body.beginKey, active);
       }
@@ -264,9 +265,9 @@ try {
     await wait(() => active.position === 1, 'Learning answer saved');
     const learning = active;
     await click('⚙ Quit test'); await click('Save & return to subjects');
-    await click('Back to mode selection'); await click('TAKE A TEST'); await click('Addition');
+    await click('Back to mode selection'); await click('TAKE A TEST'); await click('Addition — Part 1');
     await see('THIS TEST IS TIMED.');
-    assert(!(await text()).includes('Part 2'), 'Independent Addition is a full test, not a part');
+    await see('Addition — Part 1');
     await click('Start'); await question('1 + 2');
     assert.notEqual(active.id, learning.id, 'Separate unfinished attempts for same subject');
     assert.equal(active.flow, 'legacy'); const legacy = active;
@@ -277,14 +278,14 @@ try {
     await see('Addition — Part 2'); await click('Resume test'); await question('2 + 1');
     assert.equal(active.id, learning.id);
     await click('⚙ Quit test'); await click('Save & return to subjects');
-    await click('Back to mode selection'); await click('TAKE A TEST'); await click('Addition');
+    await click('Back to mode selection'); await click('TAKE A TEST'); await click('Addition — Part 1');
     await click('Resume test'); await question('2 + 1'); assert.equal(active.id, legacy.id);
     await click('3'); await click('Submit'); await question('1 + 1');
     await click('2'); await click('Submit'); await see('Test complete');
     await wait(() => evaluate('location.pathname === "/test-selection"'), 'Legacy completion returns to tests');
     assert.equal(learning.position, 1); assert.equal(learning.completed, false);
     assert.equal(JSON.stringify(programState), unchangedProgram, 'Independent test leaves learning pending');
-    for (const [label, type, problem] of [['Subtraction','B','5 - 2'], ['Multiplication','C','5 × 7'], ['Division','D','35 ÷ 7']]) {
+    for (const [label, type, problem] of [['Addition — Part 2','A','1 + 2'], ['Subtraction','B','5 - 2'], ['Multiplication','C','5 × 7'], ['Division','D','35 ÷ 7']]) {
       await click(label); await click('Start'); await question(problem);
       assert.equal(active.flow, 'legacy'); assert.equal(active.type, type);
       await click('⚙ Quit test'); await click('Save & return to mode'); await click('TAKE A TEST');
@@ -503,7 +504,7 @@ try {
   await wait(() => calls.some(c => c.path === '/admin/assessments/export' && c.query.includes('student=77777')), 'Filtered CSV export');
   assert.equal(exceptions.length, 0, `Browser exceptions: ${exceptions.join(', ')}`);
   console.log(process.env.TWO_FLOWS_ONLY
-    ? 'PASS: responsive mode/test selection, all four independent tests, separate learning/legacy attempts and resume, legacy completion, report filters/export (mock API).'
+    ? 'PASS: responsive mode/test selection, both Addition parts and all other independent tests, separate learning/legacy attempts and resume, legacy completion, report filters/export (mock API).'
     : process.env.ADDITION_PARTS_ONLY
     ? 'PASS: Addition part labels, independent attempts, quit/resume, next-subject navigation, admin report/filters/export (mock API).'
     : process.env.REPORT_ONLY

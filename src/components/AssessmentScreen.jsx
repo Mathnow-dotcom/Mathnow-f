@@ -6,7 +6,7 @@ import { assessmentCurrent, assessmentStart, assessmentUpdate, programProgress }
 import SessionTimer from './ui/SessionTimer.jsx';
 import '../styles/Assessment.css';
 
-export default function AssessmentScreen({ flow = 'learning', type }) {
+export default function AssessmentScreen({ flow = 'learning', type, part = null }) {
   const ctx = useContext(MathGameContext);
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -28,7 +28,7 @@ export default function AssessmentScreen({ flow = 'learning', type }) {
   const locked = useRef(false);
   const queue = useRef(Promise.resolve());
   const pin = ctx.childPin;
-  const beginKey = `math-assessment-begin-${pin}-${testType}-${flow}`;
+  const beginKey = `math-assessment-begin-${pin}-${testType}-${flow}${part ? `-part-${part}` : ''}`;
   const draftKey = (a) => `math-assessment-draft-${pin}-${a.id}-${a.position}`;
 
   const apply = (a) => {
@@ -58,15 +58,15 @@ export default function AssessmentScreen({ flow = 'learning', type }) {
     alive.current = true;
     if (!ctx.isLoggedIn) return;
     let cancelled = false;
-    setAdditionPart(null);
+    setAdditionPart(part);
     if (testType === 'A' && !legacy) programProgress(pin).then(p => {
       if (!cancelled && p.subject === 'add') setAdditionPart(p.part || null);
     }).catch(() => {}); // Label only; eligibility remains enforced by Start.
-    assessmentCurrent(pin, testType, flow).then(({ attempt: a }) => {
+    assessmentCurrent(pin, testType, flow, part).then(({ attempt: a }) => {
       if (!cancelled) { apply(a); setLoaded(true); }
     }).catch(() => { if (!cancelled) { setError('Could not load your test. Please try again.'); setLoaded(true); } });
     return () => { cancelled = true; alive.current = false; };
-  }, [pin, ctx.isLoggedIn, testType, flow]);
+  }, [pin, ctx.isLoggedIn, testType, flow, part]);
 
   useEffect(() => {
     if (!running || attempt?.completed) return;
@@ -97,7 +97,7 @@ export default function AssessmentScreen({ flow = 'learning', type }) {
 
   // Browser Back also leaves a persisted, resumable test rather than exposing previous items.
   useEffect(() => {
-    if (!['/test-a', '/test-b', '/test-c', '/test-d', '/legacy-test-a', '/legacy-test-b', '/legacy-test-c', '/legacy-test-d'].includes(pathname) && running) {
+    if (!['/test-a', '/test-b', '/test-c', '/test-d', '/legacy-test-a', '/legacy-test-a-part-1', '/legacy-test-a-part-2', '/legacy-test-b', '/legacy-test-c', '/legacy-test-d'].includes(pathname) && running) {
       setRunning(false);
       if (current.current?.completed) apply(null);
     }
@@ -109,7 +109,7 @@ export default function AssessmentScreen({ flow = 'learning', type }) {
     let key = localStorage.getItem(beginKey);
     if (!key) { key = crypto.randomUUID(); localStorage.setItem(beginKey, key); }
     try {
-      const a = await enqueue(() => assessmentStart(pin, key, session.current, testType, flow));
+      const a = await enqueue(() => assessmentStart(pin, key, session.current, testType, flow, part));
       apply(a); setRunning(true);
     } catch (e) { setError(e.message); }
     finally { locked.current = false; setBusy(false); }

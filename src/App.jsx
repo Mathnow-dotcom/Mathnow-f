@@ -268,6 +268,8 @@ const App = () => {
         <Route path="/test-selection" element={<AssessmentSelection tests />} />
         {['A', 'B', 'C', 'D'].map(type => <Route key={type} path={`/legacy-test-${type.toLowerCase()}`}
           element={<AssessmentScreen key={`legacy-${type}`} type={type} flow="legacy" />} />)}
+        {[1, 2].map(part => <Route key={part} path={`/legacy-test-a-part-${part}`}
+          element={<AssessmentScreen key={`legacy-add-${part}`} type="A" flow="legacy" part={part} />} />)}
         <Route path="/test-a" element={<AssessmentScreen />} />
         <Route path="/test-b" element={<AssessmentScreen key="subtraction-test" />} />
         <Route path="/test-c" element={<AssessmentScreen key="multiplication-test" />} />

@@ -14,7 +14,7 @@ export default function AssessmentSelection({ tests = false }) {
     </header>
     <section className="assessment-card assessment-selection-card">
       <div className={`assessment-choices${tests ? '' : ' assessment-mode-choices'}`}>
-        {tests ? [['a', 'Addition'], ['b', 'Subtraction'], ['c', 'Multiplication'], ['d', 'Division']].map(([type, label]) =>
+        {tests ? [['a-part-1', 'Addition — Part 1'], ['a-part-2', 'Addition — Part 2'], ['b', 'Subtraction'], ['c', 'Multiplication'], ['d', 'Division']].map(([type, label]) =>
           <button key={type} onClick={() => navigate(`/legacy-test-${type}`)}>{label}</button>) : <>
           <button onClick={() => navigate('/operations')}>LEARN</button>
           <button onClick={() => navigate('/test-selection')}>TAKE A TEST</button>
