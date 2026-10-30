@@ -4,6 +4,8 @@ import { mapQuestionToFrontend } from '../api/mathApi.js';
 import audioManager from '../utils/audioUtils.js';
 import { normalizeDifficulty } from '../utils/mathGameLogic.js';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
+import CorrectionLoop from './CorrectionLoop.jsx';
+import CorrectionTransition from './CorrectionTransition.jsx';
 
 /**
  * Learning flow:
@@ -181,6 +183,7 @@ const LearningModule = () => {
     setRocketPracticeReverse,
     showQuitModal,
     isQuittingRef,
+    childPin,
   } = useMathGamePick((ctx) => ({
     pendingDifficulty: ctx.pendingDifficulty,
     selectedTable: ctx.selectedTable,
@@ -215,6 +218,7 @@ const LearningModule = () => {
     setRocketPracticeReverse: ctx.setRocketPracticeReverse || (() => {}),
     showQuitModal: Boolean(ctx.showQuitModal),
     isQuittingRef: ctx.isQuittingRef || { current: false },
+    childPin: ctx.childPin,
   }));
 
   const diff = useMemo(() => normalizeDifficulty(pendingDifficulty), [pendingDifficulty]);
@@ -440,10 +444,11 @@ useEffect(() => {
     setPracticeStatus(null);
   };
 
-  const handleSubmitTypedAnswer = async () => {
-    if (!practiceQ || typedInput.trim() === '' || isSubmitting) return;
+  const handleSubmitTypedAnswer = async (correctionPassed = false) => {
+    correctionPassed = correctionPassed === true;
+    if (!practiceQ || (!correctionPassed && typedInput.trim() === '') || isSubmitting) return;
 
-    const answerNumber = Number(typedInput);
+    const answerNumber = correctionPassed ? practiceQ.correctAnswer : Number(typedInput);
     if (!Number.isFinite(answerNumber)) {
       setPracticeMsg('Enter a number.');
       return;
@@ -452,7 +457,7 @@ useEffect(() => {
     setIsSubmitting(true);
 
     const displayedCorrectAnswer = practiceQ?.answerLabels?.[practiceQ?.correctAnswer];
-    const answerToSubmit =
+    const answerToSubmit = correctionPassed ? practiceQ.correctAnswer :
       Number.isFinite(practiceQ?.answerScale) && String(answerNumber) === String(displayedCorrectAnswer)
         ? practiceQ.correctAnswer
         : Number.isFinite(practiceQ?.answerScale)
@@ -477,6 +482,7 @@ useEffect(() => {
 
     if (isGameMode && isGameModePractice) {
       const out = await handlePracticeAnswer(practiceQ.id, answerToSubmit);
+      if (out.error) { setIsSubmitting(false); throw new Error(out.error); }
 
       if (out.resume || out.surfQuizRestarted || out.rocketQuizRestarted || out.bonusQuizRestarted) {
         setIsClosing(true);
@@ -498,6 +504,7 @@ useEffect(() => {
 
     try {
       const out = await handlePracticeAnswer(practiceQ.id, answerToSubmit);
+      if (out.error) throw new Error(out.error);
 
       if (isPreQuizFlow) {
         const nextIndex = currentPracticeIndex + 1;
@@ -613,6 +620,7 @@ useEffect(() => {
       setPracticeMsg('Error submitting practice: ' + msg);
       setIsSubmitting(false);
       setPracticeStatus('error');
+      if (correctionPassed) throw e;
     }
   };
 
@@ -706,15 +714,8 @@ useEffect(() => {
     }
   };
   const renderBody = () => {
-    if (!practiceQ) {
-        return (
-            <div className="text-center">
-                <h3 className="text-xl font-bold text-center text-blue-700 mb-4">Loading Module</h3>
-                <p>Preparing content or already starting quiz...</p>
-            </div>
-        );
-    }
-    
+    if (!practiceQ) return null;
+
     // --- 1. Intervention Flow (Show Fact -> Practice -> Resume) ---
     if (isIntervention) {
       if (isShowingFact) {
@@ -882,6 +883,10 @@ useEffect(() => {
     return null;
 
   };
+
+  if (!practiceQ) return <CorrectionTransition />;
+  if (isIntervention && practiceQ) return <CorrectionLoop runId={quizRunId} pin={childPin}
+    paused={showQuitModal || isQuittingRef?.current} onComplete={() => handleSubmitTypedAnswer(true)} />;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">

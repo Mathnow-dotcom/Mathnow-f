@@ -8,6 +8,7 @@ export const buildQuizSlice = (d) => ({
   startLevelEntry: d.startLevelEntry,
   startQuizWithDifficulty: d.startQuizWithDifficulty,
   startActualQuiz: d.startActualQuiz,
+  resumeCorrectionRun: d.resumeCorrectionRun,
   handleAnswer: d.handleAnswer,
   transientStreakMessage: d.transientStreakMessage,
   streakPosition: d.streakPosition,

@@ -1140,6 +1140,46 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   );
 
   // ---------------- NORMAL QUIZ START ----------------
+  const resumeCorrectionRun = useCallback(async (runId) => {
+    const started = await quizStart(runId, childPin);
+    if (!started.practice) return;
+    const questions = (started.questions || []).map(mapQuestionToFrontend);
+    const index = started.currentIndex || 0;
+    setQuizRunId(runId);
+    setSelectedOperation(started.operation);
+    setSelectedTable(started.level);
+    setSelectedDifficulty(started.beltOrDegree);
+    setPendingDifficulty(started.beltOrDegree);
+    setIsPretest(!!started.pretestMode);
+    setIsPretestIntroVisible(false);
+    setIsGameMode(!!started.gameMode);
+    setGameModeType(started.gameModeType || null);
+    setIsGameModePractice(!!started.gameMode);
+    setGameModeInterventionIndex(index);
+    setQuizQuestions(questions); setCurrentQuestionIndex(index); setCurrentQuestion(questions[index]);
+    setMaxQuestions(started.pretestQuestionCount || questions.length);
+    setSessionCorrectCount(started.mainFlowCorrect || 0);
+    setWrongCount(started.wrong || 0);
+    setLightningCount(started.totalCorrect || 0);
+    applyLightningTarget(started);
+    if (started.pretestMode) {
+      setPretestQuestionCount(started.pretestQuestionCount);
+      startPretestTimer(started.pretestTimeLimitMs, started.timer?.remainingMs);
+    }
+    applySurfState(started); applyRocketState(started); applyBonusState(started);
+    applyInactivityTimeout(started);
+    if (started.gameMode) {
+      localStorage.setItem('game-mode-belt', started.beltOrDegree);
+      localStorage.setItem('game-mode-table', String(started.level));
+      localStorage.setItem('game-mode-operation', started.operation);
+      localStorage.setItem('game-mode-pin', childPin);
+    }
+    setQuizStartTime(Date.now()); setPausedTime(Date.now()); setIsTimerPaused(true);
+    setIsQuizStarting(false); setIsInitialPrepLoading(false); setIsAnimating(false);
+    setInterventionQuestion(mapQuestionToFrontend(started.practice)); setShowLearningModule(true);
+    navigate('/learning', { replace:true });
+  }, [childPin,navigate,startPretestTimer,applySurfState,applyRocketState,applyBonusState,applyInactivityTimeout,applyLightningTarget]);
+
   const startActualQuiz = useCallback(
     async (runId) => {
       if (startQuizLockRef.current) return;
@@ -1154,6 +1194,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         }
 
         const started = await quizStart(idToUse, childPin);
+        if (started.practice) { await resumeCorrectionRun(idToUse); return; }
         applyInactivityTimeout(started);
         const { questions: backendQuestions, resumed = false, currentIndex, mainFlowCorrect, wrong } =
           started;
@@ -1224,6 +1265,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       determineMaxQuestions,
       showUiMessage,
       applyInactivityTimeout,
+      resumeCorrectionRun,
     ]
   );
 
@@ -1310,6 +1352,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
           targetCorrect,
           requestedGameModeType
         );
+        if (prep?.correctionPending) { await resumeCorrectionRun(prep.quizRunId); return; }
         applyInactivityTimeout(prep);
 
         setQuizRunId(prep.quizRunId);
@@ -1414,6 +1457,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       getRecoveryRoute,
       logClientError,
       showUiMessage,
+      resumeCorrectionRun,
     ]
   );
 
@@ -1630,6 +1674,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       try {
         navigate('/pretest-intro', { replace: true });
         const started = await quizStart(runId, childPin);
+        if (started.practice) { await resumeCorrectionRun(runId); return; }
         const backendQuestions = started?.questions || started?.run?.questions || [];
         if (!backendQuestions || backendQuestions.length === 0) {
           throw new Error('No questions returned from pretest start.');
@@ -1738,6 +1783,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       setSelectedTable,
       setSelectedOperation,
       startPretestTimer,
+      resumeCorrectionRun,
       stopPretestTimer,
     ]
   );
@@ -1793,6 +1839,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         }
 
         const prep = await quizPrepare(level, 'white', childPin, op);
+        if (prep?.correctionPending && prep.pretestMode) { await resumeCorrectionRun(prep.quizRunId); return; }
 
         if (prep?.pretestMode || prep?.gameModeType === 'pretest') {
           await startPretestRun({ prep, level, operation: op });
@@ -1826,6 +1873,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       selectedOperation,
       setSelectedOperation,
       startPretestRun,
+      resumeCorrectionRun,
       syncConfigFromStorage,
       tableProgress,
       applyProgressPayload,
@@ -1853,6 +1901,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
       try {
         const prep = await quizPrepare(table, difficulty, childPin, selectedOperation);
+        if (prep?.correctionPending) { await resumeCorrectionRun(prep.quizRunId); return; }
         applyInactivityTimeout(prep);
 
         if (prep?.pretestMode || prep?.gameModeType === 'pretest') {
@@ -1922,6 +1971,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       determineMaxQuestions,
       startActualQuiz,
       startOrResumeGameModeRun,
+      resumeCorrectionRun,
       syncConfigFromStorage,
       selectedOperation,
       showUiMessage,
@@ -3171,6 +3221,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         }
 
         if (out.resume) {
+          if (Number.isInteger(out.nextIndex)) setCurrentQuestionIndex(out.nextIndex);
           if (isGameMode) {
             // Keep game-mode paused here; App route effect resumes and rebases exactly once.
             setIsTimerPaused(true);
@@ -3383,6 +3434,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     startLevelEntry,
     startQuizWithDifficulty,
     startActualQuiz,
+    resumeCorrectionRun,
     handleAnswer,
     transientStreakMessage,
     streakPosition,

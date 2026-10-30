@@ -1,3 +1,4 @@
+import CorrectionTransition from './components/CorrectionTransition.jsx';
 import React, { useEffect, createContext, lazy, Suspense, useMemo, useRef } from 'react'; 
 import useMathGame from './hooks/useMathGame.jsx';
 import DailyStreakAnimation from './components/DailyStreakAnimation.jsx';
@@ -261,7 +262,7 @@ const App = () => {
   return (
     <MathGameContext.Provider value={providerValue}>
       {/* NEW: Use Suspense to show a fallback while waiting for code to load */}
-      <Suspense fallback={<InitialLoadingScreen />}>
+      <Suspense fallback={location.pathname === "/learning" || ctx.interventionQuestion ? <CorrectionTransition /> : <InitialLoadingScreen />}>
       <Routes>
         <Route path="/mode" element={<AssessmentSelection />} />
         <Route path="/test-selection" element={<AssessmentSelection tests />} />

@@ -37,6 +37,20 @@ try {
   let programState = { subject: 'add', status: 'ASSESSMENT_READY', level: 19, batch: 1,
     subjects: { add: { status: 'ASSESSMENT_READY', completedLevels: [1,2] } }, grandfatheredAccess: ['add'] };
   let holdNextAnswer = false, releaseAnswerResponse = null;
+  let correction = null;
+  const correctionMode = process.env.CORRECTION_MODE || "normal";
+  const correctionGame = ["lightning","surf","rocket","bonus"].includes(correctionMode);
+  const correctionFacts = [
+    {_id:'missed',operation:'sub',question:'4 - 2',correctAnswer:2,params:{a:4,b:2},choices:[1,2,3]},
+    {_id:'fallback1',operation:'add',question:'1 + 1',correctAnswer:2,params:{a:1,b:1},choices:[1,2,3]},
+    {_id:'fallback2',operation:'add',question:'2 + 2',correctAnswer:4,params:{a:2,b:2},choices:[3,4,5]},
+  ];
+  if (correctionMode === 'rocket') correctionFacts.forEach(q => {
+    const expression=q.question;
+    q.question=String(q.correctAnswer); q.correctAnswer=1; q.source='rocket';
+    q.textChoices=['9 + 9',expression,'8 + 8','7 + 7']; q.choices=[];
+  });
+  const correctionView = () => ({...correction, question:correctionFacts[correction.phase === 'practice' ? correction.position : correction.shown]});
   const starts = new Map();
   const attempts = new Map();
   const state = () => {
@@ -112,6 +126,35 @@ try {
       }
       response = state();
     }
+    if (process.env.CORRECTION_ONLY && path === '/user/progress') response = {sub:{L2:{unlocked:true,pretest:{taken:!correctionMode.startsWith('pretest')},white:{completed:true},yellow:{unlocked:true}}}};
+    if (correction && path === '/quiz/prepare') response={quizRunId:'correction-run',correctionPending:true,pretestMode:correctionMode.startsWith('pretest')};
+    if (path === '/quiz/pending-correction') response = {quizRunId:correction && correction.phase !== 'finished' ? 'correction-run' : null};
+    if (correction && path === '/quiz/start') response = {
+      quizRunId:'correction-run', resumed:true,currentIndex:0,operation:'sub',level:2,beltOrDegree:'yellow',
+      questions:correctionFacts, practice:correctionFacts[0], gameMode:correctionGame, pretestMode:correctionMode.startsWith('pretest'),
+      gameModeType:correctionMode,pretestTimeLimitMs:60000,pretestQuestionCount:3,timer:{remainingMs:60000},
+      targetCorrect:10,totalCorrect:0,surfQuizNumber:1,rocketQuizNumber:1,questionsPerQuiz:3,
+    };
+    if (path === '/quiz/correction-run/correction') {
+      if (request.method === 'POST' && body.revision === correction.revision) {
+        if (body.action === 'next') {correction.phase='practice';correction.position=0;correction.elapsedMs=0;}
+        else {
+          correction.elapsedMs += body.responseMs;
+          correction.shown=correction.position;
+          if (body.action === 'timeout' || correction.elapsedMs > correction.limitMs || (body.action === 'answer' && body.answer !== correctionFacts[correction.position].correctAnswer)) {
+            correction.phase='answer';correction.position=0;
+          } else if(body.action === 'answer' && ++correction.position === 3) correction.phase='passed';
+        }
+        correction.revision++;
+      }
+      response=correctionView();
+    }
+    if (correction && path === '/quiz/practice/answer') {
+      assert.equal(correction.phase,'passed'); correction.phase='finished';
+      response=correctionMode.endsWith('last') ? {completed:true,passed:false,sessionCorrectCount:0,summary:{totalActiveMs:1000}}
+        : {resume:true,next:correctionFacts[1],nextIndex:1,questions:correctionFacts,
+          surfQuizRestarted:correctionMode === 'surf',rocketQuizRestarted:correctionMode === 'rocket',bonusQuizRestarted:correctionMode === 'bonus'};
+    }
     if (path === '/admin/assessments') response = [{ id: 'test-1', student: 'Demo', pin: '77777', type: 'A', completedAt: new Date().toISOString(),
       correct: 2, count: 3, percent: 200/3, totalMs: 6000, answers: [{ problem: '1 + 2', answer: '3', correct: true, timeMs: 2000 }] }];
     await command('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [
@@ -150,6 +193,57 @@ try {
     await see('THIS TEST IS TIMED.');
   };
 
+  if (process.env.CORRECTION_ONLY) {
+    correction={id:'loop',revision:0,phase:'answer',position:0,shown:0,elapsedMs:0,limitMs:6000};
+    programState={...programState,subject:'sub',status:'LEARNING',level:2,subjects:{sub:{status:'LEARNING',completedLevels:[1]}},grandfatheredAccess:['sub']};
+    await command('Page.navigate',{url:`${origin}/name`});
+    await login(false); await click('LEARN');
+    const selectSavedCorrection = async () => {
+      await wait(() => evaluate('location.pathname === "/operations"'),'Operations remains visible');
+      await delay(300);
+      assert.equal(await evaluate('location.pathname'),'/operations','Do not auto-resume on Operations');
+      await wait(() => evaluate('!!document.querySelector("[data-operation=sub]")'),'Subtraction card');
+      await evaluate('document.querySelector("[data-operation=sub]").click()');
+      await click('Open Level 2');
+      if (!correctionMode.startsWith('pretest')) {
+        await wait(() => evaluate('location.pathname === "/belts"'),'Belt picker before resume');
+        await wait(() => evaluate(`Array.from(document.querySelectorAll('button')).some(b => b.textContent.includes('Yellow') && b.textContent.includes('Belt'))`),'Yellow Belt rendered');
+        await evaluate(`Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Yellow') && b.textContent.includes('Belt')).click()`);
+      }
+      await wait(() => evaluate('location.pathname === "/learning"'),'Resume after selection');
+    };
+    await selectSavedCorrection();
+    await see(correctionMode === 'rocket' ? '2 = 4 - 2' : '4 - 2 = 2');
+    await command('Emulation.setDeviceMetricsOverride',{width:320,height:568,deviceScaleFactor:1,mobile:true});
+    assert(await evaluate('document.documentElement.scrollWidth <= innerWidth'),'Correction fits phone width');
+    await click('Next'); await see('4 - 2');
+    if (correctionMode === 'rocket') {
+      assert(!(await evaluate("!!document.querySelector('input[aria-label]')")), 'Rocket uses expression choices, not keypad');
+      await click('9 + 9');
+    } else { await click('9'); await click('Submit'); }
+    await see(correctionMode === 'rocket' ? '2 = 4 - 2' : '4 - 2 = 2');
+    assert.equal(correction.position,0,'Wrong answer resets full round');
+    await click('Next');
+    if (correctionMode === 'rocket') await click('4 - 2');
+    else { await click('2'); await click('Submit'); }
+    await see('1 + 1');
+    // Leaving learning must keep the correction and its position.
+    await command('Page.navigate',{url:`${origin}/name`});
+    await login(false); await click('LEARN');
+    await selectSavedCorrection();
+    await see('1 + 1'); assert.equal(correction.position,1);
+    if (correctionMode === 'rocket') await click('1 + 1');
+    else { await click('2'); await click('Submit'); }
+    await see('2 + 2');
+    if (correctionMode === 'rocket') await click('2 + 2');
+    else { await click('4'); await click('Submit'); }
+    const expectedPath=correctionMode === 'pretest-last' ? '/pretest-result' : correctionMode === 'last' ? '/way-to-go' : correctionGame ? '/game-mode' : correctionMode === 'pretest' ? '/pretest' : '/quiz';
+    await wait(() => evaluate(`location.pathname === ${JSON.stringify(expectedPath)}`),'Return to '+expectedPath+' after correction');
+    assert.equal(calls.filter(c=>c.path === '/quiz/practice/answer').length,1);
+    assert.equal(calls.filter(c=>c.path === '/quiz/answer').length,0,'Correction answers do not use scoring endpoint');
+    assert.equal(exceptions.length,0,exceptions.join(', '));
+    console.log(correctionMode + ': PASS: correction answer/Next, wrong reset, three answers, saved resume, quiz handoff and no scoring calls (mock API).');
+  } else {
   if (process.env.TWO_FLOWS_ONLY) {
     programState = { ...programState, part: 2, partBatch: 1, batch: 11 };
     const unchangedProgram = JSON.stringify(programState);
@@ -312,7 +406,7 @@ try {
   await openTest(); await click('Start'); await question('1 + 2');
   assert.equal(serial, 2, 'Completed attempts allow a new attempt');
   assert(calls.some(c => c.path.startsWith('/user/usage/')), 'Global app usage continues');
-  assert(!calls.some(c => c.path.startsWith('/quiz/')), 'Tests must not call quiz endpoints');
+  assert(!calls.some(c => c.path.startsWith('/quiz/') && c.path !== '/quiz/pending-correction'), 'Assessments must not start, answer or advance learning quizzes');
   await click('⚙ Quit test'); await click('Save & return to subjects');
   await openSubject('b'); await click('Start'); await question('5 - 2');
   assert.equal(calls.filter(c => c.path === '/assessments/start').at(-1).body.type, 'B');
@@ -415,6 +509,7 @@ try {
     : process.env.REPORT_ONLY
     ? 'PASS: admin test history, collapsed summary, per-item details, filters and CSV export.'
     : 'PASS: responsive program screen, learning Level 20, assessment-ready, intervention, program completion, all four tests, retry, quit/resume, refresh/draft, usage continuity, admin report/filters/export.');
+  }
 } finally {
   socket?.close(); chrome.kill(); vite.kill();
   console.log(`Isolated browser profile: ${profile}`);

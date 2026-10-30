@@ -1,6 +1,9 @@
 // src/api/mathApi.js
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api';
+export const correctionState = (runId, pin) => callApi(`/quiz/${encodeURIComponent(runId)}/correction`, 'GET', null, pin);
+export const pendingCorrection = pin => callApi('/quiz/pending-correction', 'GET', null, pin);
+export const correctionAction = (runId, pin, body) => callApi(`/quiz/${encodeURIComponent(runId)}/correction`, 'POST', body, pin, { keepalive: true });
 export const programProgress = pin => callApi('/user/program', 'GET', null, pin);
 export const programReports = (pin, student = '') => callApi('/admin/assessments/progress?' + new URLSearchParams({ student }), 'GET', null, pin);
 
@@ -37,7 +40,7 @@ export const assessmentExport = async (pin, filters) => {
  * @param {object} [body] The request body object.
  * @param {string} [pin] The user's PIN for the x-pin header.
  */
-async function callApi(endpoint, method = 'GET', body = null, pin = null) {
+async function callApi(endpoint, method = 'GET', body = null, pin = null, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -47,6 +50,7 @@ async function callApi(endpoint, method = 'GET', body = null, pin = null) {
   }
 
   const config = {
+    ...options,
     method,
     headers,
     body: body ? JSON.stringify(body) : null,

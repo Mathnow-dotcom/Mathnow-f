@@ -46,6 +46,7 @@ const DEFAULT_NUMBERS = {
   bonusVideoIntervalCorrect: 5,
   bonusQuestionsPerBatch: 20,
   inactivityTimer: 60,
+  correctionTimer: 6,
   pretestInactivityTimer: 3,
   pretestQuestionCount: 20,
   pretestDefaultTimer: 50,
@@ -177,6 +178,7 @@ const mapConfigToValues = (config) => {
         ? resolved.bonusMode.questionsPerBatch
         : DEFAULT_NUMBERS.bonusQuestionsPerBatch
     ),
+    correctionTimer: String((resolved?.general?.correctionRoundLimitMs ?? 6000) / 1000),
     inactivityTimer: String(
       Number.isFinite(resolved?.general?.inactivityThresholdSeconds)
         ? resolved.general.inactivityThresholdSeconds
@@ -265,6 +267,7 @@ const buildConfigPayload = (values) => {
     bonusVideoIntervalCorrect,
     bonusQuestionsPerBatch,
     inactivityThresholdMs: inactivityTimer * 1000,
+    correctionRoundLimitMs: toInt(values.correctionTimer, DEFAULT_NUMBERS.correctionTimer) * 1000,
     pretestInactivityThresholdMs: pretestInactivityTimer * 1000,
     pretestQuestionCount,
     pretestMode: {
@@ -379,6 +382,7 @@ const AdminSettings = () => {
     bonusVideoIntervalCorrect: String(DEFAULT_NUMBERS.bonusVideoIntervalCorrect),
     bonusQuestionsPerBatch: String(DEFAULT_NUMBERS.bonusQuestionsPerBatch),
     inactivityTimer: String(DEFAULT_NUMBERS.inactivityTimer),
+    correctionTimer: String(DEFAULT_NUMBERS.correctionTimer),
     pretestInactivityTimer: String(DEFAULT_NUMBERS.pretestInactivityTimer),
     pretestQuestionCount: String(DEFAULT_NUMBERS.pretestQuestionCount),
     pretestDefaultTimer: String(DEFAULT_NUMBERS.pretestDefaultTimer),
@@ -402,6 +406,7 @@ const AdminSettings = () => {
     bonusVideoIntervalCorrect: String(DEFAULT_NUMBERS.bonusVideoIntervalCorrect),
     bonusQuestionsPerBatch: String(DEFAULT_NUMBERS.bonusQuestionsPerBatch),
     inactivityTimer: String(DEFAULT_NUMBERS.inactivityTimer),
+    correctionTimer: String(DEFAULT_NUMBERS.correctionTimer),
     pretestInactivityTimer: String(DEFAULT_NUMBERS.pretestInactivityTimer),
     pretestQuestionCount: String(DEFAULT_NUMBERS.pretestQuestionCount),
     pretestDefaultTimer: String(DEFAULT_NUMBERS.pretestDefaultTimer),
@@ -512,6 +517,7 @@ const AdminSettings = () => {
         'bonusVideoIntervalCorrect',
         'bonusQuestionsPerBatch',
         'inactivityTimer',
+        'correctionTimer',
         'pretestInactivityTimer',
         'pretestQuestionCount',
       ];
@@ -1137,6 +1143,10 @@ const AdminSettings = () => {
             title="Global"
           >
             <div className="grid grid-cols-1 gap-2.5">
+              <SettingField label="Correction loop: total time for 3 facts (sec)" icon={FaClock} iconClass="text-[#7dd3fc]">
+                <input type="number" min="1" max="300" step="1" className={inputClass}
+                  value={values.correctionTimer} onChange={handleChange('correctionTimer')} disabled={isBusy} />
+              </SettingField>
               <SettingField
                 label="Inactivity timer (sec)"
                 icon={FaClock}
