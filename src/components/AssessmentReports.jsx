@@ -77,30 +77,32 @@ export default function AssessmentReports() {
         <label>Student PIN<input value={filters.student} onChange={e => setFilters({ ...filters, student: e.target.value })} /></label>
         <label>Test<select value={filters.type} onChange={e => setFilters({ ...filters, type: e.target.value })}>
           <option value="">All tests</option><option value="A">Test A — Addition</option><option value="B">Test B — Subtraction</option><option value="C">Test C — Multiplication</option><option value="D">Test D — Division</option></select></label>
-        <label>From<input type="date" value={filters.from} onChange={e => setFilters({ ...filters, from: e.target.value })} /></label>
-        <label>To<input type="date" value={filters.to} onChange={e => setFilters({ ...filters, to: e.target.value })} /></label>
+        <label>From (started)<input type="date" value={filters.from} onChange={e => setFilters({ ...filters, from: e.target.value })} /></label>
+        <label>To (started)<input type="date" value={filters.to} onChange={e => setFilters({ ...filters, to: e.target.value })} /></label>
         <button disabled={busy}>Apply filters</button>
         <button type="button" disabled={exporting || busy} onClick={download}>{exporting ? 'Exporting…' : 'Export CSV'}</button>
       </form>
       {error && <p role="alert">{error}</p>}
       {busy ? <p role="status">Loading results…</p> : <div className="assessment-results">
-        {rows.length === 0 ? <p>No completed tests found.</p> : <table><thead><tr>
-          <th>Student</th><th>Test</th><th>Batch / attempt</th><th>Result</th><th>Completed</th><th>Accuracy</th><th>Total time</th>
+        {rows.length === 0 ? <p>No tests found.</p> : <table><thead><tr>
+          <th>Student</th><th>Test</th><th>Batch / attempt</th><th>Result</th><th>Status</th><th>Answered</th><th>Started</th><th>Completed / ended</th><th>Accuracy</th><th>Total time</th>
           <th>Average time per item</th><th title="Percentage of all test items answered correctly in less than 2 seconds">Correct under 2 seconds</th>
           <th title="Percentage of all test items answered correctly in less than 3 seconds">Correct under 3 seconds</th><th>Per-item detail</th>
         </tr></thead><tbody>{rows.map(row => <tr key={row.id}>
           <td>{row.student}<br /><small>#{row.pin}</small></td><td>{row.type}{row.part ? ` — Part ${row.part}` : ''}</td>
-          <td>{row.partBatch ?? row.batch ?? 'Legacy test'}</td><td>{row.passed == null ? '—' : row.passed ? 'Pass' : 'Fail'}</td>
-          <td>{new Date(row.completedAt).toLocaleString()}</td>
+          <td>{row.partBatch ?? row.batch ?? 'HIGH STAKES TEST'}</td><td>{row.passed == null ? '—' : row.passed ? 'Pass' : 'Fail'}</td>
+          <td>{row.status || 'Completed'}</td><td>{row.answered ?? row.answers.length} / {row.count}</td>
+          <td>{row.startedAt ? new Date(row.startedAt).toLocaleString() : '—'}</td>
+          <td>{row.completedAt || row.endedAt ? new Date(row.completedAt || row.endedAt).toLocaleString() : '—'}</td>
           <td>{row.percent.toFixed(1)}%</td><td>{duration(row.totalMs)}</td>
           <td>{Number.isFinite(row.averageTimeMs) ? `${(row.averageTimeMs / 1000).toFixed(2)} s` : '—'}</td>
           <td>{Number.isFinite(row.correctUnderTwoSecondsPercent) ? `${row.correctUnderTwoSecondsPercent.toFixed(1)}%` : '—'}</td>
           <td>{Number.isFinite(row.correctUnderThreeSecondsPercent) ? `${row.correctUnderThreeSecondsPercent.toFixed(1)}%` : '—'}</td>
           <td><details><summary>View {row.count} items</summary><table><thead><tr>
             <th>Problem</th><th>Answer</th><th>Result</th><th>Time</th><th title="Time the server accepted the answer, in your device timezone">Answered at</th>
-          </tr></thead><tbody>{row.answers.map((a, i) => <tr key={i}><td>{a.problem}</td><td>{a.answer}</td>
-            <td>{a.correct ? 'Correct' : 'Incorrect'}</td><td>{duration(a.timeMs)}</td>
-            <td>{a.answeredAt ? new Date(a.answeredAt).toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Not recorded'}</td></tr>)}</tbody></table></details></td>
+          </tr></thead><tbody>{(row.items || row.answers.map(a => a.problem)).map((problem, i) => { const a = row.answers[i]; return <tr key={i}><td>{problem}</td><td>{a?.answer ?? '—'}</td>
+            <td>{!a ? 'Not answered' : a.correct ? 'Correct' : 'Incorrect'}</td><td>{a ? duration(a.timeMs) : '—'}</td>
+            <td>{a?.answeredAt ? new Date(a.answeredAt).toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Not recorded'}</td></tr>; })}</tbody></table></details></td>
         </tr>)}</tbody></table>}
       </div>}
       <div className="assessment-toolbar mt-6">

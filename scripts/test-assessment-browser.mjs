@@ -66,6 +66,7 @@ try {
     const message = JSON.parse(event.data);
     if (message.id) {
       const promise = pending.get(message.id); pending.delete(message.id);
+      if (message.error?.message === 'Invalid InterceptionId.') { promise?.resolve({}); return; } // Navigation cancels intercepted requests.
       if (message.error) promise?.reject(new Error(JSON.stringify(message.error))); else promise?.resolve(message.result);
       return;
     }
@@ -106,7 +107,8 @@ try {
       const key = `${body.flow || 'learning'}:${body.type || 'A'}:${body.part || ''}`;
       active = attempts.get(key) || null;
       if (starts.has(body.beginKey)) active = starts.get(body.beginKey);
-      else if (!active || active.completed) {
+      else if (!active || active.completed || process.env.END_TEST_ONLY) {
+        if (active && !active.completed) active.abandoned=true;
         active = { id: `test-${++serial}`, type: body.type || 'A', flow: body.flow || 'learning', position: 0, count: 3, completed: false };
         if (active.flow === 'learning' && active.type === 'A' && programState.part) {
           active.part = programState.part; active.partBatch = programState.partBatch || 1;
@@ -117,8 +119,9 @@ try {
       }
       response = state();
     } else if (path.startsWith('/assessments/') && path !== '/assessments/current') {
-      active = [...attempts.values()].find(a => a.id === path.split('/').at(-1));
-      if (body.action === 'answer' && body.position === active.position && !active.completed) {
+      active = [...starts.values()].find(a => a.id === path.split('/').at(-1));
+      if (body.action === 'end' && !active.completed) active.abandoned=true;
+      if (body.action === 'answer' && body.position === active.position && !active.completed && !active.abandoned) {
         active.position++; active.completed = active.position === active.count;
         if (loseAnswerResponse) {
           loseAnswerResponse = false;
@@ -138,13 +141,20 @@ try {
     };
     if (path === '/quiz/correction-run/correction') {
       if (request.method === 'POST' && body.revision === correction.revision) {
-        if (body.action === 'next') {correction.phase='practice';correction.position=0;correction.elapsedMs=0;}
+        if (body.action === 'next') correction.phase='retry';
+        else if (correction.phase === 'retry') {
+          if (body.action === 'answer' && body.answer === correctionFacts[correction.shown].correctAnswer) {correction.phase='practice';correction.position=0;correction.elapsedMs=0;}
+          else if(body.action !== 'pause') correction.phase='answer';
+        }
         else {
           correction.elapsedMs += body.responseMs;
           correction.shown=correction.position;
-          if (body.action === 'timeout' || correction.elapsedMs > correction.limitMs || (body.action === 'answer' && body.answer !== correctionFacts[correction.position].correctAnswer)) {
+          if (body.action === 'timeout' || (body.action === 'answer' && body.answer !== correctionFacts[correction.position].correctAnswer)) {
             correction.phase='answer';correction.position=0;
-          } else if(body.action === 'answer' && ++correction.position === 3) correction.phase='passed';
+          } else if(body.action === 'answer' && ++correction.position === 3) {
+            if (correction.elapsedMs <= correction.limitMs) correction.phase='passed';
+            else {correction.position=0;correction.elapsedMs=0;}
+          }
         }
         correction.revision++;
       }
@@ -227,6 +237,10 @@ try {
     await click('Next');
     if (correctionMode === 'rocket') await click('4 - 2');
     else { await click('2'); await click('Submit'); }
+    await wait(() => correction.phase === 'practice', 'Correct same-fact practice starts round');
+    await delay(200);
+    if (correctionMode === 'rocket') await click('4 - 2');
+    else { await click('2'); await click('Submit'); }
     await see('1 + 1');
     // Leaving learning must keep the correction and its position.
     await command('Page.navigate',{url:`${origin}/name`});
@@ -245,6 +259,34 @@ try {
     assert.equal(exceptions.length,0,exceptions.join(', '));
     console.log(correctionMode + ': PASS: correction answer/Next, wrong reset, three answers, saved resume, quiz handoff and no scoring calls (mock API).');
   } else {
+  if (process.env.END_TEST_ONLY) {
+    await command('Page.navigate', {url:`${origin}/name`}); await login(false);
+    const originalProgram=JSON.stringify(programState);
+    for (const path of ['/legacy-test-a-part-1','/test-a']) {
+      await evaluate(`history.pushState({}, '', ${JSON.stringify(path)}); window.dispatchEvent(new PopStateEvent('popstate'));`);
+      await see('THIS TEST IS TIMED.');
+      assert(!(await text()).includes('PRESS START'));
+      await click('Start');await question('1 + 2');
+      const first=active;
+      await click('3');await click('Submit');await question('2 + 1');
+      await click('⚙ Quit test');await click('Keep going');await question('2 + 1');
+      await click('⚙ Quit test');await click('End test');
+      await wait(()=>first.abandoned,'End is persisted');
+      assert.equal(first.position,1);assert(!first.completed);
+      await evaluate(`history.pushState({}, '', ${JSON.stringify(path)}); window.dispatchEvent(new PopStateEvent('popstate'));`);await click('Start');await question('1 + 2');
+      const second=active;assert.notEqual(first.id,second.id);
+      await click('3');await click('Submit');await question('2 + 1');
+      await command('Page.reload');await see('Enter Your Name');await login(false);
+      await evaluate(`history.pushState({}, '', ${JSON.stringify(path)}); window.dispatchEvent(new PopStateEvent('popstate'));`);await see('THIS TEST IS TIMED.');
+      assert(!(await text()).includes('Resume test'));
+      await click('Start');await question('1 + 2');
+      assert.notEqual(active.id,second.id);assert.equal(active.position,0);
+      await click('3');await click('Submit');await question('2 + 1');
+      await click('3');await click('Submit');await question('1 + 1');
+      await click('2');await click('Submit');await see('Test complete');
+    }
+    assert.equal(JSON.stringify(programState),originalProgram);
+  }
   if (process.env.TWO_FLOWS_ONLY) {
     programState = { ...programState, part: 2, partBatch: 1, batch: 11 };
     const unchangedProgram = JSON.stringify(programState);
@@ -320,7 +362,7 @@ try {
     await click('2'); await click('Submit'); await see('Test complete');
     await wait(() => evaluate('location.pathname === "/operations" && !!document.querySelector("[data-operation=sub]")'), 'Subtraction after Part two');
   }
-  if (!process.env.REPORT_ONLY && !process.env.ADDITION_PARTS_ONLY && !process.env.TWO_FLOWS_ONLY) {
+  if (!process.env.END_TEST_ONLY && !process.env.REPORT_ONLY && !process.env.ADDITION_PARTS_ONLY && !process.env.TWO_FLOWS_ONLY) {
   await command('Page.navigate', { url: `${origin}/name` });
   await login();
   for (const [width, height] of [[320,568], [390,844], [844,390], [768,1024], [1440,900]]) {
@@ -503,7 +545,7 @@ try {
   await click('Export CSV');
   await wait(() => calls.some(c => c.path === '/admin/assessments/export' && c.query.includes('student=77777')), 'Filtered CSV export');
   assert.equal(exceptions.length, 0, `Browser exceptions: ${exceptions.join(', ')}`);
-  console.log(process.env.TWO_FLOWS_ONLY
+  console.log(process.env.END_TEST_ONLY ? 'PASS: end/keep-going, fresh start after quit and reload in both flows, completion, admin filters/export (mock API).' : process.env.TWO_FLOWS_ONLY
     ? 'PASS: responsive mode/test selection, both Addition parts and all other independent tests, separate learning/legacy attempts and resume, legacy completion, report filters/export (mock API).'
     : process.env.ADDITION_PARTS_ONLY
     ? 'PASS: Addition part labels, independent attempts, quit/resume, next-subject navigation, admin report/filters/export (mock API).'

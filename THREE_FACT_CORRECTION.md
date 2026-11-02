@@ -2,9 +2,9 @@
 
 ## Student flow
 
-A wrong answer or the existing inactivity/slow-answer trigger in a learning quiz opens the correct-answer screen. **Next** starts a randomized round of three facts. All three must be answered correctly without help within the configured **total** active response time (default 6 seconds, inclusive).
+A wrong answer or the existing inactivity/slow-answer trigger in a learning quiz opens the correct-answer screen. **Next** opens practice of that same fact (`retry` phase). Only a correct response starts a randomized round of three facts; this assisted practice is not counted in the round time. All three must be answered correctly without help within the configured **total** active response time (default 6 seconds, inclusive).
 
-An incorrect answer or expired round shows the correct answer for that item. **Next** reshuffles the same three facts and restarts the entire round. Successful practice returns to the existing quiz/game continuation, or its existing result screen when the missed item was last. Correction answers do not add score.
+An incorrect answer or per-item inactivity shows the correct answer for that item, followed by Next and same-fact practice. A correct practice answer reshuffles the same three facts and restarts the entire round. The round time limit never interrupts an item: after three correct answers, an over-limit round automatically reshuffles and repeats. Per-item inactivity uses the existing quiz/pretest inactivity setting, independently of the round limit. Successful practice returns to the existing quiz/game continuation, or its existing result screen when the missed item was last. Correction answers do not add score.
 
 Applies to pretests, colored belts, black belt degrees, Lightning, Surf, Rocket, Bonus and the existing Fractions learning quizzes. Initial pre-quiz teaching and independent/batch assessments are unchanged.
 

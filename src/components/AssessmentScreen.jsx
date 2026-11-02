@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MathGameContext } from '../App.jsx';
-import { assessmentCurrent, assessmentStart, assessmentUpdate, programProgress } from '../api/mathApi.js';
+import { assessmentStart, assessmentUpdate, programProgress } from '../api/mathApi.js';
 import SessionTimer from './ui/SessionTimer.jsx';
 import '../styles/Assessment.css';
 
@@ -28,7 +28,8 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
   const locked = useRef(false);
   const queue = useRef(Promise.resolve());
   const pin = ctx.childPin;
-  const beginKey = `math-assessment-begin-${pin}-${testType}-${flow}${part ? `-part-${part}` : ''}`;
+  const beginKey = useRef(crypto.randomUUID());
+  const ended = useRef(false);
   const draftKey = (a) => `math-assessment-draft-${pin}-${a.id}-${a.position}`;
 
   const apply = (a) => {
@@ -36,9 +37,9 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
     current.current = a;
     setAttempt(a);
     setAnswer(a && !a.completed ? sessionStorage.getItem(draftKey(a)) || '' : '');
-    if (a?.completed) localStorage.removeItem(beginKey);
+    if (a?.abandoned) { ended.current = true; setRunning(false); setError("This test has ended. Start a new test."); beginKey.current = crypto.randomUUID(); }
   };
-  // Serialize heartbeat/pause/answer traffic so a delayed response cannot replace a newer question.
+  // Serialize heartbeat/end/answer traffic so a delayed response cannot replace a newer question.
   const enqueue = (work) => {
     const next = queue.current.catch(() => {}).then(work);
     queue.current = next;
@@ -46,9 +47,9 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
   };
   const update = (action, value) => enqueue(async () => {
     const a = current.current;
-    if (!a || a.completed) return;
+    if (!a || a.completed || a.abandoned) return;
     const next = await assessmentUpdate(pin, a.id, { session: session.current, position: a.position, action, answer: value });
-    if (action === 'answer') {
+    if (action === 'answer' || next.abandoned) {
       sessionStorage.removeItem(draftKey(a));
       apply(next);
     }
@@ -62,31 +63,34 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
     if (testType === 'A' && !legacy) programProgress(pin).then(p => {
       if (!cancelled && p.subject === 'add') setAdditionPart(p.part || null);
     }).catch(() => {}); // Label only; eligibility remains enforced by Start.
-    assessmentCurrent(pin, testType, flow, part).then(({ attempt: a }) => {
-      if (!cancelled) { apply(a); setLoaded(true); }
-    }).catch(() => { if (!cancelled) { setError('Could not load your test. Please try again.'); setLoaded(true); } });
+    setLoaded(true);
     return () => { cancelled = true; alive.current = false; };
   }, [pin, ctx.isLoggedIn, testType, flow, part]);
 
+  // Send immediately on navigation/unload; do not wait for queued heartbeats.
+  const endOnExit = () => {
+    const a = current.current;
+    if (!a || a.completed || a.abandoned || ended.current) return;
+    ended.current = true;
+    assessmentUpdate(pin, a.id, { session: session.current, position:a.position, action:'end' }).catch(() => {});
+  };
+  useEffect(() => {
+    const hide = () => { endOnExit(); };
+    const restore = event => { if (event.persisted) window.location.reload(); };
+    window.addEventListener('pagehide', hide);
+    window.addEventListener('pageshow', restore);
+    return () => {
+      window.removeEventListener('pagehide', hide);
+      window.removeEventListener('pageshow', restore);
+      endOnExit();
+    };
+  }, [pin]);
   useEffect(() => {
     if (!running || attempt?.completed) return;
-    const fail = (e) => { if (alive.current) setError(e.message); };
-    const checkpoint = () => {
-      if (!document.hidden) update('heartbeat').catch(fail);
-    };
-    const visibility = () => {
-      update(document.hidden ? 'pause' : 'heartbeat').catch(fail);
-    };
-    const pagehide = () => { update('pause').catch(() => {}); };
-    const interval = window.setInterval(checkpoint, 5000);
-    document.addEventListener('visibilitychange', visibility);
-    window.addEventListener('pagehide', pagehide);
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', visibility);
-      window.removeEventListener('pagehide', pagehide);
-      update('pause').catch(() => {});
-    };
+    const interval = window.setInterval(() => {
+      if (!document.hidden && !ended.current) update('heartbeat').catch(e => { if (alive.current) setError(e.message); });
+    }, 5000);
+    return () => clearInterval(interval);
   }, [running, attempt?.completed, pin]);
 
   useEffect(() => {
@@ -95,7 +99,7 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
     return () => clearTimeout(timeout);
   }, [attempt?.completed, running, navigate, returnPath]);
 
-  // Browser Back also leaves a persisted, resumable test rather than exposing previous items.
+  // Navigation leaves the attempt ended rather than resumable.
   useEffect(() => {
     if (!['/test-a', '/test-b', '/test-c', '/test-d', '/legacy-test-a', '/legacy-test-a-part-1', '/legacy-test-a-part-2', '/legacy-test-b', '/legacy-test-c', '/legacy-test-d'].includes(pathname) && running) {
       setRunning(false);
@@ -106,11 +110,15 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
   const begin = async () => {
     if (locked.current) return;
     locked.current = true; setBusy(true); setError('');
-    let key = localStorage.getItem(beginKey);
-    if (!key) { key = crypto.randomUUID(); localStorage.setItem(beginKey, key); }
+    const key = beginKey.current;
+    ended.current = false;
     try {
       const a = await enqueue(() => assessmentStart(pin, key, session.current, testType, flow, part));
-      apply(a); setRunning(true);
+      if (!alive.current || ended.current) {
+        await assessmentUpdate(pin, a.id, {session:session.current, position:a.position, action:'end'});
+        return;
+      }
+      apply(a); if (!a.abandoned) setRunning(true);
     } catch (e) { setError(e.message); }
     finally { locked.current = false; setBusy(false); }
   };
@@ -142,8 +150,8 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
   const leave = async () => {
     if (locked.current) return;
     locked.current = true; setBusy(true);
-    try { await update('pause'); }
-    catch { setError('Could not sync the latest timing. Your test will resume from the last saved answer.'); }
+    try { await update('end'); ended.current = true; }
+    catch { endOnExit(); }
     finally {
       locked.current = false; setBusy(false); setRunning(false); setQuit(false); navigate(legacy ? '/mode' : returnPath);
     }
@@ -164,14 +172,9 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
         </> : !running ? <>
           <span className="assessment-card-symbol" aria-hidden="true">{{ A: '＋', B: '−', C: '×', D: '÷' }[testType]}</span>
           <h1>{{ A: 'Addition', B: 'Subtraction', C: 'Multiplication', D: 'Division' }[testType]}{testType === 'A' && (attempt ? attempt.part : additionPart) ? ` — Part ${attempt ? attempt.part : additionPart}` : ''}</h1>
-          <p>{attempt
-            ? 'THIS TEST IS TIMED. PRESS RESUME TEST WHEN YOU ARE READY TO CONTINUE.'
-            : 'THIS TEST IS TIMED. PRESS START WHEN YOU ARE READY TO BEGIN THE TEST.'}</p>
-          {attempt && <div className="assessment-progress-badge">
-            <strong>{attempt.position} / {attempt.count}</strong><span>answered</span>
-          </div>}
+          <p>THIS TEST IS TIMED.</p>
           <div className="assessment-card-actions">
-          <button disabled={busy || !loaded} onClick={begin}>{busy ? 'Loading…' : attempt ? 'Resume test' : 'Start'}</button>
+          <button disabled={busy || !loaded} onClick={begin}>{busy ? 'Loading…' : 'Start'}</button>
           <button className="assessment-secondary" disabled={busy} onClick={() => navigate(returnPath)}>Back</button>
           </div>
         </> : <>
@@ -189,15 +192,13 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
             </div>
           </form>
         </>}
-        {error && <div role="alert" className="assessment-error">{error}
-          {running && !complete && <button disabled={busy} onClick={begin}>Resume here</button>}
-        </div>}
+        {error && <div role="alert" className="assessment-error">{error}</div>}
       </section>
       {quit && <div className="assessment-modal" role="dialog" aria-modal="true" aria-label="Quit test">
         <section className="assessment-card assessment-quit-card">
           <span className="assessment-card-symbol" aria-hidden="true">Ⅱ</span>
           <div className="assessment-card-actions">
-          <button disabled={busy} onClick={leave}>{legacy ? 'Save & return to mode' : 'Save & return to subjects'}</button>
+          <button disabled={busy} onClick={leave}>End test</button>
           <button className="assessment-secondary" disabled={busy} onClick={() => setQuit(false)}>Keep going</button>
           </div>
           {error && <p role="alert">{error}</p>}

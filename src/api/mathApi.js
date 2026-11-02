@@ -19,7 +19,7 @@ export const assessmentUpdate = async (pin, id, body) => {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'x-pin': pin },
       body: JSON.stringify(body), keepalive: true, signal: controller.signal,
     });
-    if (!response.ok) throw new Error('Unable to save the test. Please retry, or resume if it was opened in another tab.');
+    if (!response.ok) throw new Error('Unable to save the test. Please retry.');
     return await response.json();
   } finally { clearTimeout(timeout); }
 };

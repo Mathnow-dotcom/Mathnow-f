@@ -37,13 +37,14 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
     return () => { cancelled=true; live.current=false; };
   }, [runId,pin]);
   useEffect(() => {
-    if (!state || state.phase !== 'practice' || busy || error) return;
+    if (!state || !['practice','retry'].includes(state.phase) || busy || error) return;
     if (paused || document.hidden) {
       if (started.current != null) send('pause');
       return;
     }
     started.current = performance.now();
-    const timeout = setTimeout(() => send('timeout'), Math.max(1,state.limitMs-state.elapsedMs+1));
+    // Inactivity is per item; the round budget is evaluated by the server only after all three answers.
+    const timeout = state.inactivityMs > 0 ? setTimeout(() => send('timeout'), state.inactivityMs) : null;
     const pause = () => { if (document.hidden) send('pause'); };
     const resume = () => {
       if (!document.hidden && !lock.current) setState(s => s ? {...s} : s);
@@ -88,7 +89,7 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
         <div className="font-bold text-green-600 mb-6 text-center text-[clamp(2rem,8vw,5rem)]">{q.question.replace(/\s*=\s*\?\s*$/, '')} = {displayAnswer}</div>
         <div className="text-center"><button disabled={busy || paused || !!error} onClick={() => send('next')}
           className="bg-green-600 text-white font-bold py-2 px-8 rounded-xl shadow-lg disabled:cursor-default">Next</button></div>
-      </> : state.phase === 'practice' && reverse ? <>
+      </> : ['practice','retry'].includes(state.phase) && reverse ? <>
         <div className="text-5xl font-extrabold text-green-600 text-center mb-6">{q.question}</div>
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {state.question.textChoices.map((expression, index) => <button key={index} type="button"
@@ -98,7 +99,7 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
             {expression.replace(/\s*=\s*\?\s*$/, '')}
           </button>)}
         </div>
-      </> : state.phase === 'practice' ? <form onSubmit={submit}>
+      </> : ['practice','retry'].includes(state.phase) ? <form onSubmit={submit}>
         <div className="text-5xl font-extrabold text-green-600 text-center mb-6">{q.question}</div>
         <input aria-label="Correction answer" inputMode="none" autoComplete="off" value={input}
           onChange={e => setInput(e.target.value.replace(Number.isFinite(q.answerScale) ? /[^0-9.]/g : /[^0-9]/g,'').slice(0,10))}
