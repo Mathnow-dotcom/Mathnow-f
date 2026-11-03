@@ -22,3 +22,8 @@ Deploy backend and frontend together. Startup replaces old active/batch uniquene
 
 ## Verification
 Backend Gradle tests; frontend Vite build; `END_TEST_ONLY=1 node scripts/test-assessment-browser.mjs` for mocked-browser quit, refresh, fresh start, completion and report controls.
+
+## High-stakes daily allowance
+High-stakes Start is limited to one attempt per student, test type and Addition part per America/Los_Angeles calendar day. Started, completed and ended unfinished attempts all consume the allowance. The next allowance begins at Los Angeles midnight (including daylight-saving changes). Learning assessments are exempt.
+
+The backend checks historical startedAt values as well as enforcing a unique user/type/part/highStakesDay index for new attempts, preventing concurrent starts from creating duplicate daily attempts. Retrying the same beginKey and session remains idempotent. A second attempt receives HTTP 409 with an explanation to try tomorrow, displayed by the existing test screen error UI. No historical results are rewritten.
