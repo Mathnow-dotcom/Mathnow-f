@@ -1,3 +1,4 @@
+import '../styles/LearningKeypad.css';
 import CorrectionTransition from './CorrectionTransition.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 import { correctionAction, correctionState, mapQuestionToFrontend } from '../api/mathApi.js';
@@ -84,7 +85,7 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
   if (!q || ['passed','finished'].includes(state?.phase))
     return <CorrectionTransition error={error} onRetry={retry} busy={busy} />;
   return <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto p-4" style={{background:"#082338 url('/night_sky_landscape.jpg') center / cover"}}>
-    <section className={`bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 rounded-3xl shadow-2xl my-auto shrink-0 p-6 sm:p-8 w-full ${shown ? 'max-w-2xl' : 'max-w-md'}`}>
+    <section className={`learning-keypad-card ${['practice','retry'].includes(state.phase) && !reverse ? 'bg-[#d3d3d3]' : 'bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100'} rounded-3xl shadow-2xl my-auto shrink-0 p-6 sm:p-8 w-full ${shown ? 'max-w-2xl' : 'max-w-md'}`}>
       {shown ? <>
         <div className="font-bold text-green-600 mb-6 text-center text-[clamp(2rem,8vw,5rem)]">{q.question.replace(/\s*=\s*\?\s*$/, '')} = {displayAnswer}</div>
         <div className="text-center"><button disabled={busy || paused || !!error} onClick={() => send('next')}
@@ -105,12 +106,12 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
           onChange={e => setInput(e.target.value.replace(Number.isFinite(q.answerScale) ? /[^0-9.]/g : /[^0-9]/g,'').slice(0,10))}
           disabled={busy || paused || !!error} placeholder="Type answer"
           className="w-full h-24 bg-white rounded-2xl border-4 border-green-300 text-center text-4xl font-bold mb-5 text-gray-800" />
-        <div className="grid grid-cols-3 gap-3">
+        <div className={`learning-keypad ${Number.isFinite(q.answerScale) ? 'learning-keypad--decimal' : ''}`}>
           {[1,2,3,4,5,6,7,8,9,'Clear',0,...(Number.isFinite(q.answerScale) ? ['.'] : [])].map(n =>
             <button key={n} type="button" disabled={busy || paused || !!error}
               onClick={() => setInput(v => n === 'Clear' ? '' : n === '.' && v.includes('.') ? v : (v+n).slice(0,10))}
               className="bg-gray-100 text-gray-800 font-bold text-2xl py-2 rounded-xl shadow-md disabled:cursor-default">{n}</button>)}
-          <button disabled={busy || paused || !input || !!error} className={`font-bold py-2 rounded-xl shadow-md disabled:cursor-default ${input ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-800'}`}>Submit</button>
+          <button disabled={busy || paused || !input || !!error} className={`learning-keypad-submit font-bold py-2 rounded-xl shadow-md disabled:cursor-default ${input ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-800'}`}>Submit</button>
         </div>
       </form> : null}
       {error && <div role="alert" className="text-red-700 mt-4">{error} <button onClick={retry} disabled={busy}>Retry</button></div>}

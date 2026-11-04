@@ -1,3 +1,4 @@
+import '../styles/LearningKeypad.css';
 // ranjannkumar/math-facts/math-facts-53836cb507e63890a9c757d863525a6cb3341e86/src/components/LearningModule.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { mapQuestionToFrontend } from '../api/mathApi.js';
@@ -783,7 +784,7 @@ useEffect(() => {
             </div>
 
             <div
-              className="grid gap-3 w-full max-w-sm mx-auto grid-cols-3"
+              className={`learning-keypad ${Number.isFinite(practiceQ?.answerScale) ? 'learning-keypad--decimal' : ''}`}
             >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
                 <button
@@ -822,7 +823,7 @@ useEffect(() => {
                 onClick={handleSubmitTypedAnswer}
                 disabled={isSubmitting || typedInput === ''}
                 className={`bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition col-span-1 ${
-                  Number.isFinite(practiceQ?.answerScale) ? 'col-start-2' : ''
+                  'learning-keypad-submit'
                 }`}
               >
                 Submit
@@ -902,7 +903,7 @@ useEffect(() => {
       />
       {/* Modal/Popup Container */}
       <div
-        className={`bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 rounded-2xl sm:rounded-3xl shadow-2xl border border-blue-200/30 popup-zoom-in ${
+        className={`learning-keypad-card bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 rounded-2xl sm:rounded-3xl shadow-2xl border border-blue-200/30 popup-zoom-in ${
           isFactView
             ? 'p-6 sm:p-8 lg:p-10 w-[min(92vw,44rem)]'
             : 'p-6 sm:p-8 max-w-sm sm:max-w-md w-full mx-2 sm:mx-4'

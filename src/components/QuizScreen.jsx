@@ -1,3 +1,4 @@
+import '../styles/LearningKeypad.css';
 // src/components/QuizScreen.jsx
 import React, { useRef, useEffect, useState } from 'react';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
@@ -227,7 +228,7 @@ const QuizScreen = () => {
           <div
             className={
               useBlackStyle
-                ? 'bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl max-w-sm sm:max-w-md w-full mx-auto border border-blue-200/30 min-h-[200px] sm:min-h-[300px] md:min-h-[400px] flex flex-col justify-center'
+                ? 'learning-keypad-card bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl max-w-sm sm:max-w-md w-full mx-auto border border-blue-200/30 min-h-[200px] sm:min-h-[300px] md:min-h-[400px] flex flex-col justify-center'
                 : 'bg-white backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 border-2 border-gray-200 min-h-[200px] sm:min-h-[300px] md:min-h-[400px] flex flex-col justify-center'
             }
           >
@@ -286,7 +287,7 @@ const QuizScreen = () => {
                   </div>
                 </div>
 
-                <div className="grid gap-3 w-full max-w-sm grid-cols-3">
+                <div className={`learning-keypad ${Number.isFinite(currentQuestion?.answerScale) ? 'learning-keypad--decimal' : ''}`}>
                   {[1,2,3,4,5,6,7,8,9].map((n) => (
                     <button
                       key={n}
@@ -331,7 +332,7 @@ const QuizScreen = () => {
                       typedInput === ''
                     }
                     className={`bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition ${
-                      Number.isFinite(currentQuestion?.answerScale) ? 'col-start-2' : ''
+                      'learning-keypad-submit'
                     }`}
                   >
                     Submit

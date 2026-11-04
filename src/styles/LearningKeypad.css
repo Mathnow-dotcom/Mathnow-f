@@ -1,0 +1,67 @@
+/* Shared layout for learning, pretest, Surf and correction keypads. */
+.learning-keypad {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(8px, 1.4vw, 16px);
+  width: 100%;
+  margin-inline: auto;
+}
+.learning-keypad > button {
+  grid-column: span 2;
+  justify-self: center;
+  width: 84%;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: clamp(8px, 1.2vw, 14px) 4px;
+  font-size: clamp(20px, 2.2vw, 32px);
+  line-height: 1.2;
+  border-radius: clamp(12px, 1.8vw, 20px);
+}
+.learning-keypad > button:nth-child(10),
+.learning-keypad > button:nth-child(11) {
+  grid-column: span 3;
+}
+.learning-keypad--decimal > button:nth-child(10),
+.learning-keypad--decimal > button:nth-child(11) {
+  grid-column: span 2;
+}
+.learning-keypad > button.learning-keypad-submit {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 64px;
+  padding: clamp(16px, 2.2vw, 28px) 12px;
+  font-size: clamp(30px, 3.6vw, 48px);
+  border-radius: clamp(16px, 2.4vw, 28px);
+  margin-top: 8px;
+}
+
+/* Grow only cards that contain a keypad; reverse-choice layouts stay unchanged. */
+.learning-keypad-card div:has(> .learning-keypad),
+.learning-keypad-card div:has(> div > .learning-keypad) {
+  max-width: 100%;
+}
+.learning-keypad-card:has(.learning-keypad) {
+  width: min(100%, 36rem);
+  max-width: 36rem;
+}
+@media (max-height: 650px) {
+  .learning-keypad { gap: 8px; }
+  .learning-keypad > button { padding-block: 6px; font-size: 20px; }
+  .learning-keypad > button.learning-keypad-submit { min-height: 56px; padding-block: 10px; font-size: 30px; margin-top: 4px; }
+}
+
+@media (max-width: 380px) {
+  .learning-keypad > button { width: 92%; }
+  .learning-keypad > button.learning-keypad-submit { width: 100%; }
+}
+
+.learning-keypad-card:has(.learning-keypad) {
+  padding: clamp(16px, 3vw, 32px);
+}
+.learning-keypad-card:has(.learning-keypad) input,
+.learning-keypad-card:has(.learning-keypad) .h-24 {
+  min-width: 0;
+  height: clamp(64px, 12vw, 96px);
+  font-size: clamp(24px, 4vw, 36px);
+}

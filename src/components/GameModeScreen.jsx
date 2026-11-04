@@ -1,3 +1,4 @@
+import '../styles/LearningKeypad.css';
 import React, { useRef, useEffect, useState } from 'react';
 import { FaCog } from "react-icons/fa";
 import SettingsModal from "./SettingsModal.jsx";
@@ -201,7 +202,7 @@ const GameModeScreen = () => {
   const shellClassName =
     'relative overflow-hidden rounded-[32px] border border-[#bfe2ff]/18 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.96),_rgba(231,243,255,0.94)_40%,_rgba(215,233,255,0.92)_100%)] shadow-[0_26px_56px_rgba(4,12,20,0.34),inset_0_1px_0_rgba(255,255,255,0.9)] w-full mx-auto p-4 sm:p-6 md:p-7 min-h-[220px] sm:min-h-[320px] md:min-h-[410px] flex flex-col justify-center';
   const surfShellClassName =
-    'relative overflow-hidden bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 rounded-2xl sm:rounded-3xl shadow-2xl border border-blue-200/30 w-full mx-auto p-6 sm:p-8 min-h-[200px] sm:min-h-[300px] md:min-h-[400px] flex flex-col justify-center';
+    'learning-keypad-card relative overflow-hidden bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 rounded-2xl sm:rounded-3xl shadow-2xl border border-blue-200/30 w-full mx-auto p-6 sm:p-8 min-h-[200px] sm:min-h-[300px] md:min-h-[400px] flex flex-col justify-center';
   const answerCardClassName =
     'w-full rounded-[22px] border border-[#c9def7] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(226,237,250,0.92))] shadow-[0_12px_22px_rgba(31,67,117,0.14),inset_0_1px_0_rgba(255,255,255,0.88)]';
   const surfKeypadButtonClassName =
@@ -328,7 +329,7 @@ const GameModeScreen = () => {
 
         <div
           className={`w-full mx-auto px-1 sm:px-2 md:px-4 ${
-            isSurfMode ? 'max-w-sm sm:max-w-md' : 'max-w-lg sm:max-w-xl'
+            isSurfMode ? 'max-w-lg sm:max-w-xl' : 'max-w-lg sm:max-w-xl'
           }`}
         >
           <div className={isSurfMode ? surfShellClassName : shellClassName}>
@@ -383,7 +384,7 @@ const GameModeScreen = () => {
                   {typedInput === '' ? <span className="text-gray-400">Type answer</span> : typedInput}
                 </div>
 
-                <div className="grid gap-3 w-full max-w-sm mx-auto grid-cols-3">
+                <div className={`learning-keypad ${Number.isFinite(currentQuestion?.answerScale) ? 'learning-keypad--decimal' : ''}`}>
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
                     <button
                       key={n}
@@ -421,7 +422,7 @@ const GameModeScreen = () => {
                     onClick={handleSubmitTyped}
                     disabled={isAnimating || isTimerPaused || isAnswerSubmitted || typedInput === ''}
                     className={`bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition col-span-1 disabled:opacity-55 disabled:cursor-default ${
-                      Number.isFinite(currentQuestion?.answerScale) ? 'col-start-2' : ''
+                      'learning-keypad-submit'
                     }`}
                   >
                     Submit
