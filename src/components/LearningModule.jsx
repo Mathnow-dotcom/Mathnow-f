@@ -430,7 +430,7 @@ useEffect(() => {
       const raw = String(digit);
       if (raw === '.') {
         if (!Number.isFinite(practiceQ?.answerScale) || prev.includes('.')) return prev;
-        return prev === '' ? '0.' : `${prev}.`;
+        return prev === '' || prev === '0' ? '.' : `${prev}.`;
       }
       const digitCount = prev.replace('.', '').length;
       if (digitCount >= (Number.isFinite(practiceQ?.answerScale) ? 4 : 4)) return prev;
@@ -459,7 +459,7 @@ useEffect(() => {
 
     const displayedCorrectAnswer = practiceQ?.answerLabels?.[practiceQ?.correctAnswer];
     const answerToSubmit = correctionPassed ? practiceQ.correctAnswer :
-      Number.isFinite(practiceQ?.answerScale) && String(answerNumber) === String(displayedCorrectAnswer)
+      Number.isFinite(practiceQ?.answerScale) && answerNumber === Number(displayedCorrectAnswer)
         ? practiceQ.correctAnswer
         : Number.isFinite(practiceQ?.answerScale)
           ? Math.round(answerNumber * practiceQ.answerScale)

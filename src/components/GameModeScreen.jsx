@@ -112,7 +112,7 @@ const GameModeScreen = () => {
       const raw = String(digit);
       if (raw === '.') {
         if (!Number.isFinite(currentQuestion?.answerScale) || prev.includes('.')) return prev;
-        return prev === '' ? '0.' : `${prev}.`;
+        return prev === '' || prev === '0' ? '.' : `${prev}.`;
       }
       if (prev.replace('.', '').length >= (Number.isFinite(currentQuestion?.answerScale) ? 4 : 4)) return prev;
       return `${prev}${raw}`;
@@ -133,7 +133,7 @@ const GameModeScreen = () => {
 
     const displayedCorrectAnswer = currentQuestion?.answerLabels?.[currentQuestion?.correctAnswer];
     const submittedAnswer =
-      Number.isFinite(currentQuestion?.answerScale) && String(numericAnswer) === String(displayedCorrectAnswer)
+      Number.isFinite(currentQuestion?.answerScale) && numericAnswer === Number(displayedCorrectAnswer)
         ? currentQuestion.correctAnswer
         : Number.isFinite(currentQuestion?.answerScale)
           ? Math.round(numericAnswer * currentQuestion.answerScale)

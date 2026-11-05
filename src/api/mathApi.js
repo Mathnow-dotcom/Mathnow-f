@@ -247,11 +247,13 @@ export function mapQuestionToFrontend(backendQuestion) {
   // Fraction answers are stored as thousandths for integer-safe API scoring.
   // Keep that implementation detail out of every learner-facing game-mode UI,
   // including older in-progress questions created before answer labels existed.
+  const withoutFractionLeadingZero = (displayValue) =>
+    String(displayValue ?? '').replace(/(^|[^\d])0\.(\d+)/g, '$1.$2');
   const formatFractionAnswer = (scaledAnswer) => {
     const value = Number(scaledAnswer);
     if (!Number.isFinite(value)) return String(scaledAnswer ?? '');
-    if (value === 333) return '0.33';
-    return String(value / 1000);
+    if (value === 333) return '.33';
+    return withoutFractionLeadingZero(value / 1000);
   };
   const displayedTextChoices =
     operation === 'frac'
@@ -299,6 +301,7 @@ export function mapQuestionToFrontend(backendQuestion) {
     if (isRocketQuestion && Number.isFinite(a) && Number.isFinite(b)) {
       questionString = formatFractionAnswer(Math.round((a * 1000) / b));
     }
+    questionString = withoutFractionLeadingZero(questionString);
   }
 
   // 2) Correct answer
@@ -373,7 +376,12 @@ export function mapQuestionToFrontend(backendQuestion) {
         : null;
   const fractionAnswerLabels =
     operation === 'frac'
-      ? (backendQuestion.answerLabels || Object.fromEntries(answers.map((answer) => [answer, formatFractionAnswer(answer)])))
+      ? Object.fromEntries(
+          Object.entries(
+            backendQuestion.answerLabels ||
+              Object.fromEntries(answers.map((answer) => [answer, formatFractionAnswer(answer)]))
+          ).map(([answer, label]) => [answer, withoutFractionLeadingZero(label)])
+        )
       : null;
 
   return {

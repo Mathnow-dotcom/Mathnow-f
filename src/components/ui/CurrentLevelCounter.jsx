@@ -10,7 +10,7 @@ const OP_LABEL = {
   sub: 'Subtraction',
   mul: 'Multiplication',
   div: 'Division',
-  frac: 'Fractions',
+  frac: 'Fraction To Decimal',
 };
 
 const parseLevelsFromNode = (node = {}) =>
@@ -31,7 +31,7 @@ const readCachedLevelLabel = (pin) => {
   const safePin = String(pin || '').trim();
   if (!safePin) return '--';
   const cached = localStorage.getItem(`${LEVEL_CACHE_PREFIX}${safePin}`);
-  return cached && cached.trim() ? cached : '--';
+  return cached && cached.trim() ? cached.replace(/^Fractions\b/, 'Fraction To Decimal') : '--';
 };
 
 const writeCachedLevelLabel = (pin, label) => {

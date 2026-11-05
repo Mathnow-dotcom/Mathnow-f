@@ -193,7 +193,7 @@ const OperationPicker = () => {
                   {OPERATION_UI[operation]?.symbol || '?'}
                 </div>
                 <div
-                  className={`${labelSizeClass} leading-tight font-black tracking-wide text-center ${OPERATION_UI[operation]?.textClass || 'text-white'}`}
+                  className={`${operation === 'frac' ? 'text-xl sm:text-2xl lg:text-[1.85rem]' : labelSizeClass} max-w-full leading-tight font-black tracking-wide text-center break-words ${OPERATION_UI[operation]?.textClass || 'text-white'}`}
                   style={{ textShadow: '0 1px 0 rgba(0,0,0,0.2)' }}
                 >
                   {getOperationLabel(operation).toUpperCase()}

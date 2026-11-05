@@ -70,7 +70,7 @@ const getOperationLabel = (operation) => {
     sub: 'Subtraction',
     mul: 'Multiplication',
     div: 'Division',
-    frac: 'Fractions',
+    frac: 'Fraction To Decimal',
   };
   return opLabelMap[operation] || operation;
 };

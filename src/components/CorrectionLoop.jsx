@@ -79,7 +79,7 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
     const value = Number(input);
     if (!Number.isFinite(value)) return;
     send('answer', Number.isFinite(q?.answerScale)
-      ? String(value) === String(displayAnswer) ? q.correctAnswer : Math.round(value*q.answerScale)
+      ? value === Number(displayAnswer) ? q.correctAnswer : Math.round(value*q.answerScale)
       : value);
   };
   if (!q || ['passed','finished'].includes(state?.phase))
@@ -103,7 +103,7 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
       </> : ['practice','retry'].includes(state.phase) ? <form onSubmit={submit}>
         <div className="learning-keypad-question learning-keypad-question--correction text-6xl sm:text-7xl font-extrabold text-center mb-6 whitespace-pre-line">{q.question}</div>
         <input aria-label="Correction answer" inputMode="none" autoComplete="off" value={input}
-          onChange={e => setInput(e.target.value.replace(Number.isFinite(q.answerScale) ? /[^0-9.]/g : /[^0-9]/g,'').slice(0,10))}
+          onChange={e => setInput(e.target.value.replace(Number.isFinite(q.answerScale) ? /[^0-9.]/g : /[^0-9]/g,'').replace(/^0\./, '.').slice(0,10))}
           disabled={busy || paused || !!error} placeholder="Type answer"
           className="learning-keypad-display w-full h-24 bg-white rounded-2xl border-4 border-green-300 text-center text-4xl font-extrabold shadow-lg mb-4 text-gray-800 placeholder:text-gray-400 disabled:cursor-default" />
         <div className={`learning-keypad ${Number.isFinite(q.answerScale) ? 'learning-keypad--decimal' : ''}`}>
@@ -118,7 +118,7 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
             onClick={() => setInput(v => (v+0).slice(0,10))}
             className="bg-gray-100 text-gray-800 font-bold text-2xl py-2 rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition border border-gray-200 disabled:cursor-default">0</button>
           {Number.isFinite(q.answerScale) && <button type="button" disabled={busy || paused || !!error}
-            onClick={() => setInput(v => v.includes('.') ? v : (v+'.').slice(0,10))}
+            onClick={() => setInput(v => v.includes('.') ? v : (v === '' || v === '0' ? '.' : `${v}.`).slice(0,10))}
             className="bg-gray-100 text-gray-800 font-bold text-2xl py-2 rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition border border-gray-200 disabled:cursor-default">.</button>}
           <button disabled={busy || paused || !input || !!error}
             className="learning-keypad-submit bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition disabled:opacity-55 disabled:cursor-default">Submit</button>

@@ -16,7 +16,7 @@ const StatsCardShell = ({ style, icon, label, value, status }) => {
             <div className="stats-card__label text-[0.78rem] font-semibold tracking-[0.01em] text-[#74d3ff] sm:text-[0.92rem]">
               {label}
             </div>
-            <div className="stats-card__value text-[1rem] font-black leading-tight text-white sm:text-[1.22rem]">
+            <div className="stats-card__value break-words text-[1rem] font-black leading-tight text-white sm:text-[1.22rem]">
               {value}
             </div>
             {statusText ? (

@@ -111,7 +111,7 @@ const QuizScreen = () => {
       const raw = String(digit);
       if (raw === '.') {
         if (!Number.isFinite(currentQuestion?.answerScale) || prev.includes('.')) return prev;
-        return prev === '' ? '0.' : `${prev}.`;
+        return prev === '' || prev === '0' ? '.' : `${prev}.`;
       }
       const digitCount = prev.replace('.', '').length;
       if (digitCount >= (Number.isFinite(currentQuestion?.answerScale) ? 4 : 3)) return prev;
@@ -130,7 +130,7 @@ const QuizScreen = () => {
     if (!Number.isFinite(numericAnswer)) return;
     const displayedCorrectAnswer = currentQuestion?.answerLabels?.[currentQuestion?.correctAnswer];
     const submittedAnswer =
-      Number.isFinite(currentQuestion?.answerScale) && String(numericAnswer) === String(displayedCorrectAnswer)
+      Number.isFinite(currentQuestion?.answerScale) && numericAnswer === Number(displayedCorrectAnswer)
         ? currentQuestion.correctAnswer
         : Number.isFinite(currentQuestion?.answerScale)
           ? Math.round(numericAnswer * currentQuestion.answerScale)

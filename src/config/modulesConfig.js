@@ -35,7 +35,7 @@ export const MODULE_META = {
   },
   frac: {
     id: 'frac',
-    label: 'Fractions',
+    label: 'Fraction To Decimal',
     maxLevel: 6,
     enabled: true,
     unlockedByDefault: false,
