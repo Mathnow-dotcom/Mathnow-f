@@ -10,6 +10,10 @@ const formInputClass =
   "px-3 sm:px-4 !rounded-2xl !text-gray-800 font-bold text-center " +
   "text-2xl sm:text-3xl tracking-widest !bg-white !border-4 !border-green-300 " +
   "shadow-lg focus:outline-none focus:ring-0";
+const formSelectClass =
+  "w-full max-w-[320px] sm:max-w-[340px] mx-auto mb-2 sm:mb-3 h-10 sm:h-12 " +
+  "px-3 sm:px-4 rounded-2xl text-gray-800 font-semibold text-base sm:text-lg " +
+  "bg-white border-4 border-green-300 shadow-lg focus:outline-none focus:ring-0";
 const labelClass =
   "text-base sm:text-lg md:text-xl text-center font-sans text-green-600 font-semibold tracking-wide mb-1";
 const panelClass =
@@ -22,6 +26,8 @@ const NOOP_NAVIGATE = () => {};
 const LOGIN_UNAVAILABLE = async () => {
   throw new Error('Login unavailable');
 };
+const SCHOOL_OPTIONS = ['School A', 'School B', 'School C'];
+const GRADE_OPTIONS = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
 const AdminPinModal = ({
     adminPin,
@@ -139,6 +145,8 @@ const NameForm = () => {
   }));
 
   const [error, setError] = useState('');
+  const [school, setSchool] = useState('');
+  const [grade, setGrade] = useState('');
   const [showAdminPinModal, setShowAdminPinModal] = useState(false);
   const [adminPin, setAdminPin] = useState('');
   const [adminError, setAdminError] = useState('');
@@ -155,6 +163,8 @@ const NameForm = () => {
   useEffect(() => {
     setChildName('');
     setChildPin('');
+    setSchool('');
+    setGrade('');
   }, [setChildName, setChildPin]);
 
   useEffect(() => {
@@ -246,13 +256,21 @@ const NameForm = () => {
       setError('Please enter a valid Passcode (at least 2 characters).');
       return;
     }
+    if (!school) {
+      setError('Please select your school.');
+      return;
+    }
+    if (!grade) {
+      setError('Please select your grade level.');
+      return;
+    }
     if (isLoginLoading) return;
     setError('');
     
     try {
-        await handlePinSubmit(pinToSubmit, nameToSubmit); 
+        await handlePinSubmit(pinToSubmit, nameToSubmit, school, grade);
     } catch (err) {
-        setError(err.message || 'Login failed. Please check your name and passcode.');
+        setError(err.message || 'Login failed. Please check your name, school, grade, and passcode.');
     }
   };
 
@@ -291,7 +309,7 @@ const handleDemoClick = () => {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center px-4"
+      className="student-login-page min-h-screen w-full flex items-center justify-center px-4"
       style={{
         backgroundImage: "url('/night_sky_landscape.jpg')",
         backgroundSize: 'cover',
@@ -313,7 +331,7 @@ const handleDemoClick = () => {
         <span className="text-sm font-semibold">Admin</span>
       </button>
 
-      <div className={panelClass}>
+      <div className={`student-login-panel ${panelClass}`}>
 
         <form onSubmit={onSubmit} className="w-full flex flex-col items-center" autoComplete="off">
           <label className={labelClass}>
@@ -329,6 +347,39 @@ const handleDemoClick = () => {
             name="child-name"
             style={{ backgroundColor: '#ffffff', color: '#1f2937' }}
           />
+          <label className={labelClass} htmlFor="student-school">
+             Select Your School
+          </label>
+          <select
+            id="student-school"
+            name="student-school"
+            className={formSelectClass}
+            value={school}
+            onChange={(event) => setSchool(event.target.value)}
+            autoComplete="organization"
+          >
+            <option value="">Select your school</option>
+            {SCHOOL_OPTIONS.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+
+          <label className={labelClass} htmlFor="student-grade">
+             Select Your Grade Level
+          </label>
+          <select
+            id="student-grade"
+            name="student-grade"
+            className={formSelectClass}
+            value={grade}
+            onChange={(event) => setGrade(event.target.value)}
+          >
+            <option value="">Select your grade level</option>
+            {GRADE_OPTIONS.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+
           <label className={labelClass}>
              Enter Your Passcode
           </label>

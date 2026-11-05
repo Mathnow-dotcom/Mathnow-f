@@ -88,7 +88,7 @@ try {
       await new Promise(resolve => { releaseAnswerResponse = resolve; });
     }
     let response = {};
-    if (path === '/auth/login-pin') response = { user: { name: 'Demo', pin: '77777', theme: loginTheme, progress: {}, dailyStats: {}, currentStreak: 2, appUsage: usage } };
+    if (path === '/auth/login-pin') response = { user: { name: 'Demo', pin: '77777', school: body.school, grade: body.grade, theme: loginTheme, progress: {}, dailyStats: {}, currentStreak: 2, appUsage: usage } };
     if (path.startsWith('/user/usage/')) response = usage;
     if (path === '/user/program') response = programState;
     if (path === '/user/operations') response = { operations: { add: { enabled: true, unlocked: true, maxLevel: 38, batchSize: 19 },
@@ -191,7 +191,32 @@ try {
     await evaluate(`Array.from(document.querySelectorAll('button')).find(${match}).click()`);
   };
   const login = async (learn = true) => {
-    await click('Demo'); await click('YES'); await click('NEXT'); await see('TAKE A TEST');
+    await wait(() => evaluate("!!document.querySelector('#student-school') && !!document.querySelector('#student-grade')"), 'Student profile dropdowns');
+    assert.deepEqual(
+      await evaluate("Array.from(document.querySelectorAll('#student-school option')).map(option => option.value)"),
+      ['', 'School A', 'School B', 'School C'],
+      'School dropdown options'
+    );
+    assert.deepEqual(
+      await evaluate("Array.from(document.querySelectorAll('#student-grade option')).map(option => option.value)"),
+      ['', 'K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+      'Grade dropdown options'
+    );
+    const loginViewport = await evaluate('({ width:innerWidth, height:innerHeight })');
+    await command('Emulation.setDeviceMetricsOverride',{width:320,height:568,deviceScaleFactor:1,mobile:true});
+    const loginPanelPhone = await evaluate(`(() => {
+      const rect = document.querySelector('.student-login-panel').getBoundingClientRect();
+      return { top:rect.top, left:rect.left, right:rect.right, bottom:rect.bottom, width:rect.width, height:rect.height, innerWidth, innerHeight };
+    })()`);
+    assert(loginPanelPhone.top >= 0 && loginPanelPhone.left >= 0 && loginPanelPhone.right <= loginPanelPhone.innerWidth && loginPanelPhone.bottom <= loginPanelPhone.innerHeight, 'Student profile login fits a 320x568 phone viewport');
+    await command('Emulation.setDeviceMetricsOverride',{...loginViewport,deviceScaleFactor:1,mobile:loginViewport.width <= 767});
+    const loginCount = calls.filter(call => call.path === '/auth/login-pin').length;
+    await click('Demo');
+    await wait(() => calls.filter(call => call.path === '/auth/login-pin').length > loginCount, 'Profile login request');
+    const loginCall = calls.filter(call => call.path === '/auth/login-pin').at(-1);
+    assert.equal(loginCall.body.school, 'School A', 'Demo school profile');
+    assert.equal(loginCall.body.grade, 'K', 'Demo grade profile');
+    await click('YES'); await click('NEXT'); await see('TAKE A TEST');
     if (learn) { await click('LEARN'); await see('Assessment ready'); }
   };
   const openTest = async () => {

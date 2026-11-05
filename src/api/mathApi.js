@@ -86,8 +86,8 @@ async function callApi(endpoint, method = 'GET', body = null, pin = null, option
   return data;
 }
 
-export const authLogin = async (pin, name = 'Player') => {
-  return callApi('/auth/login-pin', 'POST', { pin, name });
+export const authLogin = async (pin, name = 'Player', school, grade) => {
+  return callApi('/auth/login-pin', 'POST', { pin, name, school, grade });
 };
 
 export const userUpdateTheme = async (themeKey, pin) => {

@@ -1031,7 +1031,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
   // ---------------- LOGIN ----------------
   const handlePinSubmit = useCallback(
-    async (pinValue, nameValue) => {
+    async (pinValue, nameValue, schoolValue, gradeValue) => {
       const oldPin = localStorage.getItem('math-child-pin');
       const storedGameModePin = localStorage.getItem('game-mode-pin');
       const shouldPreserveGameModeContext =
@@ -1041,7 +1041,12 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       try {
         setIsLoginLoading(true);
 
-        const loginResponse = await authLogin(pinValue, nameValue.trim());
+        const loginResponse = await authLogin(
+          pinValue,
+          nameValue.trim(),
+          schoolValue,
+          gradeValue
+        );
         usageSessionRef.current = loginResponse?.user?.appUsage?.sessionId || null;
         applyAppUsage(loginResponse?.user?.appUsage);
         setIsLoggedIn(true);
@@ -1108,7 +1113,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   const handleDemoLogin = useCallback(() => {
     const demoPin = '77777';
     const demoName = 'Demo';
-    handlePinSubmit(demoPin, demoName).catch((err) => {
+    handlePinSubmit(demoPin, demoName, 'School A', 'K').catch((err) => {
       console.error('Demo Login failed:', err.message);
       showUiMessage({
         type: 'error',
