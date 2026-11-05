@@ -84,34 +84,44 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
   };
   if (!q || ['passed','finished'].includes(state?.phase))
     return <CorrectionTransition error={error} onRetry={retry} busy={busy} />;
-  return <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto p-4" style={{background:"#082338 url('/night_sky_landscape.jpg') center / cover"}}>
+  return <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto p-4 font-comic" style={{background:"#082338 url('/night_sky_landscape.jpg') center / cover"}}>
     <section className={`learning-keypad-card ${['practice','retry'].includes(state.phase) && !reverse ? 'bg-[#d3d3d3]' : 'bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100'} rounded-3xl shadow-2xl my-auto shrink-0 p-6 sm:p-8 w-full ${shown ? 'max-w-2xl' : 'max-w-md'}`}>
       {shown ? <>
         <div className="font-bold text-green-600 mb-6 text-center text-[clamp(2rem,8vw,5rem)]">{q.question.replace(/\s*=\s*\?\s*$/, '')} = {displayAnswer}</div>
         <div className="text-center"><button disabled={busy || paused || !!error} onClick={() => send('next')}
           className="bg-green-600 text-white font-bold py-2 px-8 rounded-xl shadow-lg disabled:cursor-default">Next</button></div>
       </> : ['practice','retry'].includes(state.phase) && reverse ? <>
-        <div className="text-5xl font-extrabold text-green-600 text-center mb-6">{q.question}</div>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="learning-keypad-question learning-keypad-question--correction text-6xl sm:text-7xl font-extrabold text-center mb-6 whitespace-pre-line">{q.question}</div>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-md mx-auto">
           {state.question.textChoices.map((expression, index) => <button key={index} type="button"
             disabled={busy || paused || !!error}
             onClick={() => { if (!document.hidden) send('answer', index); }}
-            className="bg-gray-100 text-gray-800 font-bold text-xl sm:text-2xl min-h-16 py-4 px-2 rounded-xl shadow-md disabled:cursor-default">
+            className="w-full bg-gray-100 text-gray-700 font-bold py-4 sm:py-5 rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition select-none border border-gray-200 text-2xl disabled:cursor-default">
             {expression.replace(/\s*=\s*\?\s*$/, '')}
           </button>)}
         </div>
       </> : ['practice','retry'].includes(state.phase) ? <form onSubmit={submit}>
-        <div className="text-5xl font-extrabold text-green-600 text-center mb-6">{q.question}</div>
+        <div className="learning-keypad-question learning-keypad-question--correction text-6xl sm:text-7xl font-extrabold text-center mb-6 whitespace-pre-line">{q.question}</div>
         <input aria-label="Correction answer" inputMode="none" autoComplete="off" value={input}
           onChange={e => setInput(e.target.value.replace(Number.isFinite(q.answerScale) ? /[^0-9.]/g : /[^0-9]/g,'').slice(0,10))}
           disabled={busy || paused || !!error} placeholder="Type answer"
-          className="w-full h-24 bg-white rounded-2xl border-4 border-green-300 text-center text-4xl font-bold mb-5 text-gray-800" />
+          className="learning-keypad-display w-full h-24 bg-white rounded-2xl border-4 border-green-300 text-center text-4xl font-extrabold shadow-lg mb-4 text-gray-800 placeholder:text-gray-400 disabled:cursor-default" />
         <div className={`learning-keypad ${Number.isFinite(q.answerScale) ? 'learning-keypad--decimal' : ''}`}>
-          {[1,2,3,4,5,6,7,8,9,'Clear',0,...(Number.isFinite(q.answerScale) ? ['.'] : [])].map(n =>
+          {[1,2,3,4,5,6,7,8,9].map(n =>
             <button key={n} type="button" disabled={busy || paused || !!error}
-              onClick={() => setInput(v => n === 'Clear' ? '' : n === '.' && v.includes('.') ? v : (v+n).slice(0,10))}
-              className="bg-gray-100 text-gray-800 font-bold text-2xl py-2 rounded-xl shadow-md disabled:cursor-default">{n}</button>)}
-          <button disabled={busy || paused || !input || !!error} className={`learning-keypad-submit font-bold py-2 rounded-xl shadow-md disabled:cursor-default ${input ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-800'}`}>Submit</button>
+              onClick={() => setInput(v => (v+n).slice(0,10))}
+              className="bg-gray-100 text-gray-800 font-bold text-2xl py-2 rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition select-none border border-gray-200 disabled:cursor-default">{n}</button>)}
+          <button type="button" disabled={busy || paused || !!error}
+            onClick={() => setInput('')}
+            className="bg-gray-200 text-gray-800 font-semibold py-2 rounded-xl shadow-md hover:bg-gray-300 active:scale-95 transition col-span-1 border border-gray-300 disabled:cursor-default">Clear</button>
+          <button type="button" disabled={busy || paused || !!error}
+            onClick={() => setInput(v => (v+0).slice(0,10))}
+            className="bg-gray-100 text-gray-800 font-bold text-2xl py-2 rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition border border-gray-200 disabled:cursor-default">0</button>
+          {Number.isFinite(q.answerScale) && <button type="button" disabled={busy || paused || !!error}
+            onClick={() => setInput(v => v.includes('.') ? v : (v+'.').slice(0,10))}
+            className="bg-gray-100 text-gray-800 font-bold text-2xl py-2 rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition border border-gray-200 disabled:cursor-default">.</button>}
+          <button disabled={busy || paused || !input || !!error}
+            className="learning-keypad-submit bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-2 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition disabled:opacity-55 disabled:cursor-default">Submit</button>
         </div>
       </form> : null}
       {error && <div role="alert" className="text-red-700 mt-4">{error} <button onClick={retry} disabled={busy}>Retry</button></div>}

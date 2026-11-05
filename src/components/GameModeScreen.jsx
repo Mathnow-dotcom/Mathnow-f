@@ -342,7 +342,9 @@ const GameModeScreen = () => {
             )}
 
             <div className="text-center mb-4 sm:mb-5 md:mb-6">
-              <h3 className="font-extrabold text-[#1ea672] mb-1 sm:mb-2 drop-shadow-[0_4px_12px_rgba(10,32,74,0.16)] text-6xl sm:text-7xl md:text-8xl whitespace-pre-line">
+              <h3 className={isSurfMode
+                ? 'learning-keypad-question font-extrabold text-[#1ea672] mb-6 drop-shadow-[0_4px_12px_rgba(10,32,74,0.16)] text-6xl sm:text-7xl whitespace-pre-line'
+                : 'font-extrabold text-[#1ea672] mb-1 sm:mb-2 drop-shadow-[0_4px_12px_rgba(10,32,74,0.16)] text-6xl sm:text-7xl md:text-8xl whitespace-pre-line'}>
                 {currentQuestion?.question || '1 + 1'}
               </h3>
             </div>
@@ -380,7 +382,7 @@ const GameModeScreen = () => {
 
             {isSurfMode && (
               <div className="w-full max-w-sm mx-auto">
-                <div className="w-full bg-white rounded-2xl h-24 flex items-center justify-center text-4xl font-extrabold shadow-lg border-4 border-green-300 text-gray-800 mb-4">
+                <div className="learning-keypad-display w-full bg-white rounded-2xl h-24 items-center justify-center text-4xl font-extrabold shadow-lg border-4 border-green-300 text-gray-800 mb-4">
                   {typedInput === '' ? <span className="text-gray-400">Type answer</span> : typedInput}
                 </div>
 

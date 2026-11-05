@@ -766,14 +766,14 @@ useEffect(() => {
 
         return (
           <>
-            <div className="text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow">
+            <div className="learning-keypad-question text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow">
               {extractQuestion(practiceQ)}
             </div>
 
             <div className="w-full max-w-sm mx-auto mb-4">
               <div
                 className={[
-                  'w-full bg-white rounded-2xl h-24 flex items-center justify-center text-4xl font-extrabold shadow-lg',
+                  'learning-keypad-display w-full bg-white rounded-2xl h-24 items-center justify-center text-4xl font-extrabold shadow-lg',
                   practiceStatus === 'success' ? 'border-4 border-green-300 text-gray-800' : '',
                   practiceStatus === 'error' ? 'border-4 border-red-400 text-red-600' : '',
                   !practiceStatus ? 'border-4 border-green-300 text-gray-800' : ''

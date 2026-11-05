@@ -236,7 +236,7 @@ const QuizScreen = () => {
               <h3
                 className={
                   useBlackStyle
-                    ? 'text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow'
+                    ? 'learning-keypad-question text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow'
                     : 'text-7xl font-extrabold text-green-600 mb-1 sm:mb-2 drop-shadow-lg'
                 }
               >
@@ -281,7 +281,7 @@ const QuizScreen = () => {
               <div className="flex flex-col items-center gap-4 sm:gap-5">
                 <div className="w-full max-w-sm">
                   <div
-                    className="w-full bg-white rounded-2xl h-24 flex items-center justify-center text-4xl font-extrabold shadow-lg border-4 border-green-300 text-gray-800"
+                    className="learning-keypad-display w-full bg-white rounded-2xl h-24 items-center justify-center text-4xl font-extrabold shadow-lg border-4 border-green-300 text-gray-800"
                   >
                     {typedInput === '' ? <span className="text-gray-400">Type answer</span> : typedInput}
                   </div>

@@ -2,14 +2,15 @@
 .learning-keypad {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: clamp(8px, 1.4vw, 16px);
+  row-gap: clamp(8px, 1.4vw, 16px);
+  column-gap: clamp(16px, 2.2vw, 32px);
   width: 100%;
+  max-width: 24rem;
   margin-inline: auto;
 }
 .learning-keypad > button {
   grid-column: span 2;
-  justify-self: center;
-  width: 84%;
+  width: 100%;
   min-width: 0;
   min-height: 44px;
   margin: 0;
@@ -42,8 +43,25 @@
   max-width: 100%;
 }
 .learning-keypad-card:has(.learning-keypad) {
-  width: min(100%, 36rem);
-  max-width: 36rem;
+  width: min(100%, 28rem);
+  max-width: 28rem;
+  font-family: 'Comic Neue', 'Baloo 2', cursive, sans-serif;
+}
+.learning-keypad-card .learning-keypad-question {
+  width: 100%;
+  max-width: 24rem;
+  margin-inline: auto;
+  line-height: 1.1;
+}
+.learning-keypad-card .learning-keypad-question--correction {
+  color: #078a43;
+  text-shadow: 0 2px 0 rgba(255,255,255,.32), 0 4px 12px rgba(0,0,0,.2);
+}
+.learning-keypad-card .learning-keypad-display {
+  display: flex;
+  width: 100%;
+  max-width: 24rem;
+  margin-inline: auto;
 }
 @media (max-height: 650px) {
   .learning-keypad { gap: 8px; }
@@ -52,8 +70,7 @@
 }
 
 @media (max-width: 380px) {
-  .learning-keypad > button { width: 92%; }
-  .learning-keypad > button.learning-keypad-submit { width: 100%; }
+  .learning-keypad { column-gap: 12px; }
 }
 
 .learning-keypad-card:has(.learning-keypad) {
