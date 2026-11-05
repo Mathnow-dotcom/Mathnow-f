@@ -982,6 +982,97 @@ html {
   }
 }
 
+/* Keep the game keypad and all three stats visible together on phones. */
+@media (max-width: 767px) {
+  .screen-stats-dock,
+  .layout-has-stats:has(.keypad-page) .stats-floating {
+    position: fixed;
+    left: max(env(safe-area-inset-left), 0.35rem);
+    right: max(env(safe-area-inset-right), 0.35rem);
+    bottom: max(env(safe-area-inset-bottom), 0.35rem);
+    z-index: 150;
+    width: auto;
+    padding: 0;
+    gap: 0.35rem;
+    align-items: stretch;
+    pointer-events: none;
+  }
+
+  .screen-stats-dock > div,
+  .layout-has-stats:has(.keypad-page) .stats-floating > div {
+    flex: 1 1 0;
+    width: 0 !important;
+    min-width: 0;
+    max-width: none !important;
+    pointer-events: auto;
+  }
+
+  .screen-stats-dock .stats-card__surface,
+  .layout-has-stats:has(.keypad-page) .stats-card__surface {
+    box-sizing: border-box;
+    height: 80px;
+    min-width: 0;
+    padding: 0.35rem 0.3rem !important;
+    border-radius: 0.9rem;
+  }
+
+  .screen-stats-dock .stats-card__content,
+  .layout-has-stats:has(.keypad-page) .stats-card__content {
+    height: 100%;
+    gap: 0.25rem;
+    align-items: center;
+  }
+
+  .screen-stats-dock .stats-card__icon,
+  .layout-has-stats:has(.keypad-page) .stats-card__icon {
+    width: 1.65rem;
+    height: 1.65rem;
+    font-size: 1.35rem;
+  }
+
+  .screen-stats-dock .stats-card__copy,
+  .layout-has-stats:has(.keypad-page) .stats-card__copy {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .screen-stats-dock .stats-card__label,
+  .layout-has-stats:has(.keypad-page) .stats-card__label {
+    font-size: clamp(0.55rem, 2.5vw, 0.68rem);
+    line-height: 1.05;
+  }
+
+  .screen-stats-dock .stats-card__value,
+  .layout-has-stats:has(.keypad-page) .stats-card__value {
+    overflow-wrap: anywhere;
+    font-size: clamp(0.62rem, 2.75vw, 0.78rem);
+    line-height: 1.08;
+  }
+
+  .layout-has-stats:has(.keypad-page) {
+    box-sizing: border-box;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+
+  .layout-has-stats:has(.keypad-page) > .w-full.min-h-screen {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .layout-has-stats:has(.keypad-page) > .w-full.min-h-screen > .flex-1 {
+    min-height: 0;
+  }
+
+  .layout-has-stats:has(.keypad-page) .keypad-page {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+}
+
 /* Fixed stats dock for full-screen flows outside MainLayout */
 .screen-stats-dock {
   position: fixed;
@@ -1037,5 +1128,14 @@ html {
     flex: 1 1 0;
     min-width: 0;
     max-width: 280px;
+  }
+}
+
+@media (max-width: 767px) {
+  .screen-stats-dock {
+    left: max(env(safe-area-inset-left), 0.35rem);
+    right: max(env(safe-area-inset-right), 0.35rem);
+    bottom: max(env(safe-area-inset-bottom), 0.35rem);
+    gap: 0.35rem;
   }
 }

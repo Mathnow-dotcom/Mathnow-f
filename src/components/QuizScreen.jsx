@@ -144,7 +144,7 @@ const QuizScreen = () => {
 
   return (
     <div
-      className="App min-h-screen w-full relative landscape-optimized portrait-optimized ios-notch"
+      className="App keypad-page min-h-screen w-full relative landscape-optimized portrait-optimized ios-notch"
       style={{
         background: 'linear-gradient(135deg, #23272f 0%, #18181b 60%, #111113 100%)',
         backgroundSize: 'cover',
@@ -155,19 +155,19 @@ const QuizScreen = () => {
         paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)'
       }}
     >
-      <div className="w-full min-h-screen flex flex-col items-center justify-center relative">
+      <div className="keypad-page__content w-full min-h-screen flex flex-col items-center justify-center relative">
         
         <div
           className={
             useBlackStyle
-              ? 'w-full max-w-sm sm:max-w-md mx-auto px-1 sm:px-2 md:px-4 mb-4 sm:mb-6'
-              : 'w-full max-w-lg sm:max-w-xl mx-auto px-1 sm:px-2 md:px-4 mb-4 sm:mb-6'
+              ? 'keypad-page__status w-full max-w-sm sm:max-w-md mx-auto px-1 sm:px-2 md:px-4 mb-4 sm:mb-6'
+              : 'keypad-page__status w-full max-w-lg sm:max-w-xl mx-auto px-1 sm:px-2 md:px-4 mb-4 sm:mb-6'
           }
         >
           
 
          {/* --- STREAK MESSAGE & PROGRESS BAR CONTAINER --- */}
-          <div className="relative h-20 mb-4">
+          <div className="keypad-progress relative h-20 mb-4">
             {/* Answer Symbols (shifted slightly up) */}
             <div className="flex justify-center items-center absolute w-full top-0 space-x-1">
               {!isPretest && visibleAnswerSymbols.map((answer, index) => (

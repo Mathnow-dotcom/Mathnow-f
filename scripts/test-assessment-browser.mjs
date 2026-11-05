@@ -228,6 +228,34 @@ try {
     await command('Emulation.setDeviceMetricsOverride',{width:320,height:568,deviceScaleFactor:1,mobile:true});
     assert(await evaluate('document.documentElement.scrollWidth <= innerWidth'),'Correction fits phone width');
     await click('Next'); await see('4 - 2');
+    if (correctionMode !== 'rocket') await wait(() => evaluate("!!document.querySelector('.learning-keypad-card:has(.learning-keypad)')"), 'Correction keypad');
+    const mobileLayout = await evaluate(`(() => {
+      const rect = el => { const r = el?.getBoundingClientRect(); return r && { top:r.top, right:r.right, bottom:r.bottom, left:r.left, width:r.width, height:r.height }; };
+      const card = rect(document.querySelector('.learning-keypad-card:has(.learning-keypad)'));
+      const submit = rect(document.querySelector('.learning-keypad-submit'));
+      const dock = rect(document.querySelector('.screen-stats-dock'));
+      const stats = Array.from(document.querySelectorAll('.screen-stats-dock .stats-card__surface')).map(el => ({
+        ...rect(el), scrollWidth: el.scrollWidth, clientWidth: el.clientWidth, scrollHeight: el.scrollHeight, clientHeight: el.clientHeight,
+      }));
+      return { card, submit, dock, stats, viewport: { width: innerWidth, height: innerHeight } };
+    })()`);
+    if (correctionMode !== 'rocket') {
+      assert(mobileLayout.card.top >= 0 && mobileLayout.card.bottom <= mobileLayout.dock.top, 'Correction card stays above phone stats');
+      assert(mobileLayout.submit.bottom <= mobileLayout.dock.top, 'Submit stays visible above phone stats');
+    }
+    assert.equal(mobileLayout.stats.length, 3, 'All three stats cards are visible');
+    assert(mobileLayout.stats.every(rect => rect.left >= 0 && rect.right <= mobileLayout.viewport.width && rect.bottom <= mobileLayout.viewport.height), 'Stats fit phone viewport');
+    assert(mobileLayout.stats.every(rect => rect.scrollWidth <= rect.clientWidth && rect.scrollHeight <= rect.clientHeight), 'Stats content does not overflow cards');
+    if (correctionMode !== 'rocket') {
+      await command('Emulation.setDeviceMetricsOverride',{width:1440,height:900,deviceScaleFactor:1,mobile:false});
+      await delay(100);
+      const desktopCard = await evaluate(`(() => {
+        const r = document.querySelector('.learning-keypad-card:has(.learning-keypad)').getBoundingClientRect();
+        return { width:r.width, height:r.height };
+      })()`);
+      assert(desktopCard.width >= 500 && desktopCard.height <= 540 && desktopCard.width / desktopCard.height >= 0.9, 'Desktop keypad is wider and compact');
+      await command('Emulation.setDeviceMetricsOverride',{width:320,height:568,deviceScaleFactor:1,mobile:true});
+    }
     if (correctionMode === 'rocket') {
       assert(!(await evaluate("!!document.querySelector('input[aria-label]')")), 'Rocket uses expression choices, not keypad');
       await click('9 + 9');
@@ -254,6 +282,28 @@ try {
     else { await click('4'); await click('Submit'); }
     const expectedPath=correctionMode === 'pretest-last' ? '/pretest-result' : correctionMode === 'last' ? '/way-to-go' : correctionGame ? '/game-mode' : correctionMode === 'pretest' ? '/pretest' : '/quiz';
     await wait(() => evaluate(`location.pathname === ${JSON.stringify(expectedPath)}`),'Return to '+expectedPath+' after correction');
+    if (correctionMode === 'surf') {
+      await wait(() => evaluate("!!document.querySelector('.keypad-page .learning-keypad-submit')"), 'Surf keypad after correction');
+      const surfFitsPhone = await evaluate(`(() => {
+        const submit = document.querySelector('.keypad-page .learning-keypad-submit').getBoundingClientRect();
+        const card = document.querySelector('.keypad-page .learning-keypad-card').getBoundingClientRect();
+        const dock = document.querySelector('.screen-stats-dock').getBoundingClientRect();
+        const page = document.querySelector('.keypad-page');
+        return submit.bottom <= dock.top && card.bottom <= dock.top && page.scrollHeight <= page.clientHeight;
+      })()`);
+      assert(surfFitsPhone, 'Surf keypad and Submit fit above stats without page scrolling');
+    }
+    if (correctionMode === 'pretest') {
+      await wait(() => evaluate("!!document.querySelector('.keypad-page .learning-keypad-submit')"), 'Pretest keypad after correction');
+      const pretestPhoneLayout = await evaluate(`(() => {
+        const submit = document.querySelector('.keypad-page .learning-keypad-submit').getBoundingClientRect();
+        const card = document.querySelector('.keypad-page .learning-keypad-card').getBoundingClientRect();
+        const dock = document.querySelector('.stats-floating').getBoundingClientRect();
+        const page = document.querySelector('.keypad-page');
+        return { submitBottom:submit.bottom, cardBottom:card.bottom, dockTop:dock.top, pageScrollHeight:page.scrollHeight, pageClientHeight:page.clientHeight };
+      })()`);
+      assert(pretestPhoneLayout.submitBottom <= pretestPhoneLayout.dockTop && pretestPhoneLayout.cardBottom <= pretestPhoneLayout.dockTop && pretestPhoneLayout.pageScrollHeight <= pretestPhoneLayout.pageClientHeight, 'Pretest keypad and Submit fit above stats without page scrolling');
+    }
     assert.equal(calls.filter(c=>c.path === '/quiz/practice/answer').length,1);
     assert.equal(calls.filter(c=>c.path === '/quiz/answer').length,0,'Correction answers do not use scoring endpoint');
     assert.equal(exceptions.length,0,exceptions.join(', '));

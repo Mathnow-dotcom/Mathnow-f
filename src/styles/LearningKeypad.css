@@ -82,3 +82,210 @@
   height: clamp(64px, 12vw, 96px);
   font-size: clamp(24px, 4vw, 36px);
 }
+
+/* Desktop keypads use a wider, less vertically stretched proportion. */
+@media (min-width: 768px) {
+  .learning-keypad-card:has(.learning-keypad) {
+    padding: 20px 24px;
+  }
+
+  .learning-keypad-card div:has(> .learning-keypad-question) {
+    margin-bottom: 0 !important;
+  }
+
+  .learning-keypad-card .learning-keypad-question {
+    margin-bottom: 12px !important;
+    font-size: 56px !important;
+    line-height: 1;
+  }
+
+  .learning-keypad-card .learning-keypad-display,
+  .learning-keypad-card:has(.learning-keypad) input,
+  .learning-keypad-card:has(.learning-keypad) .h-24 {
+    height: 72px;
+    min-height: 72px;
+    margin-bottom: 12px !important;
+    font-size: 32px;
+  }
+
+  .learning-keypad-card:has(.learning-keypad) .gap-4,
+  .learning-keypad-card:has(.learning-keypad) .gap-5 {
+    gap: 12px;
+  }
+
+  .learning-keypad {
+    row-gap: 10px;
+    column-gap: 24px;
+  }
+
+  .learning-keypad > button {
+    min-height: 46px;
+    padding-block: 7px;
+    font-size: 27px;
+    border-radius: 14px;
+  }
+
+  .learning-keypad > button.learning-keypad-submit {
+    min-height: 64px;
+    padding-block: 10px;
+    margin-top: 4px;
+    font-size: 38px;
+    border-radius: 18px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .learning-keypad-card:has(.learning-keypad) {
+    width: min(100%, 32rem);
+    max-width: 32rem;
+  }
+
+  .learning-keypad-card .learning-keypad-question,
+  .learning-keypad-card .learning-keypad-display,
+  .learning-keypad {
+    max-width: 28rem;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 650px) {
+  .learning-keypad-card:has(.learning-keypad) {
+    padding: 12px 18px;
+  }
+
+  .learning-keypad-card .learning-keypad-question {
+    margin-bottom: 8px !important;
+    font-size: 44px !important;
+  }
+
+  .learning-keypad-card .learning-keypad-display,
+  .learning-keypad-card:has(.learning-keypad) input,
+  .learning-keypad-card:has(.learning-keypad) .h-24 {
+    height: 56px;
+    min-height: 56px;
+    margin-bottom: 8px !important;
+    font-size: 27px;
+  }
+
+  .learning-keypad {
+    row-gap: 7px;
+  }
+
+  .learning-keypad > button {
+    min-height: 38px;
+    padding-block: 5px;
+    font-size: 22px;
+  }
+
+  .learning-keypad > button.learning-keypad-submit {
+    min-height: 50px;
+    padding-block: 7px;
+    margin-top: 2px;
+    font-size: 30px;
+  }
+}
+
+/* Phone layouts share one viewport budget with the fixed stats dock. */
+@media (max-width: 767px) {
+  .keypad-page {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh !important;
+    overflow: hidden;
+  }
+
+  .keypad-page__content {
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 0 !important;
+    padding: 3.25rem 0 calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .keypad-page__status {
+    margin-bottom: clamp(4px, 1vh, 8px) !important;
+  }
+
+  .keypad-progress {
+    height: clamp(36px, 6.5vh, 52px) !important;
+    margin-bottom: 0 !important;
+  }
+
+  .keypad-overlay {
+    box-sizing: border-box;
+    padding: 0.5rem 0.5rem calc(92px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .learning-keypad-card:has(.learning-keypad) {
+    width: min(100%, 28rem);
+    max-height: calc(100dvh - 100px - env(safe-area-inset-bottom));
+    padding: clamp(10px, 2.2vh, 18px) !important;
+    border-radius: clamp(16px, 4vw, 24px);
+  }
+
+  .keypad-page .learning-keypad-card:has(.learning-keypad) {
+    max-height: calc(100dvh - 160px - env(safe-area-inset-bottom));
+  }
+
+  .learning-keypad-card div:has(> .learning-keypad-question) {
+    margin-bottom: 0 !important;
+  }
+
+  .learning-keypad-card .learning-keypad-question {
+    margin-bottom: clamp(6px, 1.4vh, 12px) !important;
+    font-size: clamp(34px, 7vh, 58px) !important;
+    line-height: 1;
+  }
+
+  .learning-keypad-card .learning-keypad-display,
+  .learning-keypad-card:has(.learning-keypad) input,
+  .learning-keypad-card:has(.learning-keypad) .h-24 {
+    height: clamp(50px, 8.5vh, 72px);
+    min-height: 50px;
+    margin-bottom: clamp(6px, 1.4vh, 12px) !important;
+    border-width: 3px;
+    border-radius: clamp(12px, 3vw, 18px);
+    font-size: clamp(22px, 4.2vh, 32px);
+  }
+
+  .learning-keypad-card:has(.learning-keypad) .gap-4,
+  .learning-keypad-card:has(.learning-keypad) .gap-5 {
+    gap: clamp(6px, 1.4vh, 12px);
+  }
+
+  .learning-keypad {
+    row-gap: clamp(6px, 1.2vh, 10px);
+    column-gap: clamp(14px, 4vw, 22px);
+  }
+
+  .learning-keypad > button {
+    min-height: 36px;
+    padding-block: clamp(5px, 1vh, 9px);
+    font-size: clamp(18px, 3.2vh, 26px);
+    border-radius: clamp(10px, 3vw, 16px);
+  }
+
+  .learning-keypad > button.learning-keypad-submit {
+    min-height: clamp(46px, 7.2vh, 62px);
+    padding-block: clamp(7px, 1.5vh, 12px);
+    margin-top: clamp(2px, 0.6vh, 5px);
+    font-size: clamp(26px, 4.8vh, 38px);
+    border-radius: clamp(12px, 3.5vw, 20px);
+  }
+}
+
+@media (max-width: 767px) and (max-height: 620px) {
+  .keypad-page__content {
+    padding-top: 2.25rem;
+  }
+
+  .learning-keypad-card .learning-keypad-question {
+    font-size: clamp(30px, 6.5vh, 42px) !important;
+  }
+
+  .learning-keypad-card .learning-keypad-display,
+  .learning-keypad-card:has(.learning-keypad) input,
+  .learning-keypad-card:has(.learning-keypad) .h-24 {
+    height: 48px;
+    min-height: 48px;
+  }
+}

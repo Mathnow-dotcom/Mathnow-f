@@ -210,7 +210,7 @@ const GameModeScreen = () => {
 
   return (
     <div
-      className="App min-h-screen w-full relative landscape-optimized portrait-optimized ios-notch"
+      className="App keypad-page min-h-screen w-full relative landscape-optimized portrait-optimized ios-notch"
       style={{
         background: useNightSkyTheme
           ? undefined
@@ -230,7 +230,7 @@ const GameModeScreen = () => {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(126,211,255,0.24),transparent_30%),radial-gradient(circle_at_80%_22%,rgba(67,120,255,0.18),transparent_26%),radial-gradient(circle_at_50%_82%,rgba(34,211,238,0.14),transparent_30%)]" />
       )}
 
-      <div className="w-full min-h-screen flex flex-col items-center justify-center relative">
+      <div className="keypad-page__content w-full min-h-screen flex flex-col items-center justify-center relative">
         <div
           className="absolute top-3 right-3 z-50"
           style={{ paddingTop: 'env(safe-area-inset-top)' }}
@@ -248,7 +248,7 @@ const GameModeScreen = () => {
           </button>
         </div>
 
-        <div className="w-full max-w-lg sm:max-w-xl mx-auto px-1 sm:px-2 md:px-4 mb-3 sm:mb-4">
+        <div className="keypad-page__status w-full max-w-lg sm:max-w-xl mx-auto px-1 sm:px-2 md:px-4 mb-3 sm:mb-4">
           <div className="relative h-4 sm:h-5 mb-1 sm:mb-2 flex flex-col justify-end">
             {isLightningMode && (
               <div className="flex justify-center items-center min-h-[2.5rem] sm:min-h-[3rem]">
