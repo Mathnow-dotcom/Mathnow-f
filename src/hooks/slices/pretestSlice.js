@@ -24,5 +24,6 @@ export const buildPretestSlice = (d) => ({
   pretestResult: d.pretestResult,
   setPretestResult: d.setPretestResult,
   setIsPretestIntroVisible: d.setIsPretestIntroVisible,
+  beginPretestFromIntro: d.beginPretestFromIntro,
   stopPretestTimer: d.stopPretestTimer,
 });

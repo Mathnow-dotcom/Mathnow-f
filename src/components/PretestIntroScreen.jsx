@@ -1,14 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
 
 const PretestIntroScreen = () => {
-  const { isPretest, selectedTable, navigate, isQuittingRef } =
+  const { isPretest, selectedTable, navigate, isQuittingRef, beginPretestFromIntro } =
     useMathGamePick((ctx) => ({
       isPretest: Boolean(ctx.isPretest),
       selectedTable: ctx.selectedTable,
       navigate: ctx.navigate || (() => {}),
       isQuittingRef: ctx.isQuittingRef || { current: false },
+      beginPretestFromIntro: ctx.beginPretestFromIntro || (() => false),
     }));
+  const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
     if (!isPretest) {
@@ -79,20 +81,23 @@ const PretestIntroScreen = () => {
                   className="mx-auto w-full max-w-fit px-2 text-center font-extrabold tracking-tight text-white whitespace-nowrap leading-none text-[clamp(0.7rem,1.7vw,1.6rem)] sm:text-[clamp(0.9rem,1.55vw,1.55rem)] md:text-[clamp(1rem,1.35vw,1.7rem)]"
                   style={{ fontFamily: 'Baloo 2, Comic Neue, cursive' }}
                 >
-                  ANSWER AS FAST AS YOU CAN
+                  GET READY
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-8" aria-hidden="true">
-          <div className="relative h-11 w-11 md:h-14 md:w-14">
-            <div className="absolute inset-0 rounded-full border-[3px] border-[#c6fbff]/20" />
-            <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#7df5ff] border-r-[#2dd4bf] animate-spin" />
-            <div className="absolute inset-[9px] rounded-full bg-cyan-300/28 animate-pulse" />
-          </div>
-        </div>
+        <button
+          type="button"
+          disabled={isStarting}
+          onClick={() => {
+            if (beginPretestFromIntro()) setIsStarting(true);
+          }}
+          className="relative mt-7 min-h-12 min-w-32 rounded-2xl border border-emerald-200/70 bg-gradient-to-r from-green-500 to-emerald-600 px-10 py-3 text-xl font-black tracking-wide text-white shadow-[0_14px_30px_rgba(5,150,105,0.38)] transition hover:-translate-y-0.5 hover:from-green-400 hover:to-emerald-500 active:translate-y-0 disabled:cursor-default disabled:opacity-70 sm:min-h-14 sm:min-w-40 sm:text-2xl"
+        >
+          {isStarting ? 'STARTING…' : 'GO'}
+        </button>
       </div>
     </>
   );

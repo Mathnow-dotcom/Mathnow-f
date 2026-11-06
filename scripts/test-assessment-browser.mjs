@@ -241,7 +241,16 @@ try {
       await wait(() => evaluate('!!document.querySelector("[data-operation=sub]")'),'Subtraction card');
       await evaluate('document.querySelector("[data-operation=sub]").click()');
       await click('Open Level 2');
-      if (!correctionMode.startsWith('pretest')) {
+      if (correctionMode.startsWith('pretest')) {
+        await wait(() => evaluate('location.pathname === "/pretest-intro"'),'Pretest intro before correction resume');
+        await see('LEVEL 2 PREVIEW');
+        await see('GET READY');
+        const startsBeforeGo = calls.filter(c => c.path === '/quiz/start').length;
+        await delay(150);
+        assert.equal(calls.filter(c => c.path === '/quiz/start').length, startsBeforeGo,
+          'Pretest correction must not resume before GO');
+        await click('GO');
+      } else {
         await wait(() => evaluate('location.pathname === "/belts"'),'Belt picker before resume');
         await wait(() => evaluate(`Array.from(document.querySelectorAll('button')).some(b => b.textContent.includes('Yellow') && b.textContent.includes('Belt'))`),'Yellow Belt rendered');
         await evaluate(`Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Yellow') && b.textContent.includes('Belt')).click()`);

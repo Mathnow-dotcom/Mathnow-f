@@ -379,6 +379,7 @@ const useMathGame = () => {
   const questionStartTimestamp = useRef(null);
   const pretestTimerStartRef = useRef(null);
   const pretestTimerInitialRef = useRef(null);
+  const pretestIntroGoResolverRef = useRef(null);
   const inactivityTimeoutId = useRef(null);
   const isQuittingRef = useRef(false);
   const startQuizLockRef = useRef(false);
@@ -1644,6 +1645,14 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     ]
   );
 
+  const beginPretestFromIntro = useCallback(() => {
+    const release = pretestIntroGoResolverRef.current;
+    if (typeof release !== 'function') return false;
+    pretestIntroGoResolverRef.current = null;
+    release();
+    return true;
+  }, []);
+
   const startPretestRun = useCallback(
     async ({ prep, level, operation } = {}) => {
       const runId = prep?.quizRunId;
@@ -1678,6 +1687,9 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
       try {
         navigate('/pretest-intro', { replace: true });
+        await new Promise((resolve) => {
+          pretestIntroGoResolverRef.current = resolve;
+        });
         const started = await quizStart(runId, childPin);
         if (started.practice) { await resumeCorrectionRun(runId); return; }
         const backendQuestions = started?.questions || started?.run?.questions || [];
@@ -1844,8 +1856,6 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         }
 
         const prep = await quizPrepare(level, 'white', childPin, op);
-        if (prep?.correctionPending && prep.pretestMode) { await resumeCorrectionRun(prep.quizRunId); return; }
-
         if (prep?.pretestMode || prep?.gameModeType === 'pretest') {
           await startPretestRun({ prep, level, operation: op });
           return;
@@ -1878,7 +1888,6 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       selectedOperation,
       setSelectedOperation,
       startPretestRun,
-      resumeCorrectionRun,
       syncConfigFromStorage,
       tableProgress,
       applyProgressPayload,
@@ -3437,6 +3446,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     quizRunId,
     setQuizRunId,
     startLevelEntry,
+    beginPretestFromIntro,
     startQuizWithDifficulty,
     startActualQuiz,
     resumeCorrectionRun,
