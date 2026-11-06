@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { assessmentReports, assessmentExport, programReports } from '../api/mathApi.js';
 import '../styles/Assessment.css';
 
-const subjectNames = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', frac: 'Fraction To Decimal', completed: 'Completed' };
+const subjectNames = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', frac: 'Fractions to Decimals', completed: 'Completed' };
 
 const duration = (ms) => {
   const seconds = Math.round(ms / 1000);

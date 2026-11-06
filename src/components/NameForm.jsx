@@ -12,7 +12,7 @@ const formInputClass =
   "shadow-lg focus:outline-none focus:ring-0";
 const formSelectClass =
   "w-full max-w-[320px] sm:max-w-[340px] mx-auto mb-2 sm:mb-3 h-10 sm:h-12 " +
-  "px-3 sm:px-4 rounded-2xl text-gray-800 font-semibold text-base sm:text-lg " +
+  "px-3 sm:px-4 rounded-2xl font-semibold text-base sm:text-lg " +
   "bg-white border-4 border-green-300 shadow-lg focus:outline-none focus:ring-0";
 const labelClass =
   "text-base sm:text-lg md:text-xl text-center font-sans text-green-600 font-semibold tracking-wide mb-1";
@@ -353,14 +353,14 @@ const handleDemoClick = () => {
           <select
             id="student-school"
             name="student-school"
-            className={formSelectClass}
+            className={`${formSelectClass} ${school ? 'text-gray-800' : 'text-gray-400'}`}
             value={school}
             onChange={(event) => setSchool(event.target.value)}
             autoComplete="organization"
           >
-            <option value="">Select your school</option>
+            <option value="" disabled className="text-gray-400">Select your school</option>
             {SCHOOL_OPTIONS.map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option} className="text-gray-800">{option}</option>
             ))}
           </select>
 
@@ -370,13 +370,13 @@ const handleDemoClick = () => {
           <select
             id="student-grade"
             name="student-grade"
-            className={formSelectClass}
+            className={`${formSelectClass} ${grade ? 'text-gray-800' : 'text-gray-400'}`}
             value={grade}
             onChange={(event) => setGrade(event.target.value)}
           >
-            <option value="">Select your grade level</option>
+            <option value="" disabled className="text-gray-400">Select your grade level</option>
             {GRADE_OPTIONS.map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option} className="text-gray-800">{option}</option>
             ))}
           </select>
 
