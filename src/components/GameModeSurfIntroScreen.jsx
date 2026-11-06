@@ -90,10 +90,11 @@ const GameModeSurfIntroScreen = () => {
         .surf-icon {
           position: relative;
           z-index: 1;
-          display: inline-block;
-          color: #effbff;
-          line-height: 1;
-          text-shadow: 0 8px 20px rgba(8,47,73,0.42);
+          display: block;
+          width: 82%;
+          height: 82%;
+          object-fit: contain;
+          object-position: center;
           animation: surf-icon-bob 1.7s ease-in-out infinite, surf-icon-flicker 1.55s ease-in-out infinite;
           transform-origin: center;
         }
@@ -175,7 +176,7 @@ const GameModeSurfIntroScreen = () => {
                 <div className="surf-badge">
                   <div className="surf-badge-shine" />
                   <div className="surf-wave" />
-                  <span className="surf-icon text-5xl sm:text-6xl">🏄</span>
+                  <img className="surf-icon" src="/ziggy.jpg" alt="Ziggy surfing" />
                 </div>
 
                 <h1 className="mx-auto max-w-full whitespace-nowrap text-[clamp(2.4rem,7vw,5.4rem)] font-black uppercase italic tracking-[0.04em] text-white drop-shadow-[0_8px_24px_rgba(44,108,255,0.45)]">

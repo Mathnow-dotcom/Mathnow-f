@@ -1290,6 +1290,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       navigateToIntro = false,
       gameModeType: requestedGameModeType = 'lightning',
       suppressStartError = false,
+      preparedRun = null,
     } = {}) => {
       syncConfigFromStorage();
 
@@ -1349,17 +1350,33 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
       try {
         const targetCorrect = null;
-        const prep = await quizPrepare(
-          reqLevel,
-          reqBelt,
-          childPin,
-          reqOperation,
-          true,
-          targetCorrect,
-          requestedGameModeType
-        );
+        const prep = preparedRun?.quizRunId
+          ? preparedRun
+          : await quizPrepare(
+              reqLevel,
+              reqBelt,
+              childPin,
+              reqOperation,
+              true,
+              targetCorrect,
+              requestedGameModeType
+            );
         if (prep?.correctionPending) { await resumeCorrectionRun(prep.quizRunId); return; }
         applyInactivityTimeout(prep);
+
+        const activeLevel = prep?.level ?? reqLevel;
+        const activeBelt = prep?.beltOrDegree || reqBelt;
+        const activeOperation = normalizeOperation(prep?.operation || reqOperation);
+        const activeGameModeType = prep?.gameModeType || requestedGameModeType || 'lightning';
+        setSelectedTable(activeLevel);
+        setSelectedDifficulty(activeBelt);
+        setPendingDifficulty(activeBelt);
+        setSelectedOperation(activeOperation);
+        setGameModeType(activeGameModeType);
+        localStorage.setItem('game-mode-belt', activeBelt);
+        localStorage.setItem('game-mode-table', String(activeLevel));
+        localStorage.setItem('game-mode-operation', activeOperation);
+        localStorage.setItem('game-mode-pin', childPin);
 
         setQuizRunId(prep.quizRunId);
         const totalCorrect = typeof prep.totalCorrect === 'number' ? prep.totalCorrect : 0;
@@ -1902,7 +1919,10 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   const startQuizWithDifficulty = useCallback(
     async (difficulty, table) => {
       syncConfigFromStorage();
-      hardResetQuizState();
+      // Keep the last Game Mode context until the backend confirms whether a
+      // persisted run exists. Clearing it first can turn a relogin into a new
+      // belt quiz instead of resuming Surf/Rocket/Bonus mode.
+      hardResetQuizState({ preserveGameModeContext: true });
       setSelectedDifficulty(difficulty);
       setSelectedTable(table);
       setPendingDifficulty(difficulty);
@@ -1936,13 +1956,17 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
           setIsInitialPrepLoading(false);
           // direct resume into game mode question screen
           await startOrResumeGameModeRun({
-            level: table,
-            beltOrDegree: difficulty,
+            level: prep?.level ?? table,
+            beltOrDegree: prep?.beltOrDegree || difficulty,
+            operation: prep?.operation || selectedOperation,
             gameModeType: prep?.gameModeType || 'lightning',
+            preparedRun: prep,
             navigateToGameMode: true,
           });
           return;
         }
+
+        clearStoredGameModeContext();
 
         const { quizRunId: newRunId, practice: practiceItems, resumed = false } = prep;
 
@@ -1990,6 +2014,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       selectedOperation,
       showUiMessage,
       applyInactivityTimeout,
+      clearStoredGameModeContext,
     ]
   );
 
