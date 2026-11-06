@@ -263,21 +263,17 @@ const GameModeScreen = () => {
           </div>
 
           {isSurfMode && surfCorrectStreak > 0 && (
-            <div className="flex justify-center items-center gap-8 mt-2 sm:mt-3 mb-4 sm:mb-5 text-2xl sm:text-3xl">
+            <div className="flex max-w-full flex-wrap justify-center items-center gap-2 sm:gap-3 mt-2 sm:mt-3 mb-4 sm:mb-5">
               {Array.from({ length: surfEmojiCount }).map((_, index) => (
-                <span
+                <img
                   key={`surf-emoji-${index}`}
-                  role="img"
-                  aria-label="surfboard rider"
-                  className="inline-block"
+                  src="/ziggy.jpg"
+                  alt="Ziggy surfing"
+                  className="h-9 w-9 shrink-0 object-contain sm:h-11 sm:w-11 md:h-14 md:w-14"
                   style={{
-                    transform: 'scale(2.5)',
-                    transformOrigin: 'center',
                     filter: 'drop-shadow(0 0 18px rgba(143,215,255,0.34))',
                   }}
-                >
-                  {String.fromCodePoint(0x1f3c4)}
-                </span>
+                />
               ))}
             </div>
           )}
