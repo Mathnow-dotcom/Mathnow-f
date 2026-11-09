@@ -170,7 +170,6 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
         {complete ? <>
           <h1 role="status">Test complete</h1><p>{legacy ? 'Returning to tests…' : 'Returning to your subjects…'}</p>
         </> : !running ? <>
-          <span className="assessment-card-symbol" aria-hidden="true">{{ A: '＋', B: '−', C: '×', D: '÷' }[testType]}</span>
           <h1>{{ A: 'Addition', B: 'Subtraction', C: 'Multiplication', D: 'Division' }[testType]}{testType === 'A' && (attempt ? attempt.part : additionPart) ? ` — Part ${attempt ? attempt.part : additionPart}` : ''}</h1>
           <p>THIS IS A TIMED TEST.</p>
           <div className="assessment-card-actions">
