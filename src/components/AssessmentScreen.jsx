@@ -172,7 +172,7 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
         </> : !running ? <>
           <span className="assessment-card-symbol" aria-hidden="true">{{ A: '＋', B: '−', C: '×', D: '÷' }[testType]}</span>
           <h1>{{ A: 'Addition', B: 'Subtraction', C: 'Multiplication', D: 'Division' }[testType]}{testType === 'A' && (attempt ? attempt.part : additionPart) ? ` — Part ${attempt ? attempt.part : additionPart}` : ''}</h1>
-          <p>THIS TEST IS TIMED.</p>
+          <p>THIS IS A TIMED TEST.</p>
           <div className="assessment-card-actions">
           <button disabled={busy || !loaded} onClick={begin}>{busy ? 'Loading…' : 'Start'}</button>
           <button className="assessment-secondary" disabled={busy} onClick={() => navigate(returnPath)}>Back</button>
