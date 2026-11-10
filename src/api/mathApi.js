@@ -671,6 +671,10 @@ export const restoreUserProgress = async (adminPin, payload) => {
   return callApi('/admin/restore-user', 'POST', payload, adminPin);
 };
 
+export const adminCreateUser = async (adminPin, payload) => {
+  return callApi('/admin/users', 'POST', payload, adminPin);
+};
+
 export const updateAppConfig = async (adminPin, payload) => {
   return callApi('/config', 'PUT', payload, adminPin);
 };

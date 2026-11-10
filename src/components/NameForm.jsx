@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { getAdminStats } from '../api/mathApi.js';
-import { FaUserShield } from 'react-icons/fa';
+import { FaExclamationCircle, FaTimes, FaUserShield } from 'react-icons/fa';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
 
 const formInputClass =
@@ -187,6 +187,13 @@ const NameForm = () => {
 
     return () => clearInterval(timer);
   }, [isLoginLoading, loadingMessages.length]);
+
+  useEffect(() => {
+    if (!error) return undefined;
+
+    const dismissTimer = window.setTimeout(() => setError(''), 6000);
+    return () => window.clearTimeout(dismissTimer);
+  }, [error]);
 
   useEffect(() => {
     if (!isAdminLoading) {
@@ -408,12 +415,6 @@ const handleDemoClick = () => {
             />
           </div>
 
-          {error && (
-            <div className="text-red-300 text-sm mb-2 text-center">
-              {error}
-            </div>
-          )}
-
           <div className="flex justify-center space-x-2 mt-1">
             <button
               type="submit"
@@ -434,6 +435,37 @@ const handleDemoClick = () => {
           </div>
         </form>
       </div>
+
+      {error && (
+        <div
+          className="fixed left-1/2 top-3 sm:top-5 z-[120] w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 animate-pop-in"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
+          <div className="flex items-start gap-3 rounded-2xl border border-red-200/60 bg-white/95 px-4 py-3.5 shadow-2xl backdrop-blur-md sm:px-5 sm:py-4">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+              <FaExclamationCircle className="text-lg" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1 font-sans">
+              <p className="m-0 text-sm font-extrabold tracking-wide text-gray-900 sm:text-base">
+                Unable to sign in
+              </p>
+              <p className="m-0 mt-0.5 text-sm font-medium leading-5 text-gray-600">
+                {error}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setError('')}
+              className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+              aria-label="Dismiss login error"
+            >
+              <FaTimes aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {isLoginLoading && (  
         <div 
