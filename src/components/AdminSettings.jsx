@@ -19,13 +19,12 @@ import {
   FaUndoAlt,
 } from 'react-icons/fa';
 import {
-  getAppConfig,
+  getModuleAppConfig,
   reloadAppConfig,
   restoreUserProgress,
-  resetAppConfig,
+  resetModuleAppConfig,
   updateAdminPin,
-  updateAppConfig,
-  updateBlackBeltTimer,
+  updateModuleAppConfig,
 } from '../api/mathApi.js';
 
 const DEFAULT_NUMBERS = {
@@ -54,6 +53,13 @@ const DEFAULT_NUMBERS = {
 const PRETEST_LEVEL_COUNT = 19;
 const RESTORE_OPERATION_KEYS = ['add', 'sub', 'mul', 'div', 'frac'];
 const TOAST_DURATION_MS = 1500;
+const MODULE_OPTIONS = [
+  { value: 'add', label: 'Addition' },
+  { value: 'sub', label: 'Subtraction' },
+  { value: 'mul', label: 'Multiplication' },
+  { value: 'div', label: 'Division' },
+  { value: 'frac', label: 'Fractions to Decimals' },
+];
 
 const toInt = (value, fallback) => {
   const parsed = Number.parseInt(value, 10);
@@ -257,6 +263,12 @@ const buildConfigPayload = (values) => {
   const pretestQuestionCount = toInt(values.pretestQuestionCount, DEFAULT_NUMBERS.pretestQuestionCount);
 
   return {
+    blackBeltTimersMs: Object.fromEntries(
+      Array.from({ length: 7 }, (_, index) => {
+        const degree = index + 1;
+        return [String(degree), toInt(values[`blackDegree${degree}`], DEFAULT_NUMBERS[`blackDegree${degree}`]) * 1000];
+      })
+    ),
     lightningTargetCorrect: lightningTarget,
     lightningFastThresholdMs: lightningTimer * 1000,
     surfQuestionsPerQuiz,
@@ -270,6 +282,8 @@ const buildConfigPayload = (values) => {
     correctionRoundLimitMs: toInt(values.correctionTimer, DEFAULT_NUMBERS.correctionTimer) * 1000,
     pretestInactivityThresholdMs: pretestInactivityTimer * 1000,
     pretestQuestionCount,
+    pretestTimeLimitMs:
+      toInt(values.pretestDefaultTimer, DEFAULT_NUMBERS.pretestDefaultTimer) * 1000,
     pretestMode: {
       questionCount: pretestQuestionCount,
     },
@@ -346,6 +360,7 @@ const SettingField = ({
 const AdminSettings = () => {
   const navigate = useNavigate();
   const [adminPin, setAdminPin] = useState(() => localStorage.getItem('math-admin-pin'));
+  const [selectedModule, setSelectedModule] = useState('add');
 
   useEffect(() => {
     if (!adminPin) {
@@ -448,7 +463,7 @@ const AdminSettings = () => {
       if (!preserveStatus) setStatus(null);
       setIsLoading(true);
       try {
-        const config = await getAppConfig(storedPin);
+        const config = await getModuleAppConfig(storedPin, selectedModule);
         const mapped = mapConfigToValues(config);
         setValues(mapped);
         setBaselineValues(mapped);
@@ -464,7 +479,7 @@ const AdminSettings = () => {
         setIsLoading(false);
       }
     },
-    [adminPin, navigate]
+    [adminPin, navigate, selectedModule]
   );
 
   useEffect(() => {
@@ -520,6 +535,7 @@ const AdminSettings = () => {
         'correctionTimer',
         'pretestInactivityTimer',
         'pretestQuestionCount',
+        'pretestDefaultTimer',
       ];
       const hasGeneralChanges = generalKeys.some(
         (key) => values[key] !== baselineValues[key]
@@ -529,7 +545,7 @@ const AdminSettings = () => {
         baselineValues.pretestTimersPerLevel
       );
 
-      if (hasGeneralChanges || hasPerLevelPretestTimerChanges) {
+      if (hasGeneralChanges || hasPerLevelPretestTimerChanges || degreeChanges.length > 0) {
         const bonusTargetCorrect = toInt(
           values.bonusTargetCorrect,
           DEFAULT_NUMBERS.bonusTargetCorrect
@@ -582,24 +598,14 @@ const AdminSettings = () => {
             payload.pretestTimeLimitsPerLevelMs = pretestTimeLimitsPerLevelMs;
           }
         }
-        await updateAppConfig(storedPin, payload);
-      }
-
-      if (degreeChanges.length > 0) {
-        await Promise.all(
-          degreeChanges.map(({ key, degree }) =>
-            updateBlackBeltTimer(storedPin, degree, {
-              timerMs: toInt(values[key], DEFAULT_NUMBERS[`blackDegree${degree}`]) * 1000,
-            })
-          )
-        );
+        await updateModuleAppConfig(storedPin, selectedModule, payload);
       }
 
       if (hasGeneralChanges || hasPerLevelPretestTimerChanges || degreeChanges.length > 0) {
         await reloadAppConfig(storedPin);
       }
 
-      const refreshed = await getAppConfig(storedPin);
+      const refreshed = await getModuleAppConfig(storedPin, selectedModule);
       const refreshedConfig = refreshed?.config || refreshed;
       let refreshedMapped = mapConfigToValues(refreshedConfig);
 
@@ -619,15 +625,16 @@ const AdminSettings = () => {
       });
 
       if (mismatchedDegrees.length > 0) {
-        await Promise.all(
-          mismatchedDegrees.map(({ key, degree }) =>
-            updateBlackBeltTimer(storedPin, degree, {
-              timerMs: toInt(values[key], DEFAULT_NUMBERS[`blackDegree${degree}`]) * 1000,
-            })
-          )
-        );
+        await updateModuleAppConfig(storedPin, selectedModule, {
+          blackBeltTimersMs: Object.fromEntries(
+            mismatchedDegrees.map(({ key, degree }) => [
+              String(degree),
+              toInt(values[key], DEFAULT_NUMBERS[`blackDegree${degree}`]) * 1000,
+            ])
+          ),
+        });
         await reloadAppConfig(storedPin);
-        const synced = await getAppConfig(storedPin);
+        const synced = await getModuleAppConfig(storedPin, selectedModule);
         const syncedConfig = synced?.config || synced;
         refreshedMapped = mapConfigToValues(syncedConfig);
       }
@@ -738,7 +745,7 @@ const AdminSettings = () => {
         }
       }
 
-      setStatus({ type: 'success', message: 'Settings saved.' });
+      setStatus({ type: 'success', message: `${MODULE_OPTIONS.find((item) => item.value === selectedModule)?.label} settings saved.` });
     } catch (e) {
       setStatus({ type: 'error', message: e.message || 'Failed to save settings.' });
     } finally {
@@ -755,9 +762,9 @@ const AdminSettings = () => {
     setIsSaving(true);
     setStatus(null);
     try {
-      await resetAppConfig(storedPin);
+      await resetModuleAppConfig(storedPin, selectedModule);
       await loadConfig({ preserveStatus: true });
-      setStatus({ type: 'success', message: 'Settings reset to defaults.' });
+      setStatus({ type: 'success', message: 'Selected module reset to defaults.' });
     } catch (e) {
       setStatus({ type: 'error', message: e.message || 'Failed to reset settings.' });
     } finally {
@@ -981,6 +988,29 @@ const AdminSettings = () => {
             </p>
           </div>
         </div>
+      </div>
+
+      <div className="mb-5 rounded-[1.5rem] border border-[#4d8be6]/38 bg-[linear-gradient(180deg,rgba(10,27,70,0.9),rgba(7,21,58,0.82))] p-4 shadow-[0_18px_44px_rgba(0,8,26,0.38)] backdrop-blur-xl sm:p-5">
+        <label className="block max-w-xl">
+          <span className="mb-2 block text-sm font-extrabold uppercase tracking-[0.12em] text-[#8ddbff]">
+            Configure module
+          </span>
+          <select
+            value={selectedModule}
+            onChange={(event) => setSelectedModule(event.target.value)}
+            disabled={isBusy}
+            className="w-full rounded-2xl border border-[#63cfff]/40 bg-[#071b46] px-4 py-3 text-base font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] outline-none transition focus:border-[#6fffd2] focus:ring-2 focus:ring-[#6fffd2]/20 disabled:opacity-60"
+          >
+            {MODULE_OPTIONS.map((module) => (
+              <option key={module.value} value={module.value}>
+                {module.label}
+              </option>
+            ))}
+          </select>
+          <span className="mt-2 block text-sm leading-5 text-[#a7bedf]">
+            Changes below apply only to the selected module.
+          </span>
+        </label>
       </div>
 
       {isLoading && (

@@ -663,6 +663,10 @@ export const getAppConfig = async (adminPin) => {
   return callApi('/config', 'GET', null, adminPin);
 };
 
+export const getModuleAppConfig = async (adminPin, operation) => {
+  return callApi(`/config/module/${encodeURIComponent(operation)}`, 'GET', null, adminPin);
+};
+
 export const restoreUserProgress = async (adminPin, payload) => {
   return callApi('/admin/restore-user', 'POST', payload, adminPin);
 };
@@ -671,8 +675,16 @@ export const updateAppConfig = async (adminPin, payload) => {
   return callApi('/config', 'PUT', payload, adminPin);
 };
 
+export const updateModuleAppConfig = async (adminPin, operation, payload) => {
+  return callApi(`/config/module/${encodeURIComponent(operation)}`, 'PUT', payload, adminPin);
+};
+
 export const resetAppConfig = async (adminPin) => {
   return callApi('/config/reset', 'POST', {}, adminPin);
+};
+
+export const resetModuleAppConfig = async (adminPin, operation) => {
+  return callApi(`/config/module/${encodeURIComponent(operation)}/reset`, 'POST', {}, adminPin);
 };
 
 export const reloadAppConfig = async (adminPin) => {

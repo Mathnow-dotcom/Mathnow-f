@@ -620,6 +620,11 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     if (typeof nextTarget === 'number') {
       setLightningTargetCorrect(nextTarget);
     }
+    const nextFastThreshold = Number(payload?.lightningFastThresholdMs);
+    if (Number.isFinite(nextFastThreshold) && nextFastThreshold > 0) {
+      setLightningFastThresholdMs(nextFastThreshold);
+      localStorage.setItem(LIGHTNING_FAST_MS_STORAGE_KEY, String(nextFastThreshold));
+    }
   }, []);
 
   const applyInactivityTimeout = useCallback((...sources) => {
