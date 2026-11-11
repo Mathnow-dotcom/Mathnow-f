@@ -87,11 +87,11 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
   return <div className="keypad-overlay fixed inset-0 z-50 flex items-center justify-center overflow-hidden p-4 font-comic" style={{background:"#082338 url('/night_sky_landscape.jpg') center / cover"}}>
     <section className={`learning-keypad-card ${['practice','retry'].includes(state.phase) && !reverse ? 'bg-[#d3d3d3]' : 'bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100'} rounded-3xl shadow-2xl my-auto shrink-0 p-6 sm:p-8 w-full ${shown ? 'max-w-2xl' : 'max-w-md'}`}>
       {shown ? <>
-        <div className="font-bold text-green-600 mb-6 text-center text-[clamp(2rem,8vw,5rem)]">{q.question.replace(/\s*=\s*\?\s*$/, '')} = {displayAnswer}</div>
+        <div className={`font-bold text-green-600 mb-6 text-center text-[clamp(2rem,8vw,5rem)] ${q.operation === 'frac' ? 'fraction-question-prompt' : ''}`}>{q.question.replace(/\s*=\s*\?\s*$/, '')} = {displayAnswer}</div>
         <div className="text-center"><button disabled={busy || paused || !!error} onClick={() => send('next')}
           className="bg-green-600 text-white font-bold py-2 px-8 rounded-xl shadow-lg disabled:cursor-default">Next</button></div>
       </> : ['practice','retry'].includes(state.phase) && reverse ? <>
-        <div className="learning-keypad-question learning-keypad-question--correction text-6xl sm:text-7xl font-extrabold text-center mb-6 whitespace-pre-line">{q.question}</div>
+        <div className={`learning-keypad-question learning-keypad-question--correction text-6xl sm:text-7xl font-extrabold text-center mb-6 whitespace-pre-line ${q.operation === 'frac' ? 'fraction-question-prompt' : ''}`}>{q.question}</div>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-md mx-auto">
           {state.question.textChoices.map((expression, index) => <button key={index} type="button"
             disabled={busy || paused || !!error}
@@ -101,7 +101,7 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
           </button>)}
         </div>
       </> : ['practice','retry'].includes(state.phase) ? <form onSubmit={submit}>
-        <div className="learning-keypad-question learning-keypad-question--correction text-6xl sm:text-7xl font-extrabold text-center mb-6 whitespace-pre-line">{q.question}</div>
+        <div className={`learning-keypad-question learning-keypad-question--correction text-6xl sm:text-7xl font-extrabold text-center mb-6 whitespace-pre-line ${q.operation === 'frac' ? 'fraction-question-prompt' : ''}`}>{q.question}</div>
         <input aria-label="Correction answer" inputMode="none" autoComplete="off" value={input}
           onChange={e => setInput(e.target.value.replace(Number.isFinite(q.answerScale) ? /[^0-9.]/g : /[^0-9]/g,'').replace(/^0\./, '.').slice(0,10))}
           disabled={busy || paused || !!error} placeholder="Type answer"

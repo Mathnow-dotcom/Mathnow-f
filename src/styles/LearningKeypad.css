@@ -8,6 +8,17 @@
   max-width: 24rem;
   margin-inline: auto;
 }
+
+/* Fraction prompts are full instructions rather than short equations. Keep
+   them balanced and readable across the shared quiz/correction/game keypads. */
+.fraction-question-prompt {
+  max-width: 100%;
+  font-size: clamp(1.65rem, 3.2vw, 2.6rem) !important;
+  line-height: 1.15 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
 .learning-keypad > button {
   grid-column: span 2;
   width: 100%;

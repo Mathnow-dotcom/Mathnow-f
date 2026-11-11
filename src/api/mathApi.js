@@ -291,15 +291,25 @@ export function mapQuestionToFrontend(backendQuestion) {
     questionString = `${a} ${symbolByOperation(operation)} ${b}`;
   }
 
-  // Fractions are displayed like the other operations: the expression only.
-  // Trim the suffix here as well so an already-created question from before
-  // this display change is rendered consistently when it is resumed.
+  // Give fraction questions an explicit instruction. Rebuild the wording from
+  // params when possible so saved/in-progress questions created by older app
+  // versions are upgraded on display as well.
   if (operation === 'frac' && typeof questionString === 'string') {
-    questionString = questionString.replace(/\s*=\s*\?\s*$/, '');
-    // Rocket asks the reverse question. Reconstruct a decimal label for an
-    // older saved Rocket question whose prompt still contains the scaled value.
+    const removeInstruction = (value) =>
+      String(value ?? '')
+        .replace(/^\s*convert\s+/i, '')
+        .replace(/\s+to\s+(?:a\s+)?(?:decimal|fraction)\s*$/i, '')
+        .replace(/\s*=\s*\?\s*$/, '')
+        .trim();
+
     if (isRocketQuestion && Number.isFinite(a) && Number.isFinite(b)) {
-      questionString = formatFractionAnswer(Math.round((a * 1000) / b));
+      questionString = `Convert ${formatFractionAnswer(Math.round((a * 1000) / b))} to fraction`;
+    } else if (isRocketQuestion) {
+      questionString = `Convert ${withoutFractionLeadingZero(removeInstruction(questionString))} to fraction`;
+    } else if (Number.isFinite(a) && Number.isFinite(b)) {
+      questionString = `Convert ${a}/${b} to decimal`;
+    } else {
+      questionString = `Convert ${removeInstruction(questionString)} to decimal`;
     }
     questionString = withoutFractionLeadingZero(questionString);
   }
@@ -393,6 +403,7 @@ export function mapQuestionToFrontend(backendQuestion) {
     answerLabels: isRocketQuestion ? displayedTextChoices : fractionAnswerLabels,
     answerScale: fractionAnswerScale,
     isRocketQuestion,
+    isFractionQuestion: operation === 'frac',
   };
 }
 
@@ -652,16 +663,32 @@ export const getAppConfig = async (adminPin) => {
   return callApi('/config', 'GET', null, adminPin);
 };
 
+export const getModuleAppConfig = async (adminPin, operation) => {
+  return callApi(`/config/module/${encodeURIComponent(operation)}`, 'GET', null, adminPin);
+};
+
 export const restoreUserProgress = async (adminPin, payload) => {
   return callApi('/admin/restore-user', 'POST', payload, adminPin);
+};
+
+export const adminCreateUser = async (adminPin, payload) => {
+  return callApi('/admin/users', 'POST', payload, adminPin);
 };
 
 export const updateAppConfig = async (adminPin, payload) => {
   return callApi('/config', 'PUT', payload, adminPin);
 };
 
+export const updateModuleAppConfig = async (adminPin, operation, payload) => {
+  return callApi(`/config/module/${encodeURIComponent(operation)}`, 'PUT', payload, adminPin);
+};
+
 export const resetAppConfig = async (adminPin) => {
   return callApi('/config/reset', 'POST', {}, adminPin);
+};
+
+export const resetModuleAppConfig = async (adminPin, operation) => {
+  return callApi(`/config/module/${encodeURIComponent(operation)}/reset`, 'POST', {}, adminPin);
 };
 
 export const reloadAppConfig = async (adminPin) => {

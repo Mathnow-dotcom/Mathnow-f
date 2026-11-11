@@ -236,8 +236,8 @@ const QuizScreen = () => {
               <h3
                 className={
                   useBlackStyle
-                    ? 'learning-keypad-question text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow'
-                    : 'text-7xl font-extrabold text-green-600 mb-1 sm:mb-2 drop-shadow-lg'
+                    ? `learning-keypad-question text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow ${currentQuestion?.operation === 'frac' ? 'fraction-question-prompt' : ''}`
+                    : `text-7xl font-extrabold text-green-600 mb-1 sm:mb-2 drop-shadow-lg ${currentQuestion?.operation === 'frac' ? 'fraction-question-prompt' : ''}`
                 }
               >
                 {currentQuestion?.question || '1 + 1'}

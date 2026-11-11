@@ -723,7 +723,7 @@ useEffect(() => {
          if (isClosing) return null;
         return (
           <>
-            <div className={factLineClass}>
+            <div className={`${factLineClass} ${practiceQ?.operation === 'frac' ? 'fraction-question-prompt' : ''}`}>
               {extractFactDisplay(practiceQ)}
             </div>
             <div className="flex justify-center">
@@ -745,7 +745,7 @@ useEffect(() => {
           }));
           return (
             <>
-              <div className="text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow">
+              <div className={`text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow ${practiceQ?.operation === 'frac' ? 'fraction-question-prompt' : ''}`}>
                 {reverseQuestion}
               </div>
               <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-md mx-auto">
@@ -766,7 +766,7 @@ useEffect(() => {
 
         return (
           <>
-            <div className="learning-keypad-question text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow">
+            <div className={`learning-keypad-question text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow ${practiceQ?.operation === 'frac' ? 'fraction-question-prompt' : ''}`}>
               {extractQuestion(practiceQ)}
             </div>
 
@@ -841,7 +841,7 @@ useEffect(() => {
       if (isShowingFact) {
         return (
           <>
-            <div className={factLineClass}>
+            <div className={`${factLineClass} ${practiceQ?.operation === 'frac' ? 'fraction-question-prompt' : ''}`}>
               {extractFactDisplay(practiceQ)}
             </div>
             <div className="flex justify-center">
@@ -858,7 +858,7 @@ useEffect(() => {
         const answers = practiceQ.answers || [];
         return (
           <>
-            <div className="text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow">
+            <div className={`text-6xl sm:text-7xl font-extrabold text-green-500 text-center mb-6 whitespace-pre-line drop-shadow ${practiceQ?.operation === 'frac' ? 'fraction-question-prompt' : ''}`}>
               {extractQuestion(practiceQ)}
             </div>
 

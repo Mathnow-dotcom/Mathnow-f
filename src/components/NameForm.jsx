@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { getAdminStats } from '../api/mathApi.js';
-import { FaUserShield } from 'react-icons/fa';
+import { FaTimes, FaUserShield } from 'react-icons/fa';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
 
 const formInputClass =
@@ -187,6 +187,13 @@ const NameForm = () => {
 
     return () => clearInterval(timer);
   }, [isLoginLoading, loadingMessages.length]);
+
+  useEffect(() => {
+    if (!error) return undefined;
+
+    const dismissTimer = window.setTimeout(() => setError(''), 6000);
+    return () => window.clearTimeout(dismissTimer);
+  }, [error]);
 
   useEffect(() => {
     if (!isAdminLoading) {
@@ -408,12 +415,6 @@ const handleDemoClick = () => {
             />
           </div>
 
-          {error && (
-            <div className="text-red-300 text-sm mb-2 text-center">
-              {error}
-            </div>
-          )}
-
           <div className="flex justify-center space-x-2 mt-1">
             <button
               type="submit"
@@ -434,6 +435,29 @@ const handleDemoClick = () => {
           </div>
         </form>
       </div>
+
+      {error && (
+        <div
+          className="fixed inset-x-0 top-3 z-[120] flex justify-center px-3 sm:top-5 sm:px-5"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
+          <div className="relative flex w-full max-w-sm animate-pop-in items-center rounded-2xl border border-green-300/70 bg-green-700 px-12 py-3 text-white shadow-2xl sm:py-3.5">
+            <p className="m-0 w-full text-center font-sans text-base font-extrabold tracking-wide sm:text-lg">
+              {error}
+            </p>
+            <button
+              type="button"
+              onClick={() => setError('')}
+              className="absolute right-3 flex h-8 w-8 items-center justify-center rounded-full text-green-100 transition hover:bg-white/15 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/70"
+              aria-label="Dismiss login error"
+            >
+              <FaTimes aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {isLoginLoading && (  
         <div 

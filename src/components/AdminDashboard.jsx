@@ -10,14 +10,19 @@ import {
   FaCircle,
   FaStar,
   FaFire,
+  FaUserPlus,
+  FaTimes,
 } from 'react-icons/fa';
-import { getAdminStats, userGetProgress } from '../api/mathApi.js';
+import { adminCreateUser, getAdminStats, userGetProgress } from '../api/mathApi.js';
 import '../styles/AdminDashboard.css';
 import { currentProgramProgress } from '../utils/currentProgress.js';
 
 const MS_PER_SEC = 1000;
 const PROGRESS_PLACEHOLDER = 'Loading...';
 const LOADING_DOTS = ['.', '..', '...'];
+const SCHOOL_OPTIONS = ['School A', 'School B', 'School C'];
+const GRADE_OPTIONS = ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+const EMPTY_USER_FORM = { name: '', pin: '', school: '', grade: '' };
 
 const formatTime = (ms) => {
   const safeMs = Number(ms);
@@ -217,10 +222,16 @@ const AdminDashboard = () => {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(() => new Date());
+  const [refreshKey, setRefreshKey] = useState(0);
   const loadMoreSentinelRef = useRef(null);
   const requestingNextPageRef = useRef(false);
 
   const [adminPin, setAdminPin] = useState(() => localStorage.getItem('math-admin-pin'));
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [createUserForm, setCreateUserForm] = useState(EMPTY_USER_FORM);
+  const [createUserError, setCreateUserError] = useState('');
+  const [createUserSuccess, setCreateUserSuccess] = useState('');
+  const [creatingUser, setCreatingUser] = useState(false);
 
   useEffect(() => {
     const storedPin = localStorage.getItem('math-admin-pin');
@@ -319,7 +330,7 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [adminPin, offset, navigate]);
+  }, [adminPin, offset, navigate, refreshKey]);
 
   useEffect(() => {
     fetchStats();
@@ -372,6 +383,73 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('math-admin-pin');
     navigate('/name', { replace: true });
+  };
+
+  const openCreateUser = () => {
+    setCreateUserForm(EMPTY_USER_FORM);
+    setCreateUserError('');
+    setCreateUserSuccess('');
+    setShowCreateUser(true);
+  };
+
+  const closeCreateUser = () => {
+    if (creatingUser) return;
+    setShowCreateUser(false);
+    setCreateUserError('');
+    setCreateUserSuccess('');
+  };
+
+  const updateCreateUserField = (field, value) => {
+    const nextValue = field === 'pin' ? value.replace(/\D/g, '').slice(0, 4) : value;
+    setCreateUserForm((previous) => ({ ...previous, [field]: nextValue }));
+    setCreateUserError('');
+    setCreateUserSuccess('');
+  };
+
+  const handleCreateUser = async (event) => {
+    event.preventDefault();
+    if (creatingUser) return;
+
+    const name = createUserForm.name.trim();
+    const pin = createUserForm.pin.trim();
+    if (name.length < 2) {
+      setCreateUserError('Enter a name with at least 2 characters.');
+      return;
+    }
+    if (!/^\d{2,4}$/.test(pin)) {
+      setCreateUserError('Enter a PIN containing 2 to 4 digits.');
+      return;
+    }
+    if (!createUserForm.school || !createUserForm.grade) {
+      setCreateUserError('Select both a school and grade level.');
+      return;
+    }
+
+    const storedPin = localStorage.getItem('math-admin-pin') || adminPin;
+    if (!storedPin) {
+      navigate('/name', { replace: true });
+      return;
+    }
+
+    try {
+      setCreatingUser(true);
+      setCreateUserError('');
+      const response = await adminCreateUser(storedPin, {
+        name,
+        pin,
+        school: createUserForm.school,
+        grade: createUserForm.grade,
+      });
+      setCreateUserSuccess(response?.message || 'User created successfully');
+      setCreateUserForm(EMPTY_USER_FORM);
+      setStats([]);
+      setOffset(0);
+      setRefreshKey((key) => key + 1);
+    } catch (creationError) {
+      setCreateUserError(creationError?.message || 'Unable to create the user.');
+    } finally {
+      setCreatingUser(false);
+    }
   };
 
   const handleViewStats = (student) => {
@@ -475,6 +553,15 @@ const AdminDashboard = () => {
           </div>
 
           <div className="admin-dashboard__actions">
+            <button
+              onClick={openCreateUser}
+              type="button"
+              className="admin-dashboard__btn admin-dashboard__btn--create"
+              aria-label="Create a new student"
+            >
+              <FaUserPlus className="admin-dashboard__btn-icon" />
+              <span>Create User</span>
+            </button>
             <button onClick={() => navigate('/admin/tests')} type="button"
               className="admin-dashboard__btn admin-dashboard__btn--settings">Test Results</button>
             <button
@@ -705,6 +792,109 @@ const AdminDashboard = () => {
           </>
         )}
       </div>
+
+      {showCreateUser && (
+        <div className="admin-dashboard__modal-backdrop" role="presentation" onMouseDown={closeCreateUser}>
+          <section
+            className="admin-dashboard__modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-user-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="admin-dashboard__modal-header">
+              <div>
+                <h2 id="create-user-title">Create Student User</h2>
+                <p>Assign the credentials the student will use to log in.</p>
+              </div>
+              <button
+                type="button"
+                className="admin-dashboard__modal-close"
+                onClick={closeCreateUser}
+                aria-label="Close create user form"
+                disabled={creatingUser}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <form className="admin-dashboard__create-form" onSubmit={handleCreateUser}>
+              <label>
+                <span>Student Name</span>
+                <input
+                  type="text"
+                  value={createUserForm.name}
+                  onChange={(event) => updateCreateUserField('name', event.target.value)}
+                  maxLength={15}
+                  autoComplete="off"
+                  placeholder="Enter student name"
+                  disabled={creatingUser}
+                />
+              </label>
+
+              <label>
+                <span>Student PIN</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={createUserForm.pin}
+                  onChange={(event) => updateCreateUserField('pin', event.target.value)}
+                  maxLength={4}
+                  autoComplete="off"
+                  placeholder="2 to 4 digits"
+                  disabled={creatingUser}
+                />
+              </label>
+
+              <label>
+                <span>School</span>
+                <select
+                  value={createUserForm.school}
+                  onChange={(event) => updateCreateUserField('school', event.target.value)}
+                  disabled={creatingUser}
+                >
+                  <option value="" disabled>Select a school</option>
+                  {SCHOOL_OPTIONS.map((school) => <option key={school} value={school}>{school}</option>)}
+                </select>
+              </label>
+
+              <label>
+                <span>Grade Level</span>
+                <select
+                  value={createUserForm.grade}
+                  onChange={(event) => updateCreateUserField('grade', event.target.value)}
+                  disabled={creatingUser}
+                >
+                  <option value="" disabled>Select a grade</option>
+                  {GRADE_OPTIONS.map((grade) => <option key={grade} value={grade}>{grade}</option>)}
+                </select>
+              </label>
+
+              {createUserError && <p className="admin-dashboard__form-message is-error">{createUserError}</p>}
+              {createUserSuccess && <p className="admin-dashboard__form-message is-success">{createUserSuccess}</p>}
+
+              <div className="admin-dashboard__modal-actions">
+                <button
+                  type="button"
+                  className="admin-dashboard__modal-secondary"
+                  onClick={closeCreateUser}
+                  disabled={creatingUser}
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  className="admin-dashboard__modal-primary"
+                  disabled={creatingUser}
+                >
+                  {creatingUser ? 'Creating...' : 'Create User'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </div>
   );
 };

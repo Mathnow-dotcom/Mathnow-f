@@ -338,9 +338,9 @@ const GameModeScreen = () => {
             )}
 
             <div className="text-center mb-4 sm:mb-5 md:mb-6">
-              <h3 className={isSurfMode
+              <h3 className={`${isSurfMode
                 ? 'learning-keypad-question font-extrabold text-[#1ea672] mb-6 drop-shadow-[0_4px_12px_rgba(10,32,74,0.16)] text-6xl sm:text-7xl whitespace-pre-line'
-                : 'font-extrabold text-[#1ea672] mb-1 sm:mb-2 drop-shadow-[0_4px_12px_rgba(10,32,74,0.16)] text-6xl sm:text-7xl md:text-8xl whitespace-pre-line'}>
+                : 'font-extrabold text-[#1ea672] mb-1 sm:mb-2 drop-shadow-[0_4px_12px_rgba(10,32,74,0.16)] text-6xl sm:text-7xl md:text-8xl whitespace-pre-line'} ${currentQuestion?.operation === 'frac' ? 'fraction-question-prompt' : ''}`}>
                 {currentQuestion?.question || '1 + 1'}
               </h3>
             </div>
