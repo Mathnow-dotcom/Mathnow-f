@@ -363,33 +363,294 @@
 .admin-reports-page .assessment-results tbody tr:nth-child(even) { background: #f2f9fc; }
 
 /* Configuration */
-.admin-config-page { color: var(--admin-ink) !important; }
-.admin-config-page .admin-brand { margin-bottom: .75rem; }
-.admin-config-page .admin-config-header,
+.admin-config-page {
+  color: var(--admin-ink) !important;
+  padding: clamp(.65rem, 1.4vw, 1.15rem) !important;
+}
+.admin-config-page .admin-brand { margin: 0; }
 .admin-config-page .admin-config-module,
 .admin-config-page .admin-config-card,
 .admin-config-page .admin-config-actions {
-  border-color: var(--admin-line) !important;
-  background: rgba(255,255,255,.91) !important;
-  box-shadow: var(--admin-shadow) !important;
-  backdrop-filter: blur(12px);
+  border-color: rgba(40, 121, 181, .34) !important;
+  background: rgba(255,255,255,.97) !important;
+  box-shadow: 0 10px 26px rgba(36,70,94,.22) !important;
+  backdrop-filter: blur(10px);
 }
-.admin-config-page .admin-config-header { padding: .75rem 1rem; border-radius: 1.2rem; }
-.admin-config-page .admin-config-header h1,
-.admin-config-page .admin-config-card h2,
-.admin-config-page .admin-config-field [class*="text-white"] { color: var(--admin-ink) !important; }
-.admin-config-page .admin-config-header p,
-.admin-config-page .admin-config-card p,
-.admin-config-page .admin-config-module [class*="text-[#a7bedf]"] { color: var(--admin-muted) !important; }
-.admin-config-page .admin-config-module { border-radius: 1.35rem; }
-.admin-config-page .admin-config-field {
-  border-color: rgba(65,136,191,.2) !important;
-  background: rgba(234,246,252,.78) !important;
+.admin-config-page .admin-config-header {
+  align-items: flex-start;
+  margin-bottom: .65rem !important;
+  padding: 0 .25rem;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
 }
-.admin-config-page .admin-config-field > div:first-child > div:first-child,
+.admin-config-page .admin-config-heading {
+  display: grid;
+  min-width: 0;
+  gap: .12rem;
+}
+.admin-config-page .admin-config-heading-copy {
+  padding-left: .15rem;
+}
+.admin-config-page .admin-config-header h1 {
+  color: #12365f !important;
+  font-size: clamp(1.8rem, 3.4vw, 2.8rem) !important;
+  line-height: 1 !important;
+  letter-spacing: -.025em !important;
+  text-shadow: 0 1px 2px rgba(255,255,255,.98), 0 2px 8px rgba(255,255,255,.78);
+}
+.admin-config-page .admin-config-header p {
+  margin-top: .25rem !important;
+  color: #274f77 !important;
+  font-size: clamp(.78rem, 1.15vw, .98rem) !important;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(255,255,255,.96), 0 2px 7px rgba(255,255,255,.7);
+}
+.admin-config-page .admin-config-nav {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: .45rem;
+  width: min(11rem, 32vw);
+}
+.admin-config-page .admin-config-nav__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  width: 100%;
+  min-height: 2.45rem;
+  padding: .5rem .8rem;
+  border: 1px solid transparent;
+  border-radius: .7rem;
+  font-family: inherit;
+  font-size: .82rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 7px 16px rgba(28,61,90,.2);
+  transition: transform .16s ease, filter .16s ease;
+}
+.admin-config-page .admin-config-nav__button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+.admin-config-page .admin-config-nav__button--logout {
+  color: #fff;
+  border-color: rgba(255,255,255,.28);
+  background: linear-gradient(135deg, #ff3158, #e71543);
+  box-shadow: 0 8px 18px rgba(165,19,50,.28);
+}
+.admin-config-page .admin-config-nav__button--stats {
+  color: #194b7d;
+  border-color: rgba(43,123,182,.27);
+  background: rgba(255,255,255,.95);
+}
+.admin-config-page .admin-config-nav__button--stats svg { color: #1487d1; }
+
+.admin-config-page .admin-config-module {
+  width: min(100%, 34rem);
+  margin-bottom: .7rem !important;
+  padding: .65rem .8rem !important;
+  border-radius: .9rem !important;
+}
+.admin-config-page .admin-config-module label { max-width: none; }
+.admin-config-page .admin-config-module label > span:first-child {
+  margin-bottom: .35rem !important;
+  color: #2786c5 !important;
+  font-size: .7rem !important;
+  letter-spacing: .1em !important;
+}
+.admin-config-page .admin-config-module select {
+  min-height: 2.35rem;
+  padding: .4rem .7rem !important;
+  border-radius: .6rem !important;
+  font-size: .88rem !important;
+}
+.admin-config-page .admin-config-module label > span:last-child {
+  margin-top: .3rem !important;
+  color: #5f7694 !important;
+  font-size: .72rem !important;
+  line-height: 1.25 !important;
+}
+
+.admin-config-page form > * + * { margin-top: .65rem !important; }
+.admin-config-page form > .grid { gap: .65rem !important; }
+.admin-config-page .admin-config-card {
+  padding: .7rem !important;
+  border-radius: .9rem !important;
+}
+.admin-config-page .admin-config-card > div:first-child {
+  align-items: center !important;
+  gap: .55rem !important;
+  margin-bottom: .5rem !important;
+}
+.admin-config-page .admin-config-card > div:first-child > div:first-child {
+  align-items: center !important;
+  gap: .55rem !important;
+}
 .admin-config-page .admin-config-card > div:first-child > div:first-child > div:first-child {
-  background: linear-gradient(145deg, #e3f5fc, #c5e9f8) !important;
-  border-color: rgba(45,130,192,.26) !important;
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  border-radius: .65rem !important;
+  color: #fff !important;
+  background: linear-gradient(145deg, #28a9ec, #0875d1) !important;
+  border-color: rgba(255,255,255,.62) !important;
+  box-shadow: 0 5px 11px rgba(16,105,177,.28), inset 0 1px 0 rgba(255,255,255,.32) !important;
+}
+.admin-config-page .admin-config-card > div:first-child > div:first-child > div:first-child svg {
+  font-size: .95rem !important;
+  color: #fff !important;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.16));
+}
+.admin-config-page .admin-config-card h2 {
+  color: #102f57 !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -.01em;
+}
+.admin-config-page .admin-config-card p { color: var(--admin-muted) !important; }
+.admin-config-page .admin-config-card .grid { gap: .5rem !important; }
+
+.admin-config-page .admin-config-field {
+  gap: .38rem !important;
+  padding: .42rem .5rem !important;
+  border-color: rgba(48,124,181,.28) !important;
+  border-radius: .68rem !important;
+  background: rgba(234,246,252,.84) !important;
+}
+.admin-config-page .admin-config-field > div:first-child { gap: .42rem !important; }
+.admin-config-page .admin-config-field > div:first-child > div:first-child {
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  border-radius: .5rem !important;
+  color: #fff !important;
+  background: linear-gradient(145deg, #36b9ec, #147dcc) !important;
+  border-color: rgba(255,255,255,.62) !important;
+  box-shadow: 0 3px 8px rgba(22,108,168,.2) !important;
+}
+.admin-config-page .admin-config-field > div:first-child > div:first-child svg {
+  font-size: .78rem !important;
+  color: #fff !important;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.14));
+}
+.admin-config-page .admin-config-field [class*="text-white"] {
+  color: #112f55 !important;
+  font-size: .8rem !important;
+  font-weight: 900 !important;
+  line-height: 1.12 !important;
+}
+.admin-config-page .admin-config-field [class*="text-[#95acd2]"] {
+  color: var(--admin-muted) !important;
+  font-size: .68rem !important;
+}
+.admin-config-page .admin-config-card input,
+.admin-config-page .admin-config-card select {
+  height: 2.05rem !important;
+  padding: .25rem .5rem !important;
+  border-radius: .48rem !important;
+  font-size: .8rem !important;
+  font-weight: 900 !important;
+  box-shadow: inset 0 1px 2px rgba(31,70,99,.08) !important;
+}
+.admin-config-page .admin-config-card > div:first-child > div:last-child button {
+  min-height: 2.1rem !important;
+  padding: .4rem .7rem !important;
+  border-radius: .58rem !important;
+  font-size: .72rem !important;
+}
+
+.admin-config-page [data-config-section="lightning"] .admin-config-field { background: #fff7e5 !important; }
+.admin-config-page [data-config-section="lightning"] > div:first-child > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #ffbd1f, #f28a00) !important;
+  border-color: #ffd870 !important;
+  box-shadow: 0 5px 11px rgba(221,126,0,.3), inset 0 1px 0 rgba(255,255,255,.35) !important;
+}
+.admin-config-page [data-config-section="surfboard"] .admin-config-field { background: #eafbff !important; }
+.admin-config-page [data-config-section="surfboard"] > div:first-child > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #2dc8ed, #0788cd) !important;
+  border-color: #86e7f6 !important;
+  box-shadow: 0 5px 11px rgba(0,133,190,.28), inset 0 1px 0 rgba(255,255,255,.35) !important;
+}
+.admin-config-page [data-config-section="rocket"] .admin-config-field { background: #fff0f8 !important; }
+.admin-config-page [data-config-section="rocket"] > div:first-child > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #ff4d9b, #d91878) !important;
+  border-color: #ffacd0 !important;
+  box-shadow: 0 5px 11px rgba(198,17,100,.28), inset 0 1px 0 rgba(255,255,255,.35) !important;
+}
+.admin-config-page [data-config-section="bonus"] .admin-config-field { background: #fff2f4 !important; }
+.admin-config-page [data-config-section="bonus"] > div:first-child > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #ff3f70, #e20e48) !important;
+  border-color: #ffa2b9 !important;
+  box-shadow: 0 5px 11px rgba(190,13,62,.28), inset 0 1px 0 rgba(255,255,255,.35) !important;
+}
+.admin-config-page [data-config-section="global"] .admin-config-field,
+.admin-config-page [data-config-section="admin-pin"] .admin-config-field,
+.admin-config-page [data-config-section="pretest"] .admin-config-field { background: #edf7ff !important; }
+
+/* Strong, playful field icon colors from the reference design. */
+.admin-config-page [data-config-section="lightning"] .admin-config-field:nth-child(1) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #ffad20, #f07800) !important;
+}
+.admin-config-page [data-config-section="lightning"] .admin-config-field:nth-child(2) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #62df37, #18a91a) !important;
+}
+.admin-config-page [data-config-section="surfboard"] .admin-config-field:nth-child(1) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #32c8ee, #078acb) !important;
+}
+.admin-config-page [data-config-section="surfboard"] .admin-config-field:nth-child(2) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #35d69c, #079e72) !important;
+}
+.admin-config-page [data-config-section="rocket"] .admin-config-field:nth-child(1) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #a755ef, #6e1cce) !important;
+}
+.admin-config-page [data-config-section="rocket"] .admin-config-field:nth-child(2) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #ff4e97, #d91472) !important;
+}
+.admin-config-page [data-config-section="bonus"] .admin-config-field:nth-child(1) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #ff9e22, #ef6400) !important;
+}
+.admin-config-page [data-config-section="bonus"] .admin-config-field:nth-child(2) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #39d85d, #09a22c) !important;
+}
+.admin-config-page [data-config-section="bonus"] .admin-config-field:nth-child(3) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #35b9ee, #0878d2) !important;
+}
+
+.admin-config-page [data-config-section="black-belt-timers"] .grid > .admin-config-field:nth-child(1) > div:first-child > div:first-child,
+.admin-config-page [data-config-section="black-belt-timers"] .grid > .admin-config-field:nth-child(6) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #9a54ef, #6622c6) !important;
+}
+.admin-config-page [data-config-section="black-belt-timers"] .grid > .admin-config-field:nth-child(2) > div:first-child > div:first-child,
+.admin-config-page [data-config-section="black-belt-timers"] .grid > .admin-config-field:nth-child(5) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #ff4b88, #da135d) !important;
+}
+.admin-config-page [data-config-section="black-belt-timers"] .grid > .admin-config-field:nth-child(3) > div:first-child > div:first-child,
+.admin-config-page [data-config-section="black-belt-timers"] .grid > .admin-config-field:nth-child(7) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #33c6a5, #07937a) !important;
+}
+.admin-config-page [data-config-section="black-belt-timers"] .grid > .admin-config-field:nth-child(4) > div:first-child > div:first-child {
+  background: linear-gradient(145deg, #ffb927, #f07b00) !important;
+}
+
+.admin-config-page .admin-config-actions {
+  padding: .5rem !important;
+  border-radius: .85rem !important;
+}
+.admin-config-page .admin-config-actions > div { gap: .5rem !important; }
+.admin-config-page .admin-config-actions > div > div { gap: .5rem !important; }
+.admin-config-page .admin-config-actions button {
+  min-height: 2.65rem !important;
+  padding: .45rem .75rem !important;
+  border-radius: .65rem !important;
+  font-size: .78rem !important;
+}
+.admin-config-page .admin-config-actions button > span:first-child {
+  width: 1.85rem !important;
+  height: 1.85rem !important;
+  border-radius: .5rem !important;
 }
 .admin-config-page input,
 .admin-config-page select {
@@ -397,7 +658,6 @@
   border-color: rgba(49,126,184,.34) !important;
   background: #fff !important;
 }
-.admin-config-page .admin-config-actions { border-radius: 1.35rem; }
 
 /* Analytics */
 .admin-analytics-page { color: var(--admin-ink) !important; }
@@ -437,6 +697,8 @@
   .admin-analytics-page .admin-analytics-header > * { justify-self: stretch; }
   .admin-analytics-page .admin-analytics-header > div:last-child { flex-wrap: wrap; justify-content: stretch; }
   .admin-analytics-page .admin-analytics-header > div:last-child button { flex: 1 1 9rem; }
+  .admin-config-page .admin-config-header { gap: .75rem; }
+  .admin-config-page .admin-config-nav { width: 9.5rem; }
 }
 
 @media (max-width: 640px) {
@@ -452,7 +714,26 @@
   .admin-reports-page .assessment-filters { display: grid; grid-template-columns: 1fr; }
   .admin-reports-page .assessment-filters label,
   .admin-reports-page .assessment-filters button { width: 100%; }
-  .admin-config-page .admin-config-header { align-items: flex-start; }
+  .admin-config-page { padding: .65rem !important; }
+  .admin-config-page .admin-config-header {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 0;
+  }
+  .admin-config-page .admin-config-nav {
+    flex-direction: row;
+    width: 100%;
+  }
+  .admin-config-page .admin-config-nav__button { flex: 1 1 0; }
+  .admin-config-page .admin-config-module { width: 100%; }
+  .admin-config-page .admin-config-card { padding: .62rem !important; }
+  .admin-config-page .admin-config-card > div:first-child { align-items: flex-start !important; }
+  .admin-config-page .admin-config-actions > div,
+  .admin-config-page .admin-config-actions > div > div { gap: .4rem !important; }
+  .admin-config-page .admin-config-actions button {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

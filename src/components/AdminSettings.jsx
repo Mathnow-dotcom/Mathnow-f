@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FaArrowLeft,
   FaBolt,
   FaBullseye,
   FaCheckCircle,
+  FaChartLine,
   FaClock,
   FaExclamationCircle,
   FaKey,
@@ -12,6 +12,7 @@ import {
   FaRocket,
   FaSave,
   FaShieldAlt,
+  FaSignOutAlt,
   FaStar,
   FaStopwatch,
   FaSyncAlt,
@@ -301,6 +302,7 @@ const SectionCard = ({
   headerAction = null,
 }) => (
   <section
+    data-config-section={String(title).toLowerCase().replace(/[^a-z0-9]+/g, '-')}
     className={`admin-config-card h-fit self-start rounded-[1.5rem] border border-[#4d8be6]/38 bg-[linear-gradient(180deg,rgba(10,27,70,0.85),rgba(7,21,58,0.78))] p-4 shadow-[0_18px_44px_rgba(0,8,26,0.42),inset_0_1px_0_rgba(224,239,255,0.08)] backdrop-blur-xl sm:p-5 ${className}`}
   >
     <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
@@ -453,6 +455,12 @@ const AdminSettings = () => {
   }, [status]);
 
   const getStoredAdminPin = () => localStorage.getItem('math-admin-pin') || '';
+
+  const handleLogout = () => {
+    localStorage.removeItem('math-admin-pin');
+    setAdminPin('');
+    navigate('/name', { replace: true });
+  };
 
   const loadConfig = useCallback(
     async ({ preserveStatus = false } = {}) => {
@@ -936,7 +944,6 @@ const AdminSettings = () => {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_center,rgba(110,170,255,0.08),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(29,203,255,0.12),transparent_32%)]" />
 
       <div className="relative z-10 mx-auto max-w-[1540px]">
-      <AdminBrand />
       {status && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md pointer-events-none">
           <div
@@ -967,21 +974,10 @@ const AdminSettings = () => {
         </div>
       )}
 
-      <div className="admin-config-header mb-5 flex items-center justify-between gap-4 sm:mb-6">
-        <div className="flex items-center gap-4 sm:gap-5">
-          <button
-            onClick={() => navigate('/admin-dashboard')}
-            className="group inline-flex h-14 items-center gap-3 rounded-full border border-[#7db7ff]/28 bg-[linear-gradient(180deg,rgba(12,31,74,0.92),rgba(8,21,55,0.96))] pl-2 pr-4 text-white shadow-[0_14px_30px_rgba(0,9,30,0.32),inset_0_1px_0_rgba(220,239,255,0.08)] transition hover:-translate-y-0.5 hover:border-[#98ceff]/38 hover:shadow-[0_18px_36px_rgba(0,9,30,0.38),0_0_18px_rgba(93,183,255,0.15)]"
-            aria-label="Back to admin dashboard"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-[radial-gradient(circle_at_top_left,_rgba(121,198,255,0.22),_rgba(18,45,108,0.98)_70%)] text-[#eaf4ff] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition group-hover:scale-105">
-              <FaArrowLeft size={18} className="block" />
-            </span>
-            <span className="hidden text-sm font-bold tracking-[0.01em] text-[#d7ebff] sm:block">
-              Back
-            </span>
-          </button>
-          <div className="min-w-0">
+      <header className="admin-config-header mb-5 flex items-start justify-between gap-4 sm:mb-6">
+        <div className="admin-config-heading min-w-0">
+          <AdminBrand />
+          <div className="admin-config-heading-copy min-w-0">
             <h1 className="text-white text-3xl font-extrabold leading-[0.95] tracking-[0.01em] drop-shadow sm:text-[3.3rem]">
               App Configuration
             </h1>
@@ -990,7 +986,26 @@ const AdminSettings = () => {
             </p>
           </div>
         </div>
-      </div>
+
+        <nav className="admin-config-nav" aria-label="Admin settings navigation">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="admin-config-nav__button admin-config-nav__button--logout"
+          >
+            <FaSignOutAlt aria-hidden="true" />
+            <span>Logout</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/admin-dashboard')}
+            className="admin-config-nav__button admin-config-nav__button--stats"
+          >
+            <FaChartLine aria-hidden="true" />
+            <span>Student Stats</span>
+          </button>
+        </nav>
+      </header>
 
       <div className="admin-config-module mb-5 rounded-[1.5rem] border border-[#4d8be6]/38 bg-[linear-gradient(180deg,rgba(10,27,70,0.9),rgba(7,21,58,0.82))] p-4 shadow-[0_18px_44px_rgba(0,8,26,0.38)] backdrop-blur-xl sm:p-5">
         <label className="block max-w-xl">
