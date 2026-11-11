@@ -38,6 +38,20 @@
   margin: 0 auto;
 }
 
+.admin-dashboard__utility-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.admin-dashboard button.admin-dashboard__utility-logout {
+  min-width: 8.5rem;
+  min-height: 2.85rem;
+  padding: 0.7rem 1.15rem;
+}
+
 .admin-dashboard button {
   margin: 0;
   min-height: 0;
@@ -958,6 +972,18 @@
     width: 2.65rem;
     height: 2.65rem;
     border-radius: 0.75rem;
+  }
+
+  .admin-dashboard__utility-bar {
+    align-items: flex-start;
+    margin-bottom: 0.7rem;
+  }
+
+  .admin-dashboard button.admin-dashboard__utility-logout {
+    width: auto;
+    min-width: 7.2rem;
+    min-height: 2.65rem;
+    padding: 0.62rem 0.9rem;
   }
 
   .admin-dashboard__btn {

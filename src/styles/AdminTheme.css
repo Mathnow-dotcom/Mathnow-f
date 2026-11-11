@@ -134,21 +134,36 @@
 .admin-dashboard.admin-classroom-page { color: var(--admin-ink); }
 .admin-dashboard.admin-classroom-page::before { display: none; }
 .admin-dashboard.admin-classroom-page .admin-dashboard__shell { max-width: 1460px; }
-.admin-dashboard.admin-classroom-page .admin-brand { margin-bottom: .75rem; }
-.admin-dashboard.admin-classroom-page .admin-dashboard__topbar {
-  padding: .9rem 1rem;
-  border: 1px solid var(--admin-line);
-  border-radius: 1.2rem;
-  background: rgba(255,255,255,.96);
-  box-shadow: var(--admin-shadow);
-  backdrop-filter: blur(12px);
+.admin-dashboard.admin-classroom-page .admin-brand { margin-bottom: 0; }
+.admin-dashboard.admin-classroom-page .admin-dashboard__utility-bar {
+  position: relative;
+  z-index: 2;
+  min-height: 3.2rem;
 }
-.admin-dashboard.admin-classroom-page .admin-dashboard__title { color: #153963; }
+.admin-dashboard.admin-classroom-page .admin-dashboard__utility-logout {
+  box-shadow: 0 8px 20px rgba(118, 18, 28, .28);
+}
+.admin-dashboard.admin-classroom-page .admin-dashboard__topbar {
+  padding: .2rem .15rem .35rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.admin-dashboard.admin-classroom-page .admin-dashboard__title {
+  color: #12365f;
+  text-shadow: 0 1px 2px rgba(255,255,255,.94), 0 2px 8px rgba(255,255,255,.72);
+}
 .admin-dashboard.admin-classroom-page .admin-dashboard__subtitle,
 .admin-dashboard.admin-classroom-page .admin-dashboard__card-label,
 .admin-dashboard.admin-classroom-page .admin-dashboard__student-pin {
   color: #536f91;
   font-weight: 700;
+}
+.admin-dashboard.admin-classroom-page .admin-dashboard__subtitle {
+  color: #234f78;
+  text-shadow: 0 1px 2px rgba(255,255,255,.96), 0 2px 7px rgba(255,255,255,.74);
 }
 .admin-dashboard.admin-classroom-page .admin-dashboard__title-icon {
   color: #fff;
@@ -212,10 +227,20 @@
 }
 .admin-dashboard.admin-classroom-page .admin-dashboard__table { color: var(--admin-ink); background: transparent; }
 .admin-dashboard.admin-classroom-page .admin-dashboard__table thead th {
-  color: #173e69;
-  border-color: rgba(44,128,190,.28);
-  background: #dff3fc;
+  color: #fff;
+  border-color: rgba(203,235,255,.32);
+  background: linear-gradient(180deg, #2f91d0 0%, #1d70b5 100%);
   font-weight: 800;
+  text-shadow: 0 1px 2px rgba(8,54,95,.38);
+}
+.admin-dashboard.admin-classroom-page .admin-dashboard__table thead tr:nth-child(2) th {
+  color: #fff;
+  background: linear-gradient(180deg, #247fc1 0%, #1765a9 100%);
+}
+.admin-dashboard.admin-classroom-page .admin-dashboard__group-head--today,
+.admin-dashboard.admin-classroom-page .admin-dashboard__group-head--overall,
+.admin-dashboard.admin-classroom-page .admin-dashboard__sub-head {
+  border-color: rgba(215,240,255,.34);
 }
 .admin-dashboard.admin-classroom-page .admin-dashboard__table tbody tr td {
   color: #18385e;
@@ -419,7 +444,8 @@
   .admin-brand--floating { position: absolute !important; }
   .admin-brand__mark { width: 2rem; height: 2rem; border-radius: .62rem; }
   .admin-brand__mark svg { width: 100%; height: 100%; }
-  .admin-dashboard.admin-classroom-page .admin-dashboard__topbar { padding: .8rem; }
+  .admin-dashboard.admin-classroom-page .admin-dashboard__topbar { padding: .2rem 0 .35rem; }
+  .admin-dashboard.admin-classroom-page .admin-dashboard__utility-bar { min-height: 2.8rem; }
   .admin-reports-page { padding: .8rem .65rem 2rem !important; }
   .admin-reports-page .assessment-toolbar { align-items: stretch; flex-direction: column; }
   .admin-reports-page .assessment-toolbar button { width: 100%; }

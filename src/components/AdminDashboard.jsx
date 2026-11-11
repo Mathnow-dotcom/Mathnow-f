@@ -544,7 +544,19 @@ const AdminDashboard = () => {
   return (
     <div className="admin-dashboard admin-classroom-page" style={dashboardStyle}>
       <div className="admin-dashboard__shell">
-        <AdminBrand />
+        <div className="admin-dashboard__utility-bar">
+          <AdminBrand />
+          <button
+            onClick={handleLogout}
+            type="button"
+            className="admin-dashboard__btn admin-dashboard__btn--logout admin-dashboard__utility-logout"
+            aria-label="Logout"
+          >
+            <FaSignOutAlt className="admin-dashboard__btn-icon" />
+            <span>Logout</span>
+          </button>
+        </div>
+
         <header className="admin-dashboard__topbar">
           <div className="admin-dashboard__heading-wrap">
             <div className="admin-dashboard__title-icon" aria-hidden="true">
@@ -582,15 +594,6 @@ const AdminDashboard = () => {
             >
               <FaCog className="admin-dashboard__btn-icon" />
               <span>App Settings</span>
-            </button>
-            <button
-              onClick={handleLogout}
-              type="button"
-              className="admin-dashboard__btn admin-dashboard__btn--logout"
-              aria-label="Logout"
-            >
-              <FaSignOutAlt className="admin-dashboard__btn-icon" />
-              <span>Logout</span>
             </button>
           </div>
         </header>
