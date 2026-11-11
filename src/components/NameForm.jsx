@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { getAdminStats } from '../api/mathApi.js';
 import { FaTimes, FaUserShield } from 'react-icons/fa';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
+import AdminBrand from './admin/AdminBrand.jsx';
 
 const formInputClass =
   "!w-full !max-w-[320px] sm:!max-w-[340px] mx-auto mb-2 sm:mb-3 h-10 sm:h-12 " +
@@ -58,17 +59,18 @@ const AdminPinModal = ({
     );
 
     return (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] animate-fade-in"
+        <div className="admin-classroom-page admin-login-page fixed inset-0 flex items-center justify-center z-[100] animate-fade-in"
              style={{
-                 backgroundImage: "url('/night_sky_landscape.jpg')",
+                 backgroundImage: "url('/Mathnow_bg.png')",
                  backgroundSize: 'cover',
                  backgroundPosition: 'center',
                  backgroundRepeat: 'no-repeat',
                  backdropFilter: 'blur(4px)',
              }}
         >
+            <AdminBrand className="admin-brand--floating" />
             <div
-                className={`${panelClass} animate-pop-in`}
+                className={`${panelClass} admin-login-card animate-pop-in`}
             >
                 <h2 className="text-base sm:text-lg md:text-xl text-center font-sans text-green-600 font-semibold tracking-wide mb-2">
                     Enter Admin PIN
@@ -313,6 +315,41 @@ const handleDemoClick = () => {
       handleDemoLogin();
   };
 
+  if (isAdminLoading) {
+    return (
+      <div
+        className="admin-classroom-page fixed inset-0 z-[102] flex items-center justify-center"
+        style={{
+          backgroundImage: "url('/Mathnow_bg.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        <AdminBrand className="admin-brand--floating" />
+        <div className="rounded-3xl border border-sky-200/70 bg-white/90 px-7 py-5 text-center text-[#18345b] shadow-2xl backdrop-blur-md">
+          <p className="m-0 text-xl sm:text-2xl font-extrabold tracking-wide">
+            Loading Admin Dashboard
+            <span className="inline-block w-[2.2ch] text-left">{adminLoadingDots}</span>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showAdminPinModal) {
+    return (
+      <AdminPinModal
+        adminPin={adminPin}
+        setAdminPin={setAdminPin}
+        isAdminLoading={isAdminLoading}
+        error={adminError}
+        onSubmit={handleAdminPinSubmit}
+        onCancel={handleCloseAdminPinModal}
+      />
+    );
+  }
+
 
   return (
     <div
@@ -493,36 +530,6 @@ const handleDemoClick = () => {
         </div>
       )} 
 
-      {isAdminLoading && (
-        <div
-          className="fixed inset-0 z-[102] flex items-center justify-center bg-[#040b16]"
-          style={{
-            backgroundColor: '#040b16',
-            backgroundImage: "url('/night_sky_landscape.jpg')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        >
-          <div className="rounded-3xl border border-white/20 bg-slate-950/62 px-7 py-5 text-center text-white shadow-2xl backdrop-blur-md">
-            <p className="text-xl sm:text-2xl font-extrabold tracking-wide">
-              Loading Admin Dashboard
-              <span className="inline-block w-[2.2ch] text-left">{adminLoadingDots}</span>
-            </p>
-          </div>
-        </div>
-      )}
-      
-      {showAdminPinModal && (
-        <AdminPinModal 
-          adminPin={adminPin}
-          setAdminPin={setAdminPin}
-          isAdminLoading={isAdminLoading}
-          error={adminError}
-          onSubmit={handleAdminPinSubmit}
-          onCancel={handleCloseAdminPinModal}
-        />
-      )}
     </div>
   );
 };

@@ -12,10 +12,12 @@ import {
   FaFire,
   FaUserPlus,
   FaTimes,
+  FaClipboardList,
 } from 'react-icons/fa';
 import { adminCreateUser, getAdminStats, userGetProgress } from '../api/mathApi.js';
 import '../styles/AdminDashboard.css';
 import { currentProgramProgress } from '../utils/currentProgress.js';
+import AdminBrand from './admin/AdminBrand.jsx';
 
 const MS_PER_SEC = 1000;
 const PROGRESS_PLACEHOLDER = 'Loading...';
@@ -501,17 +503,17 @@ const AdminDashboard = () => {
   if (loading && offset === 0 && stats.length === 0) {
     return (
       <div
-        className="fixed inset-0 z-[102] flex items-center justify-center bg-[#040b16]"
+        className="admin-classroom-page fixed inset-0 z-[102] flex items-center justify-center"
         style={{
-          backgroundColor: '#040b16',
-          backgroundImage: "url('/night_sky_landscape.jpg')",
+          backgroundImage: "url('/Mathnow_bg.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
         }}
       >
-        <div className="rounded-3xl border border-white/20 bg-slate-950/62 px-7 py-5 text-center text-white shadow-2xl backdrop-blur-md">
-          <p className="text-xl sm:text-2xl font-extrabold tracking-wide">
+        <AdminBrand className="admin-brand--floating" />
+        <div className="rounded-3xl border border-sky-200/70 bg-white/90 px-7 py-5 text-center text-[#18345b] shadow-2xl backdrop-blur-md">
+          <p className="m-0 text-xl sm:text-2xl font-extrabold tracking-wide">
             Loading Admin Dashboard
             <span className="inline-block w-[2.2ch] text-left" aria-hidden="true">
               {loadingDots}
@@ -524,7 +526,8 @@ const AdminDashboard = () => {
 
   if (error) {
     return (
-      <div className="admin-dashboard admin-dashboard__state" style={dashboardStyle}>
+      <div className="admin-dashboard admin-classroom-page admin-dashboard__state" style={dashboardStyle}>
+        <AdminBrand className="admin-brand--floating" />
         <h1 className="admin-dashboard__title">Admin Dashboard</h1>
         <p className="admin-dashboard__state-error">{error}</p>
         <button
@@ -539,8 +542,9 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="admin-dashboard" style={dashboardStyle}>
+    <div className="admin-dashboard admin-classroom-page" style={dashboardStyle}>
       <div className="admin-dashboard__shell">
+        <AdminBrand />
         <header className="admin-dashboard__topbar">
           <div className="admin-dashboard__heading-wrap">
             <div className="admin-dashboard__title-icon" aria-hidden="true">
@@ -562,8 +566,14 @@ const AdminDashboard = () => {
               <FaUserPlus className="admin-dashboard__btn-icon" />
               <span>Create User</span>
             </button>
-            <button onClick={() => navigate('/admin/tests')} type="button"
-              className="admin-dashboard__btn admin-dashboard__btn--settings">Test Results</button>
+            <button
+              onClick={() => navigate('/admin/tests')}
+              type="button"
+              className="admin-dashboard__btn admin-dashboard__btn--settings"
+            >
+              <FaClipboardList className="admin-dashboard__btn-icon" />
+              <span>Test Results</span>
+            </button>
             <button
               onClick={() => navigate('/admin-settings')}
               type="button"

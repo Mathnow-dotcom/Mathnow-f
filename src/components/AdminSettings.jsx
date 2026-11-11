@@ -26,6 +26,7 @@ import {
   updateAdminPin,
   updateModuleAppConfig,
 } from '../api/mathApi.js';
+import AdminBrand from './admin/AdminBrand.jsx';
 
 const DEFAULT_NUMBERS = {
   blackDegree1: 60,
@@ -300,7 +301,7 @@ const SectionCard = ({
   headerAction = null,
 }) => (
   <section
-    className={`h-fit self-start rounded-[1.5rem] border border-[#4d8be6]/38 bg-[linear-gradient(180deg,rgba(10,27,70,0.85),rgba(7,21,58,0.78))] p-4 shadow-[0_18px_44px_rgba(0,8,26,0.42),inset_0_1px_0_rgba(224,239,255,0.08)] backdrop-blur-xl sm:p-5 ${className}`}
+    className={`admin-config-card h-fit self-start rounded-[1.5rem] border border-[#4d8be6]/38 bg-[linear-gradient(180deg,rgba(10,27,70,0.85),rgba(7,21,58,0.78))] p-4 shadow-[0_18px_44px_rgba(0,8,26,0.42),inset_0_1px_0_rgba(224,239,255,0.08)] backdrop-blur-xl sm:p-5 ${className}`}
   >
     <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
@@ -338,7 +339,7 @@ const SettingField = ({
   contentClassName = '',
 }) => (
   <label
-    className={`group flex w-full flex-col gap-2 rounded-[1rem] border border-white/10 bg-[linear-gradient(180deg,rgba(13,33,85,0.74),rgba(8,24,64,0.58))] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-colors hover:border-[#5fd5ff]/25 ${className}`}
+    className={`admin-config-field group flex w-full flex-col gap-2 rounded-[1rem] border border-white/10 bg-[linear-gradient(180deg,rgba(13,33,85,0.74),rgba(8,24,64,0.58))] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-colors hover:border-[#5fd5ff]/25 ${className}`}
   >
     <div className="flex min-w-0 items-center gap-3">
       {Icon ? (
@@ -922,11 +923,11 @@ const AdminSettings = () => {
   const isBusy = isLoading || isSaving || isRestoringUser;
 
   return (
-    <div className="relative overflow-hidden px-3 py-3 sm:px-5 lg:px-6" style={dashboardStyle}>
+    <div className="admin-classroom-page admin-config-page relative overflow-hidden px-3 py-3 sm:px-5 lg:px-6" style={dashboardStyle}>
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.14]"
+        className="pointer-events-none absolute inset-0 opacity-0"
         style={{
-          backgroundImage: "url('/night_sky_landscape.jpg')",
+          backgroundImage: "url('/Mathnow_bg.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -935,6 +936,7 @@ const AdminSettings = () => {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_center,rgba(110,170,255,0.08),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(29,203,255,0.12),transparent_32%)]" />
 
       <div className="relative z-10 mx-auto max-w-[1540px]">
+      <AdminBrand />
       {status && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md pointer-events-none">
           <div
@@ -965,7 +967,7 @@ const AdminSettings = () => {
         </div>
       )}
 
-      <div className="mb-5 flex items-center justify-between gap-4 sm:mb-6">
+      <div className="admin-config-header mb-5 flex items-center justify-between gap-4 sm:mb-6">
         <div className="flex items-center gap-4 sm:gap-5">
           <button
             onClick={() => navigate('/admin-dashboard')}
@@ -990,7 +992,7 @@ const AdminSettings = () => {
         </div>
       </div>
 
-      <div className="mb-5 rounded-[1.5rem] border border-[#4d8be6]/38 bg-[linear-gradient(180deg,rgba(10,27,70,0.9),rgba(7,21,58,0.82))] p-4 shadow-[0_18px_44px_rgba(0,8,26,0.38)] backdrop-blur-xl sm:p-5">
+      <div className="admin-config-module mb-5 rounded-[1.5rem] border border-[#4d8be6]/38 bg-[linear-gradient(180deg,rgba(10,27,70,0.9),rgba(7,21,58,0.82))] p-4 shadow-[0_18px_44px_rgba(0,8,26,0.38)] backdrop-blur-xl sm:p-5">
         <label className="block max-w-xl">
           <span className="mb-2 block text-sm font-extrabold uppercase tracking-[0.12em] text-[#8ddbff]">
             Configure module
@@ -1461,7 +1463,7 @@ const AdminSettings = () => {
         </SectionCard>
 
         <div className="sticky bottom-3 z-20">
-          <div className="rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(6,18,52,0.88),rgba(7,19,48,0.76))] p-3 shadow-[0_22px_50px_rgba(0,8,24,0.48),inset_0_1px_0_rgba(219,239,255,0.05)] backdrop-blur-xl">
+          <div className="admin-config-actions rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(6,18,52,0.88),rgba(7,19,48,0.76))] p-3 shadow-[0_22px_50px_rgba(0,8,24,0.48),inset_0_1px_0_rgba(219,239,255,0.05)] backdrop-blur-xl">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex flex-col gap-3 sm:flex-row">
               <button

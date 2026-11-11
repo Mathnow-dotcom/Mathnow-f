@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { assessmentReports, assessmentExport, programReports } from '../api/mathApi.js';
 import '../styles/Assessment.css';
+import AdminBrand from './admin/AdminBrand.jsx';
 
 const subjectNames = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', frac: 'Fractions to Decimals', completed: 'Completed' };
 
@@ -64,7 +65,8 @@ export default function AssessmentReports() {
     finally { setExporting(false); }
   };
   if (!pin) return <Navigate to="/" replace />;
-  return <main className="assessment-page">
+  return <main className="assessment-page admin-classroom-page admin-reports-page">
+    <AdminBrand />
     <header className="assessment-toolbar"><h1 className="text-2xl font-bold">Test Results</h1>
       <button onClick={() => navigate('/admin-dashboard')}>Student Stats</button></header>
     <section className="assessment-report">
