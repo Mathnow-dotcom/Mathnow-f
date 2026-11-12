@@ -4,13 +4,13 @@ import { useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
 import {
-  FaArrowLeft,
   FaExclamationTriangle,
   FaBullseye,
   FaCheckCircle,
   FaChartLine,
   FaLayerGroup,
   FaDownload,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import {
   analyticsGetSummary,
@@ -412,14 +412,14 @@ const FactDetailModal = ({ open, onClose, pin, factKey }) => {
         className="admin-analytics-modal-card w-full max-w-4xl max-h-[92vh] rounded-[28px] border border-cyan-300/35 bg-[radial-gradient(circle_at_18%_0%,rgba(45,74,163,0.35),rgba(8,18,54,0.95)_44%),linear-gradient(150deg,rgba(7,15,45,0.95),rgba(3,9,31,0.98))] text-slate-100 shadow-[0_0_0_1px_rgba(125,211,252,0.08),0_20px_65px_rgba(2,6,23,0.88),0_0_55px_rgba(56,189,248,0.18)] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="shrink-0 px-4 sm:px-6 py-4 border-b border-cyan-200/20 bg-slate-950/35">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="w-[76px] sm:w-[96px]" aria-hidden="true" />
-            <div className="flex-1 text-center text-2xl sm:text-4xl font-black tracking-tight text-slate-50">
-            {detail?.fact?.question || "Fact details"}
+        <div className="admin-analytics-modal-header shrink-0 px-4 sm:px-6 py-4 border-b border-cyan-200/20 bg-slate-950/35">
+          <div className="flex items-center justify-between gap-3 sm:gap-5">
+            <div className="min-w-0 text-xl sm:text-3xl font-black tracking-tight text-slate-50">
+              {detail?.fact?.question || "Fact details"}
             </div>
             <button
-              className="w-[76px] sm:w-[96px] rounded-xl px-3 py-2 bg-gradient-to-b from-blue-500/45 to-blue-700/35 border border-cyan-300/45 text-slate-100 font-bold hover:from-blue-400/55 hover:to-blue-600/45 transition-colors"
+              type="button"
+              className="admin-analytics-modal-close shrink-0 rounded-xl px-4 py-2 bg-gradient-to-b from-blue-500/45 to-blue-700/35 border border-cyan-300/45 text-slate-100 font-bold hover:from-blue-400/55 hover:to-blue-600/45 transition-colors"
               onClick={onClose}
             >
               Close
@@ -427,13 +427,13 @@ const FactDetailModal = ({ open, onClose, pin, factKey }) => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5">
+        <div className="admin-analytics-modal-body flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5">
           {loading && <div className="text-cyan-100/85">Loading...</div>}
           {error && <div className="text-red-300">{error}</div>}
 
           {detail && !loading && !error && (
             <>
-              <div className="rounded-2xl border border-cyan-200/20 bg-slate-950/30 p-3 sm:p-4 mb-5 sm:mb-6">
+              <div className="admin-analytics-modal-summary rounded-2xl border border-cyan-200/20 bg-slate-950/30 p-3 sm:p-4 mb-5 sm:mb-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
                 {[
                   { label: "Attempts", value: detail.stats?.totalAttempts ?? 0 },
@@ -443,12 +443,12 @@ const FactDetailModal = ({ open, onClose, pin, factKey }) => {
                 ].map((s, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl border border-cyan-200/20 bg-[linear-gradient(140deg,rgba(21,34,72,0.85),rgba(16,31,67,0.68),rgba(36,130,174,0.18))] p-3.5 sm:p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(2,6,23,0.45)]"
+                    className="admin-analytics-modal-stat rounded-2xl border border-cyan-200/20 bg-[linear-gradient(140deg,rgba(21,34,72,0.85),rgba(16,31,67,0.68),rgba(36,130,174,0.18))] p-3.5 sm:p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(2,6,23,0.45)]"
                   >
-                    <div className="text-xs sm:text-sm text-cyan-100/80 font-medium tracking-wide">
+                    <div className="admin-analytics-modal-stat-label text-xs sm:text-sm text-cyan-100/80 font-medium tracking-wide">
                       {s.label}
                     </div>
-                    <div className="text-2xl sm:text-4xl font-black text-slate-50 leading-tight mt-1">
+                    <div className="admin-analytics-modal-stat-value text-2xl sm:text-4xl font-black text-slate-50 leading-tight mt-1">
                       {s.value}
                     </div>
                   </div>
@@ -456,26 +456,26 @@ const FactDetailModal = ({ open, onClose, pin, factKey }) => {
               </div>
               </div>
 
-              <div className="font-bold text-xl sm:text-4xl text-slate-50 mb-3 sm:mb-4">
+              <div className="admin-analytics-modal-section-title font-bold text-xl sm:text-3xl text-slate-50 mb-3 sm:mb-4">
                 Recent attempts
               </div>
 
               {detail.recentAttempts?.length === 0 && (
-                <div className="rounded-xl border border-cyan-200/20 bg-slate-900/45 p-4 text-cyan-100/75">
+                <div className="admin-analytics-modal-empty rounded-xl border border-cyan-200/20 bg-slate-900/45 p-4 text-cyan-100/75">
                   No attempts recorded yet.
                 </div>
               )}
 
-              <div className="space-y-3 sm:space-y-4 pb-4">
+              <div className="admin-analytics-attempt-list space-y-3 sm:space-y-4 pb-4">
                 {detail.recentAttempts?.map((a, idx) => (
                   <div
                     key={idx}
-                    className="rounded-2xl border border-cyan-300/30 bg-[linear-gradient(135deg,rgba(16,28,63,0.82),rgba(11,33,68,0.68),rgba(11,23,55,0.9))] shadow-[0_12px_30px_rgba(2,6,23,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] p-4 sm:p-5"
+                    className={`admin-analytics-attempt ${a.correct ? "is-correct" : "is-timeout"} rounded-2xl border border-cyan-300/30 bg-[linear-gradient(135deg,rgba(16,28,63,0.82),rgba(11,33,68,0.68),rgba(11,23,55,0.9))] shadow-[0_12px_30px_rgba(2,6,23,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] p-4 sm:p-5`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="font-semibold text-lg sm:text-[1.9rem] leading-snug text-slate-50">
+                      <div className="admin-analytics-attempt-heading font-semibold text-lg sm:text-[1.55rem] leading-snug text-slate-50">
                         <span
-                          className={`inline-flex items-center justify-center w-6 h-6 mr-2 rounded-md text-sm ${
+                          className={`admin-analytics-attempt-status inline-flex items-center justify-center w-6 h-6 mr-2 rounded-md text-sm ${
                             a.correct
                               ? "bg-emerald-400/80 text-slate-900"
                               : "bg-amber-300/85 text-slate-900"
@@ -487,12 +487,12 @@ const FactDetailModal = ({ open, onClose, pin, factKey }) => {
                         <span className="font-mono">{a.userAnswer}</span>{" "}
                         <span className="text-cyan-100/85">(correct {a.correctAnswer})</span>
                       </div>
-                      <div className="shrink-0 rounded-xl border border-cyan-200/35 bg-[linear-gradient(140deg,rgba(59,130,246,0.22),rgba(15,23,42,0.72))] px-3 py-1.5 text-lg sm:text-2xl font-black text-cyan-100 shadow-[0_8px_18px_rgba(15,23,42,0.45)]">
+                      <div className="admin-analytics-attempt-time shrink-0 rounded-xl border border-cyan-200/35 bg-[linear-gradient(140deg,rgba(59,130,246,0.22),rgba(15,23,42,0.72))] px-3 py-1.5 text-lg sm:text-xl font-black text-cyan-100 shadow-[0_8px_18px_rgba(15,23,42,0.45)]">
                         {ms(a.responseMs)}
                       </div>
                     </div>
 
-                    <div className="text-xs sm:text-base text-cyan-100/78">
+                    <div className="admin-analytics-attempt-meta text-xs sm:text-base text-cyan-100/78">
                       {formatAttemptDateTime(a.attemptedAt)} ·
                       {" "}
                       {a.gameMode ? "Game mode" : "Quiz"}
@@ -500,13 +500,13 @@ const FactDetailModal = ({ open, onClose, pin, factKey }) => {
 
                     {Array.isArray(a.choices) && (
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm sm:text-lg text-cyan-100/85">
+                        <span className="admin-analytics-choice-label text-sm sm:text-lg text-cyan-100/85">
                           Choices:
                         </span>
                         {a.choices.map((choice, choiceIdx) => (
                           <span
                             key={`${idx}-${choiceIdx}-${choice}`}
-                            className="min-w-[2.25rem] text-center rounded-lg border border-cyan-200/45 bg-[linear-gradient(145deg,rgba(56,189,248,0.3),rgba(15,23,42,0.82))] px-3 py-1 text-sm sm:text-2xl font-bold font-mono text-slate-50 shadow-[0_6px_14px_rgba(15,23,42,0.4)]"
+                            className="admin-analytics-choice min-w-[2.25rem] text-center rounded-lg border border-cyan-200/45 bg-[linear-gradient(145deg,rgba(56,189,248,0.3),rgba(15,23,42,0.82))] px-3 py-1 text-sm sm:text-xl font-bold font-mono text-slate-50 shadow-[0_6px_14px_rgba(15,23,42,0.4)]"
                           >
                             {choice}
                           </span>
@@ -928,6 +928,11 @@ export default function AnalyticsScreen() {
     paddingBottom: "max(env(safe-area-inset-bottom), 1rem)",
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("math-admin-pin");
+    navigate("/name", { replace: true });
+  };
+
   return (
     <div style={dashboardStyle} className="admin-classroom-page admin-analytics-page relative overflow-hidden text-white">
       <div
@@ -935,40 +940,51 @@ export default function AnalyticsScreen() {
         className="pointer-events-none absolute inset-0 bg-[url('/Mathnow_bg.png')] bg-cover bg-center opacity-0"
       />
       <div className="relative z-[1] mx-auto w-full max-w-[1280px] px-4 py-4 md:px-6 md:py-6">
-        <AdminBrand />
-        <div className="admin-analytics-header mb-5 grid grid-cols-[auto_1fr_auto] items-center gap-3 md:mb-6">
-          <button
-            className="inline-flex items-center gap-2 rounded-xl border border-blue-200/20 bg-[#0c1f4f]/70 px-4 py-2.5 font-bold text-blue-50 transition-colors hover:bg-[#12306f]/80"
-            onClick={() => navigate(-1)}
-          >
-            <FaArrowLeft className="text-sm" />
-            <span>Back</span>
-          </button>
-          <div className="flex items-center justify-center gap-3 text-4xl md:text-5xl font-black tracking-tight text-blue-50">
-            <FaChartLine className="text-2xl md:text-4xl text-blue-300" />
-            <span>Analytics</span>
+        <header className="admin-analytics-header mb-5 md:mb-6">
+          <div className="admin-analytics-heading">
+            <AdminBrand />
+            <div className="admin-analytics-title-row">
+              <span className="admin-analytics-title-icon" aria-hidden="true">
+                <FaChartLine />
+              </span>
+              <h1>Analytics</h1>
+            </div>
           </div>
-          <div className="flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={handleExportLatestAttemptsPerQuestion}
-              disabled={exportingQuestion !== null}
-              className="inline-flex items-center gap-2 rounded-xl border border-blue-200/30 bg-[#12306f]/85 px-4 py-2.5 font-extrabold text-blue-50 shadow-[0_10px_24px_rgba(34,211,238,0.12)] transition-colors hover:bg-[#1b438f] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <FaDownload className="text-sm" />
-              <span>{exportingQuestion === "__latest30__" ? "Downloading..." : "30 attempts"}</span>
+          <nav className="admin-analytics-nav" aria-label="Analytics navigation">
+            <button type="button" className="admin-analytics-nav__logout" onClick={handleLogout}>
+              <FaSignOutAlt aria-hidden="true" />
+              <span>Logout</span>
             </button>
-            <button
-              type="button"
-              onClick={() => handleExportAttempts()}
-              disabled={exportingQuestion !== null}
-              className="inline-flex items-center gap-2 rounded-xl border border-cyan-200/35 bg-cyan-500 px-4 py-2.5 font-extrabold text-slate-950 shadow-[0_10px_24px_rgba(34,211,238,0.18)] transition-colors hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <FaDownload className="text-sm" />
-              <span>{exportingQuestion === "__all__" ? "Downloading..." : "Download All"}</span>
-            </button>
-          </div>
-        </div>
+            <div className="admin-analytics-nav__secondary">
+              <button
+                type="button"
+                className="admin-analytics-nav__stats"
+                onClick={() => navigate("/admin-dashboard")}
+              >
+                <FaChartLine aria-hidden="true" />
+                <span>Student Stats</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleExportLatestAttemptsPerQuestion}
+                disabled={exportingQuestion !== null}
+                className="admin-analytics-nav__attempts"
+              >
+                <FaDownload className="text-sm" />
+                <span>{exportingQuestion === "__latest30__" ? "Downloading..." : "30 attempts"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExportAttempts()}
+                disabled={exportingQuestion !== null}
+                className="admin-analytics-nav__download"
+              >
+                <FaDownload className="text-sm" />
+                <span>{exportingQuestion === "__all__" ? "Downloading..." : "Download All"}</span>
+              </button>
+            </div>
+          </nav>
+        </header>
 
         {(loadingTop || loadingFacts) && (
           <div className="mb-4 animate-pulse text-blue-100/80">Loading analytics...</div>
@@ -980,7 +996,7 @@ export default function AnalyticsScreen() {
           </div>
         )}
 
-        <div className="admin-analytics-surface relative mb-4 overflow-hidden rounded-2xl border border-blue-200/15 bg-[#0b1f4f]/72 shadow-[0_18px_44px_rgba(2,8,30,0.5)]">
+        <div className="admin-analytics-surface admin-analytics-profile relative mb-4 overflow-hidden rounded-2xl border border-blue-200/15 bg-[#0b1f4f]/72 shadow-[0_18px_44px_rgba(2,8,30,0.5)]">
           <div className="pointer-events-none absolute inset-y-0 right-0 w-3/5 bg-[radial-gradient(circle_at_80%_55%,rgba(76,125,255,0.3),rgba(11,31,79,0)_70%)] opacity-80" />
           <div className="relative flex items-center gap-4 p-4 md:p-6">
             <div
@@ -1002,7 +1018,7 @@ export default function AnalyticsScreen() {
               </span>
             </div>
           </div>
-          <div className="relative flex items-center justify-between gap-3 border-t border-blue-100/15 bg-[#06173d]/75 px-4 py-3 md:px-6">
+          <div className="admin-analytics-profile-footer relative flex items-center justify-between gap-3 border-t border-blue-100/15 bg-[#06173d]/75 px-4 py-3 md:px-6">
             <div className="inline-flex items-center gap-2 text-xl font-bold md:text-2xl">
               <FaLayerGroup className="text-lg text-blue-200/80" />
               <span>{levelDisplay}</span>
@@ -1015,7 +1031,7 @@ export default function AnalyticsScreen() {
         </div>
 
         <div className="mb-4 grid grid-cols-1 gap-3 md:mb-5 sm:grid-cols-3">
-          <div className="admin-analytics-metric rounded-2xl border border-blue-300/35 bg-[linear-gradient(140deg,rgba(39,74,186,0.32),rgba(14,31,83,0.9))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="admin-analytics-metric admin-analytics-metric--blue rounded-2xl border border-blue-300/35 bg-[linear-gradient(140deg,rgba(39,74,186,0.32),rgba(14,31,83,0.9))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
             <div className="mb-1 flex items-center gap-2.5 text-sm font-semibold text-blue-100/85 md:text-lg">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-blue-200/35 bg-blue-500/20 text-sm">
                 <FaBullseye />
@@ -1026,7 +1042,7 @@ export default function AnalyticsScreen() {
               {summary?.overall?.totalAttempts ?? 0}
             </div>
           </div>
-          <div className="admin-analytics-metric rounded-2xl border border-emerald-300/35 bg-[linear-gradient(140deg,rgba(17,112,99,0.3),rgba(10,61,67,0.88))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="admin-analytics-metric admin-analytics-metric--green rounded-2xl border border-emerald-300/35 bg-[linear-gradient(140deg,rgba(17,112,99,0.3),rgba(10,61,67,0.88))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
             <div className="mb-1 flex items-center gap-2.5 text-sm font-semibold text-emerald-100/85 md:text-lg">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-emerald-200/35 bg-emerald-500/20 text-sm">
                 <FaCheckCircle />
@@ -1037,7 +1053,7 @@ export default function AnalyticsScreen() {
               {summary?.overall?.totalCorrect ?? 0}
             </div>
           </div>
-          <div className="admin-analytics-metric rounded-2xl border border-violet-300/35 bg-[linear-gradient(140deg,rgba(95,66,192,0.35),rgba(35,24,89,0.9))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="admin-analytics-metric admin-analytics-metric--violet rounded-2xl border border-violet-300/35 bg-[linear-gradient(140deg,rgba(95,66,192,0.35),rgba(35,24,89,0.9))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
             <div className="mb-1 flex items-center gap-2.5 text-sm font-semibold text-violet-100/85 md:text-lg">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-violet-200/35 bg-violet-500/20 text-sm">
                 <FaChartLine />
@@ -1050,7 +1066,7 @@ export default function AnalyticsScreen() {
           </div>
         </div>
 
-        <div className="admin-analytics-surface mb-4 rounded-2xl border border-blue-200/15 bg-[#0b1f4f]/72 p-4 md:mb-5">
+        <div className="admin-analytics-surface admin-analytics-filters mb-4 rounded-2xl border border-blue-200/15 bg-[#0b1f4f]/72 p-4 md:mb-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <div className="mb-1 text-sm font-semibold text-blue-100/80">Level</div>
@@ -1083,7 +1099,7 @@ export default function AnalyticsScreen() {
           </div>
         </div>
 
-        <div className="admin-analytics-surface mb-5 rounded-2xl border border-blue-200/15 bg-[#0b1f4f]/72 p-4 md:p-5">
+        <div className="admin-analytics-surface admin-analytics-table-card mb-5 rounded-2xl border border-blue-200/15 bg-[#0b1f4f]/72 p-4 md:p-5">
           <div className="mb-4 flex items-center gap-2 text-2xl font-bold">
             <FaExclamationTriangle className="text-amber-300" />
             <span>Struggling Facts</span>
@@ -1095,7 +1111,7 @@ export default function AnalyticsScreen() {
 
           {Array.isArray(struggling?.strugglingFacts) && struggling.strugglingFacts.length > 0 && (
             <div className="overflow-auto rounded-xl border border-blue-100/10">
-              <table className="w-full min-w-[520px] text-left">
+              <table className="admin-analytics-table w-full min-w-[520px] text-left">
                 <thead className="bg-[#10295f] text-sm text-blue-100/75">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Fact</th>
@@ -1125,7 +1141,7 @@ export default function AnalyticsScreen() {
           )}
         </div>
 
-        <div className="admin-analytics-surface rounded-2xl border border-blue-200/15 bg-[#0b1f4f]/72 p-4 md:p-5">
+        <div className="admin-analytics-surface admin-analytics-table-card rounded-2xl border border-blue-200/15 bg-[#0b1f4f]/72 p-4 md:p-5">
           <div className="mb-4 flex items-center gap-2 text-2xl font-bold">
             <FaChartLine className="text-blue-300" />
             <span>Facts Performance</span>
@@ -1139,7 +1155,7 @@ export default function AnalyticsScreen() {
 
           {!loadingFacts && sortedFacts.length > 0 && (
             <div className="overflow-auto rounded-xl border border-blue-100/10">
-              <table className="w-full min-w-[860px] text-left">
+              <table className="admin-analytics-table w-full min-w-[860px] text-left">
                 <thead className="text-sm text-blue-100/75 bg-[#10295f]">
                   <tr>
                     <th className="px-3 py-3 font-semibold">Question</th>
@@ -1195,10 +1211,10 @@ export default function AnalyticsScreen() {
                       <td className="px-3 py-3 text-xs">
                         {(f.stats?.mastered || f.stats?.struggling) ? (
                           <span
-                            className={`inline-flex rounded-full border px-2.5 py-1 font-bold ${
+                            className={`admin-analytics-flag ${
                               f.stats?.struggling
-                                ? "border-amber-300/35 bg-amber-500/20 text-amber-100"
-                                : "border-emerald-300/35 bg-emerald-500/20 text-emerald-100"
+                                ? "admin-analytics-flag--struggling"
+                                : "admin-analytics-flag--mastered"
                             }`}
                           >
                             {`${f.stats?.mastered ? "mastered" : ""}${f.stats?.struggling ? " struggling" : ""}`.trim()}
@@ -1215,7 +1231,7 @@ export default function AnalyticsScreen() {
                             handleExportAttempts(f.question);
                           }}
                           disabled={exportingQuestion !== null || !f.question}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-cyan-100/45 bg-cyan-400/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-colors hover:border-cyan-100/80 hover:bg-cyan-300/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="admin-analytics-row-download inline-flex h-9 w-9 items-center justify-center rounded-lg border border-cyan-100/45 bg-cyan-400/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-colors hover:border-cyan-100/80 hover:bg-cyan-300/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
                           aria-label={`Download attempts for ${f.question}`}
                           title={`Download attempts for ${f.question}`}
                         >

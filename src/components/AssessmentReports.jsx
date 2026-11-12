@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { assessmentReports, assessmentExport, programReports } from '../api/mathApi.js';
+import {
+  assessmentReports,
+  assessmentExport,
+  getAdminStats,
+  programReports,
+} from '../api/mathApi.js';
+import {
+  FaChartLine,
+  FaClock,
+  FaCog,
+  FaDownload,
+  FaSignOutAlt,
+  FaTrophy,
+  FaUsers,
+} from 'react-icons/fa';
 import '../styles/Assessment.css';
 import AdminBrand from './admin/AdminBrand.jsx';
 
@@ -10,6 +24,16 @@ const duration = (ms) => {
   const seconds = Math.round(ms / 1000);
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
   return `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
+};
+const compactDuration = (ms) => {
+  const totalMinutes = Math.round((Number(ms) || 0) / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+};
+const toNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
 };
 const queryDates = ({ student, type, from, to }) => {
   const result = { student: student.trim(), type };
@@ -35,6 +59,32 @@ export default function AssessmentReports() {
   const [program, setProgram] = useState(null);
   const [showProgram, setShowProgram] = useState(false);
   const [programError, setProgramError] = useState('');
+  const [summary, setSummary] = useState({
+    totalStudents: 0,
+    totalTimeMs: 0,
+    totalScore: 0,
+    loggedInToday: 0,
+  });
+  useEffect(() => {
+    let cancelled = false;
+    if (!pin) return undefined;
+    getAdminStats(pin, 1000, 0)
+      .then((response) => {
+        if (cancelled) return;
+        const students = Array.isArray(response?.data) ? response.data : [];
+        const totalCount = Number(response?.pagination?.totalCount);
+        setSummary({
+          totalStudents: Number.isFinite(totalCount) ? totalCount : students.length,
+          totalTimeMs: students.reduce((sum, student) => sum + toNumber(student?.grandTotalActiveMs), 0),
+          totalScore: students.reduce((sum, student) => sum + toNumber(student?.grandTotalCorrect), 0),
+          loggedInToday: students.reduce((sum, student) => sum + (student?.loggedInToday ? 1 : 0), 0),
+        });
+      })
+      .catch(() => {
+        // Test reporting still works if dashboard summary metrics are unavailable.
+      });
+    return () => { cancelled = true; };
+  }, [pin]);
   useEffect(() => {
     let cancelled = false;
     if (!showProgram) return;
@@ -65,12 +115,54 @@ export default function AssessmentReports() {
     finally { setExporting(false); }
   };
   if (!pin) return <Navigate to="/" replace />;
+  const logout = () => {
+    localStorage.removeItem('math-admin-pin');
+    navigate('/name', { replace: true });
+  };
   return <main className="assessment-page admin-classroom-page admin-reports-page">
-    <AdminBrand />
-    <header className="assessment-toolbar"><h1 className="text-2xl font-bold">Test Results</h1>
-      <button onClick={() => navigate('/admin-dashboard')}>Student Stats</button></header>
+    <header className="admin-reports-header">
+      <div className="admin-reports-heading">
+        <AdminBrand />
+        <div className="admin-reports-title-row">
+          <span className="admin-reports-title-icon" aria-hidden="true"><FaChartLine /></span>
+          <h1>Test Results</h1>
+        </div>
+      </div>
+      <nav className="admin-reports-nav" aria-label="Test results navigation">
+        <button type="button" className="admin-reports-nav__logout" onClick={logout}>
+          <FaSignOutAlt aria-hidden="true" /> Logout
+        </button>
+        <div className="admin-reports-nav__secondary">
+          <button type="button" onClick={() => navigate('/admin-dashboard')}>
+            <FaChartLine aria-hidden="true" /> Student Stats
+          </button>
+          <button type="button" onClick={() => navigate('/admin-settings')}>
+            <FaCog aria-hidden="true" /> App Settings
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <section className="admin-reports-summary" aria-label="Admin summary">
+      <article className="admin-reports-summary__card">
+        <span className="admin-reports-summary__icon is-blue"><FaUsers /></span>
+        <div><strong>{summary.totalStudents}</strong><span>Total Students</span></div>
+      </article>
+      <article className="admin-reports-summary__card">
+        <span className="admin-reports-summary__icon is-green"><FaClock /></span>
+        <div><strong>{compactDuration(summary.totalTimeMs)}</strong><span>Total Time</span></div>
+      </article>
+      <article className="admin-reports-summary__card">
+        <span className="admin-reports-summary__icon is-amber"><FaTrophy /></span>
+        <div><strong>{summary.totalScore}</strong><span>Total Score</span></div>
+      </article>
+      <article className="admin-reports-summary__card">
+        <span className="admin-reports-summary__icon is-violet"><FaChartLine /></span>
+        <div><strong>{summary.loggedInToday}</strong><span>Students Logged In Today</span></div>
+      </article>
+    </section>
+
     <section className="assessment-report">
-      <p className="mb-6">Assessment history and learning progression.</p>
       <form className="assessment-filters" onSubmit={e => {
         e.preventDefault();
         if (filters.from && filters.to && filters.from > filters.to) { setError('Start date must be before end date.'); return; }
@@ -81,25 +173,28 @@ export default function AssessmentReports() {
           <option value="">All tests</option><option value="A">Test A — Addition</option><option value="B">Test B — Subtraction</option><option value="C">Test C — Multiplication</option><option value="D">Test D — Division</option></select></label>
         <label>From (started)<input type="date" value={filters.from} onChange={e => setFilters({ ...filters, from: e.target.value })} /></label>
         <label>To (started)<input type="date" value={filters.to} onChange={e => setFilters({ ...filters, to: e.target.value })} /></label>
-        <button disabled={busy}>Apply filters</button>
-        <button type="button" disabled={exporting || busy} onClick={download}>{exporting ? 'Exporting…' : 'Export CSV'}</button>
+        <button className="assessment-filter-apply" disabled={busy}>Apply filters</button>
+        <button className="assessment-filter-export" type="button" disabled={exporting || busy} onClick={download}>
+          <FaDownload aria-hidden="true" /> {exporting ? 'Exporting…' : 'Export CSV'}
+        </button>
       </form>
       {error && <p role="alert">{error}</p>}
       {busy ? <p role="status">Loading results…</p> : <div className="assessment-results">
         {rows.length === 0 ? <p>No tests found.</p> : <table><thead><tr>
-          <th>Student</th><th>Test</th><th>Batch / attempt</th><th>Result</th><th>Status</th><th>Answered</th><th>Started</th><th>Completed / ended</th><th>Accuracy</th><th>Total time</th>
+          <th>#</th><th>Student</th><th>Test</th><th>Batch / attempt</th><th>Result</th><th>Status</th><th>Answered</th><th>Started</th><th>Completed / ended</th><th>Accuracy</th><th>Total time</th>
           <th>Average time per item</th><th title="Percentage of all test items answered correctly in less than 2 seconds">Correct under 2 seconds</th>
           <th title="Percentage of all test items answered correctly in less than 3 seconds">Correct under 3 seconds</th><th>Per-item detail</th>
-        </tr></thead><tbody>{rows.map(row => <tr key={row.id}>
-          <td>{row.student}<br /><small>#{row.pin}</small></td><td>{row.type}{row.part ? ` — Part ${row.part}` : ''}</td>
-          <td>{row.partBatch ?? row.batch ?? 'HIGH STAKES TEST'}</td><td>{row.passed == null ? '—' : row.passed ? 'Pass' : 'Fail'}</td>
+        </tr></thead><tbody>{rows.map((row, rowIndex) => <tr key={row.id}>
+          <td className="assessment-row-number">{page * 25 + rowIndex + 1}</td>
+          <td><span className="assessment-student-cell"><span className="assessment-student-avatar">{String(row.student || '?').charAt(0).toUpperCase()}</span><span>{row.student}<small>#{row.pin}</small></span></span></td><td>{row.type}{row.part ? ` — Part ${row.part}` : ''}</td>
+          <td>{row.partBatch ?? row.batch ?? 'HIGH STAKES TEST'}</td><td><span className={`assessment-result-badge ${row.passed == null ? 'is-neutral' : row.passed ? 'is-pass' : 'is-fail'}`}>{row.passed == null ? '—' : row.passed ? 'Pass' : 'Fail'}</span></td>
           <td>{row.status || 'Completed'}</td><td>{row.answered ?? row.answers.length} / {row.count}</td>
           <td>{row.startedAt ? new Date(row.startedAt).toLocaleString() : '—'}</td>
           <td>{row.completedAt || row.endedAt ? new Date(row.completedAt || row.endedAt).toLocaleString() : '—'}</td>
-          <td>{row.percent.toFixed(1)}%</td><td>{duration(row.totalMs)}</td>
+          <td><span className="assessment-metric-pill is-accuracy">{row.percent.toFixed(1)}%</span></td><td>{duration(row.totalMs)}</td>
           <td>{Number.isFinite(row.averageTimeMs) ? `${(row.averageTimeMs / 1000).toFixed(2)} s` : '—'}</td>
-          <td>{Number.isFinite(row.correctUnderTwoSecondsPercent) ? `${row.correctUnderTwoSecondsPercent.toFixed(1)}%` : '—'}</td>
-          <td>{Number.isFinite(row.correctUnderThreeSecondsPercent) ? `${row.correctUnderThreeSecondsPercent.toFixed(1)}%` : '—'}</td>
+          <td><span className="assessment-metric-pill is-fast">{Number.isFinite(row.correctUnderTwoSecondsPercent) ? `${row.correctUnderTwoSecondsPercent.toFixed(1)}%` : '—'}</span></td>
+          <td><span className="assessment-metric-pill is-three">{Number.isFinite(row.correctUnderThreeSecondsPercent) ? `${row.correctUnderThreeSecondsPercent.toFixed(1)}%` : '—'}</span></td>
           <td><details><summary>View {row.count} items</summary><table><thead><tr>
             <th>Problem</th><th>Answer</th><th>Result</th><th>Time</th><th title="Time the server accepted the answer, in your device timezone">Answered at</th>
           </tr></thead><tbody>{(row.items || row.answers.map(a => a.problem)).map((problem, i) => { const a = row.answers[i]; return <tr key={i}><td>{problem}</td><td>{a?.answer ?? '—'}</td>
