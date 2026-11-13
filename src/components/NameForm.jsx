@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getAdminStats } from '../api/mathApi.js';
 import {
-  FaBackspace,
   FaGamepad,
   FaGraduationCap,
   FaLock,
@@ -461,7 +460,12 @@ const handleDemoClick = () => {
             <UserKeypadButton
               value="<"
               className="student-login-key--backspace"
-              label={<FaBackspace aria-label="Backspace" />}
+              label={
+                <svg viewBox="0 0 24 24" role="img" aria-label="Backspace" focusable="false">
+                  <path d="M9 5h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-7-7 7-7Z" fill="#1764a5" />
+                  <path d="m12 9 6 6m0-6-6 6" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              }
             />
             <UserKeypadButton value="0" />
             <UserKeypadButton 
