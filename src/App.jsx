@@ -1,3 +1,5 @@
+import AdminBrand from './components/admin/AdminBrand.jsx';
+import './styles/ClassroomTransitions.css';
 import CorrectionTransition from './components/CorrectionTransition.jsx';
 import React, { useEffect, createContext, lazy, Suspense, useMemo, useRef } from 'react'; 
 import useMathGame from './hooks/useMathGame.jsx';
@@ -63,19 +65,14 @@ export const MathGameContext = createContext({});
 
 const InitialLoadingScreen = () => (
     <div 
-            className="fixed inset-0 z-[99] bg-black/90 flex flex-col items-center justify-center "
-            style={{ 
-                backgroundImage: "url('/night_sky_landscape.jpg')", 
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-            }}
+            className="classroom-selection-page classroom-loading-screen fixed inset-0 z-[99] flex flex-col items-center justify-center px-4"
     >
+        <AdminBrand className="classroom-screen-brand" />
         <svg className="animate-spin h-12 w-12 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <p className=" text-2xl font-semibold text-white-700 ">Loading...</p>
+        <p className="classroom-selection-status mt-4 text-2xl font-semibold">Loading...</p>
     </div>
 );
 
@@ -340,35 +337,14 @@ const App = () => {
         />
       )}
       
-        {showSiblingCheck && (
-        <div 
-            className="fixed inset-0 z-[99] bg-black/90"
-            style={{ 
-                backgroundImage: "url('/night_sky_landscape.jpg')", 
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-            }}
-        >
-             <SiblingCheckModal />
-        </div>
-      )}
+      {showSiblingCheck && <SiblingCheckModal />}
 
 
       {/* Optional overlays kept here if you use them */}
       {ctx.showQuitModal && (
-        <div className="fixed inset-0 z-50 p-4 animate-fade-in">
-          <div
-            className="absolute inset-0 bg-black"
-            style={{
-              backgroundImage: "url('/night_sky_landscape.jpg')",
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-            }}
-          />
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative flex h-full items-center justify-center">
+        <div className="classroom-selection-page classroom-modal-screen fixed inset-0 z-50 p-4 animate-fade-in">
+          <AdminBrand className="classroom-screen-brand" />
+          <div className="classroom-modal-content relative flex items-center justify-center">
           <div className="relative w-full max-w-[520px] animate-pop-in">
             <div className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-blue-400/30 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-sky-400/20 blur-3xl" />

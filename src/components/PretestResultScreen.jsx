@@ -1,3 +1,5 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 import React, { useEffect, useMemo } from 'react';
 import Confetti from 'react-confetti';
 import { useLocation } from 'react-router-dom';
@@ -109,15 +111,9 @@ const PretestResultScreen = () => {
 
   return (
     <div
-      className="min-h-screen full-height-safe relative w-full overflow-auto px-3 py-4 sm:px-5 sm:py-5"
-      style={{
-        backgroundImage: "url('/night_sky_landscape.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
+      className="classroom-selection-page classroom-outcome-page min-h-screen full-height-safe relative w-full overflow-auto px-3 py-4 sm:px-5 sm:py-5"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[#07143d]/45" />
+      <AdminBrand className="classroom-screen-brand" />
       {passed && (
         <Confetti
           width={window.innerWidth}
@@ -136,7 +132,7 @@ const PretestResultScreen = () => {
       <span className="pointer-events-none absolute right-[14%] top-[42%] h-2.5 w-2.5 rotate-45 rounded-sm bg-[#f472b6] opacity-90" />
       <span className="pointer-events-none absolute right-[11%] bottom-[19%] h-3 w-3 -rotate-12 rounded-sm bg-[#fbbf24] opacity-90" />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-[72rem] items-center justify-center py-2">
+      <div className="classroom-outcome-content relative z-10 mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-[72rem] items-center justify-center py-2">
         <div className="w-full max-w-[35rem] rounded-[2rem] bg-gradient-to-br from-cyan-300/70 via-teal-300/56 to-sky-300/62 p-[1.5px] shadow-[0_18px_48px_rgba(4,12,20,0.6)] sm:rounded-[2.25rem]">
           <div className="relative overflow-hidden rounded-[calc(2rem-1.5px)] border border-white/15 bg-slate-900/62 px-3 pb-4 pt-14 text-center backdrop-blur-md sm:rounded-[calc(2.25rem-1.5px)] sm:px-5 sm:pb-6 sm:pt-[4.75rem]">
             <div className="pointer-events-none absolute -top-14 -right-12 h-28 w-28 rounded-full bg-cyan-300/18 blur-2xl" />

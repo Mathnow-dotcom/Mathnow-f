@@ -1,3 +1,5 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
@@ -175,14 +177,9 @@ const GameModeSurfCompleteScreen = () => {
       `}</style>
 
       <div
-        className="fixed inset-0 z-[100] overflow-auto px-4 py-8 sm:px-6"
-        style={{
-          backgroundImage:
-            "linear-gradient(180deg, rgba(5,16,48,0.4), rgba(4,14,38,0.72)), url('/night_sky_landscape.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
+        className="classroom-selection-page classroom-game-summary fixed inset-0 z-[100] overflow-auto px-4 py-8 sm:px-6"
       >
+        <AdminBrand className="classroom-screen-brand" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_18%,rgba(103,232,249,0.18),transparent_24%),radial-gradient(circle_at_82%_18%,rgba(96,165,250,0.16),transparent_24%),radial-gradient(circle_at_50%_76%,rgba(34,197,94,0.1),transparent_28%),radial-gradient(circle_at_50%_42%,rgba(129,140,248,0.14),transparent_34%)]" />
 
         <span className="surf-complete-sparkle left-[8%] top-[14%] h-2.5 w-2.5" style={{ animationDelay: '0s' }} />

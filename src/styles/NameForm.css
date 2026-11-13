@@ -1,0 +1,323 @@
+.student-login-page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: max(env(safe-area-inset-top), 0.65rem) max(env(safe-area-inset-right), 0.75rem)
+    max(env(safe-area-inset-bottom), 0.65rem) max(env(safe-area-inset-left), 0.75rem) !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #efc28e url('/Mathnow_bg.png') center / cover fixed no-repeat;
+  font-family: 'Baloo 2', 'Nunito Sans', 'Trebuchet MS', sans-serif;
+}
+
+.student-login-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 252, 243, 0.03), rgba(255, 241, 211, 0.1));
+}
+
+.student-login-admin {
+  min-height: 2.45rem;
+  padding: 0.45rem 0.85rem !important;
+  border: 1px solid rgba(66, 101, 139, 0.28) !important;
+  color: #173c68 !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: 0 8px 22px rgba(43, 72, 96, 0.2) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.student-login-admin:hover {
+  background: #fff !important;
+}
+
+.student-login-shell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: min(94vw, 22rem);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.45rem, 1.2vh, 0.7rem);
+  margin: auto;
+}
+
+.student-login-brand.admin-brand {
+  flex-direction: column;
+  gap: 0.05rem;
+  filter: drop-shadow(0 4px 7px rgba(24, 63, 102, 0.2));
+}
+
+.student-login-brand .admin-brand__mark {
+  width: clamp(3.5rem, 8vh, 4.4rem);
+  height: clamp(3.5rem, 8vh, 4.4rem);
+}
+
+.student-login-brand .admin-brand__word {
+  color: #173f70;
+  font-size: clamp(2rem, 5vh, 2.75rem);
+  line-height: 0.92;
+  text-shadow: 0 2px 5px rgba(255, 255, 255, 0.72);
+}
+
+.student-login-brand .admin-brand__math {
+  color: #173f70;
+}
+
+.student-login-brand .admin-brand__word strong {
+  color: #2e8ff0;
+}
+
+.student-login-panel {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(0.72rem, 1.7vh, 1rem) clamp(0.8rem, 2vw, 1.1rem) !important;
+  border: 1px solid rgba(92, 142, 185, 0.3) !important;
+  border-radius: 1.15rem !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(244, 249, 255, 0.9)) !important;
+  box-shadow: 0 18px 44px rgba(45, 69, 91, 0.25) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.student-login-form {
+  gap: 0 !important;
+}
+
+.student-login-label {
+  display: flex !important;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  margin: 0 0 0.25rem !important;
+  color: #173f70 !important;
+  font-size: clamp(0.76rem, 1.7vh, 0.9rem) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2;
+  text-align: left !important;
+}
+
+.student-login-label:not(:first-child) {
+  margin-top: clamp(0.42rem, 1vh, 0.62rem) !important;
+}
+
+.student-login-label svg {
+  width: 1rem;
+  color: #18568e;
+  flex: 0 0 auto;
+}
+
+.student-login-input,
+.student-login-select {
+  width: 100% !important;
+  max-width: none !important;
+  height: clamp(2.25rem, 5.2vh, 2.75rem) !important;
+  min-height: 2.25rem;
+  margin: 0 !important;
+  padding: 0.35rem 0.75rem !important;
+  border: 2px solid #b6d2e7 !important;
+  border-radius: 0.65rem !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: inset 0 1px 2px rgba(28, 66, 101, 0.04), 0 4px 12px rgba(47, 86, 121, 0.08) !important;
+  font-family: inherit;
+}
+
+.student-login-input {
+  color: #17345b !important;
+  font-size: clamp(1rem, 2.5vh, 1.35rem) !important;
+  letter-spacing: 0.12em !important;
+  text-align: left !important;
+}
+
+.student-login-passcode {
+  text-align: center !important;
+}
+
+.student-login-select {
+  appearance: auto;
+  color: #17345b;
+  font-size: clamp(0.78rem, 1.8vh, 0.92rem) !important;
+  font-weight: 700 !important;
+}
+
+.student-login-select--empty {
+  color: #8b95a5 !important;
+  font-weight: 600 !important;
+}
+
+.student-login-select--selected {
+  color: #17345b !important;
+}
+
+.student-login-select option {
+  color: #17345b;
+  background: #ffffff;
+  font-family: inherit;
+  font-weight: 650;
+}
+
+.student-login-select .student-login-select-placeholder {
+  color: #475569;
+  background: #eef6ff;
+  font-weight: 750;
+}
+
+.student-login-select .student-login-select-option:checked {
+  color: #ffffff;
+  background: #245d93;
+}
+
+.student-login-input:focus,
+.student-login-select:focus {
+  border-color: #3c91d6 !important;
+  outline: 3px solid rgba(57, 145, 215, 0.17) !important;
+}
+
+.student-login-keypad {
+  width: 100% !important;
+  max-width: none !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.3rem, 0.8vh, 0.45rem) !important;
+  margin: clamp(0.48rem, 1.1vh, 0.65rem) 0 0 !important;
+}
+
+.student-login-key {
+  height: clamp(2.05rem, 4.8vh, 2.55rem) !important;
+  min-height: 2.05rem;
+  border: 1px solid #d7e0ea !important;
+  border-radius: 0.62rem !important;
+  color: #17345b !important;
+  background: linear-gradient(180deg, #fff, #f2f5f8) !important;
+  box-shadow: 0 4px 9px rgba(43, 67, 90, 0.13) !important;
+  font-size: clamp(0.78rem, 1.9vh, 0.95rem) !important;
+}
+
+.student-login-key:hover {
+  border-color: #a8c7df !important;
+  background: #eaf3fa !important;
+}
+
+.student-login-key--backspace {
+  color: #fff !important;
+  background: linear-gradient(145deg, #285d91, #163f70) !important;
+}
+
+.student-login-key--backspace svg {
+  font-size: 1.05rem;
+}
+
+.student-login-key--clear {
+  color: #1764a5 !important;
+  background: linear-gradient(180deg, #eef8ff, #e2f1fb) !important;
+}
+
+.student-login-actions {
+  width: 100%;
+  gap: 0.55rem;
+  margin-top: clamp(0.55rem, 1.2vh, 0.75rem) !important;
+}
+
+.student-login-action {
+  display: inline-flex;
+  min-height: clamp(2.35rem, 5.2vh, 2.8rem);
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 !important;
+  padding: 0.45rem 0.75rem !important;
+  border-radius: 0.78rem !important;
+  font-family: inherit;
+  font-size: clamp(0.82rem, 1.9vh, 0.98rem) !important;
+  font-weight: 800 !important;
+}
+
+.student-login-action--start {
+  background: linear-gradient(145deg, #27b46b, #0d8a4b) !important;
+}
+
+.student-login-action--demo {
+  border: 1px solid #c5ddf2;
+  color: #1764a5 !important;
+  background: linear-gradient(180deg, #f4faff, #e5f3ff) !important;
+}
+
+@media (max-width: 520px) {
+  .student-login-page {
+    align-items: flex-start !important;
+    justify-content: center !important;
+  }
+
+  .student-login-shell {
+    width: min(94vw, 21rem);
+    margin: 0 auto;
+    padding-top: 2.8rem;
+  }
+
+  .student-login-admin {
+    min-height: 2.2rem;
+    padding: 0.35rem 0.7rem !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 650px) {
+  .student-login-shell {
+    gap: 0.25rem;
+  }
+
+  .student-login-brand.admin-brand {
+    flex-direction: row;
+    gap: 0.35rem;
+  }
+
+  .student-login-brand .admin-brand__mark {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+
+  .student-login-brand .admin-brand__word {
+    font-size: 2rem;
+  }
+
+  .student-login-panel {
+    padding: 0.6rem 0.85rem !important;
+  }
+
+  .student-login-label:not(:first-child) {
+    margin-top: 0.3rem !important;
+  }
+
+  .student-login-input,
+  .student-login-select {
+    height: 2.15rem !important;
+    min-height: 2.15rem;
+  }
+
+  .student-login-key {
+    height: 1.9rem !important;
+    min-height: 1.9rem;
+  }
+
+  .student-login-keypad {
+    gap: 0.25rem !important;
+    margin-top: 0.35rem !important;
+  }
+
+  .student-login-actions {
+    margin-top: 0.4rem !important;
+  }
+
+  .student-login-action {
+    min-height: 2.15rem;
+  }
+}
+
+/* Match the confirmation modal’s Yes button without changing loading behavior. */
+.student-login-loading-card {
+  background: linear-gradient(135deg, #2588ef, #0d67c3);
+}

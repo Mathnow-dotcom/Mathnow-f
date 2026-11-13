@@ -1,3 +1,5 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 // src/components/SettingsModal.jsx
 import React, { useState } from 'react';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
@@ -18,18 +20,9 @@ const SettingsModal = () => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 p-4 animate-fade-in">
-            <div
-                className="absolute inset-0 bg-black"
-                style={{
-                    backgroundImage: "url('/night_sky_landscape.jpg')",
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                }}
-            />
-            <div className="absolute inset-0 bg-black/30" />
-            <div className="relative flex h-full items-center justify-center">
+        <div className="classroom-selection-page classroom-modal-screen fixed inset-0 z-50 p-4 animate-fade-in">
+            <AdminBrand className="classroom-screen-brand" />
+            <div className="classroom-modal-content relative flex items-center justify-center">
             <div className={`relative w-full max-w-[420px] ${isClosingSettings ? 'animate-pop-out' : 'animate-pop-in'}`}>
                 <div className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-blue-400/30 blur-3xl" />
                 <div className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-sky-400/20 blur-3xl" />

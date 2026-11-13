@@ -1,3 +1,5 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Confetti from 'react-confetti';
 import { FaArrowRight, FaBullseye, FaClock, FaStar, FaTrophy } from 'react-icons/fa';
@@ -252,15 +254,9 @@ const ResultsScreen = () => {
 
   return (
     <div
-      className="min-h-screen full-height-safe w-full relative overflow-hidden px-3 py-3 sm:px-5 sm:py-4 md:px-7"
-      style={{
-        backgroundImage: "url('/night_sky_landscape.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
+      className="classroom-selection-page classroom-outcome-page min-h-screen full-height-safe w-full relative overflow-hidden px-3 py-3 sm:px-5 sm:py-4 md:px-7"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[#07143d]/45" />
+      <AdminBrand className="classroom-screen-brand" />
       <Confetti
         width={window.innerWidth}
         height={window.innerHeight}
@@ -276,7 +272,7 @@ const ResultsScreen = () => {
 
       <div
         ref={fitFrameRef}
-        className="relative z-10 mx-auto flex h-[calc(100vh-0.75rem)] w-full max-w-[72rem] items-center justify-center py-1 sm:h-[calc(100vh-1rem)]"
+        className="classroom-outcome-content classroom-result-frame relative z-10 mx-auto flex h-[calc(100vh-0.75rem)] w-full max-w-[72rem] items-center justify-center py-1 sm:h-[calc(100vh-1rem)]"
       >
         <div className="flex w-full justify-center">
           <div

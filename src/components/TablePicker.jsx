@@ -7,6 +7,8 @@ import { useMathGamePick } from '../store/mathGameBridgeStore.js';
 import useGuardedVideoPlayback from '../hooks/useGuardedVideoPlayback.js';
 import VideoPlaybackGate from './ui/VideoPlaybackGate.jsx';
 import FloatingBackButton from './ui/FloatingBackButton.jsx';
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 // import UserInfoBadge from './ui/UserInfoBadge.jsx';
 // import DailyStreakCounter from './ui/DailyStreakCounter.jsx';
 
@@ -319,17 +321,12 @@ const TablePicker = ({ programLevel = null }) => {
   }
 
    return (
-    <div
-      className="min-h-screen w-full px-4 py-6 flex flex-col items-center"
-      style={{
-        backgroundImage: "url('/night_sky_landscape.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
+    <div className="classroom-selection-page min-h-screen w-full px-4 pt-24 sm:pt-28 pb-6 flex flex-col items-center">
+      <AdminBrand className="classroom-screen-brand" />
       {/* Back button fixed top-left */}
-      <FloatingBackButton onClick={() => navigate('/operations')} ariaLabel="Back to operations" />
+      <div className="classroom-selection-back">
+        <FloatingBackButton onClick={() => navigate('/operations')} ariaLabel="Back to operations" />
+      </div>
 
       {/* <UserInfoBadge /> */}
 
@@ -383,16 +380,9 @@ const TablePicker = ({ programLevel = null }) => {
 
       {isInitialPrepLoading && (
         <div
-          className="fixed inset-0 z-[100200] flex items-center justify-center px-4"
-          style={{
-            backgroundImage: "url('/night_sky_landscape.jpg')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundColor: 'rgba(2, 6, 23, 0.72)',
-            backdropFilter: 'blur(2px)',
-          }}
+          className="classroom-selection-page classroom-loading-screen fixed inset-0 z-[100200] flex items-center justify-center px-4"
         >
+          <AdminBrand className="classroom-screen-brand" />
           <div className="w-[92vw] max-w-[22rem] sm:max-w-[28rem] lg:max-w-[36rem] rounded-[1.6rem] sm:rounded-[1.9rem] border border-cyan-200/35 bg-slate-950/72 p-5 sm:p-7 lg:p-9 text-white shadow-2xl">
             <div className="mx-auto w-fit">
               <div

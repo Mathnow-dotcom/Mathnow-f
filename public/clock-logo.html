@@ -19,128 +19,127 @@
         
         .main-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: clamp(20px, 5vw, 50px);
-            margin-left: clamp(-300px, -30vw, -600px);
+            gap: clamp(10px, 1.8vh, 18px);
             width: 100%;
             height: 100%;
             justify-content: center;
+            transform: translateY(-9vh);
         }
         
         .clock-container {
             position: relative;
             animation: zoomOut 3s ease-in-out forwards;
-            margin-top: clamp(15px, 3vh, 35px);
         }
         
         .clock {
-            width: clamp(120px, 25vw, 300px);
-            height: clamp(120px, 25vw, 300px);
-            border: clamp(8px, 2vw, 20px) solid #2c5282;
+            width: clamp(110px, 10vw, 160px);
+            height: clamp(110px, 10vw, 160px);
+            border: clamp(8px, 0.75vw, 12px) solid #2c5b91;
             border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.95);
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
+            box-sizing: border-box;
+            box-shadow: 0 12px 28px rgba(27, 66, 106, 0.2);
         }
         
         .clock-center {
-            width: clamp(10px, 2.5vw, 24px);
-            height: clamp(10px, 2.5vw, 24px);
-            background-color: #2c5282;
+            width: 10%;
+            aspect-ratio: 1;
+            background-color: #2c5b91;
             border-radius: 50%;
             position: absolute;
-            top: calc(50% - clamp(5px, 1.25vw, 12px) - clamp(4px, 1vw, 9px));
-            left: calc(50% - clamp(5px, 1.25vw, 12px) - clamp(1px, 0.25vw, 2px));
+            top: 45%;
+            left: 45%;
             z-index: 3;
         }
         
         .stopwatch-knob {
-            width: clamp(10px, 2.5vw, 24px);
-            height: clamp(20px, 5vw, 50px);
-            background-color: #2c5282;
+            width: 10%;
+            height: 19%;
+            background-color: #2c5b91;
             position: absolute;
-            top: clamp(-25px, -5vw, -55px);
+            top: -17%;
             left: 50%;
             transform: translateX(-50%);
-            border-radius: clamp(6px, 1.5vw, 12px) clamp(6px, 1.5vw, 12px) clamp(2px, 0.5vw, 4px) clamp(2px, 0.5vw, 4px);
+            border-radius: 8px 8px 3px 3px;
             z-index: 1;
         }
         
         .stopwatch-knob::before {
             content: '';
             position: absolute;
-            top: clamp(-5px, -1vw, -10px);
+            top: -31%;
             left: 50%;
             transform: translateX(-50%);
-            width: clamp(16px, 4vw, 32px);
-            height: clamp(8px, 2vw, 16px);
-            background-color: #2c5282;
-            border-radius: clamp(8px, 2vw, 16px) clamp(8px, 2vw, 16px) clamp(4px, 1vw, 8px) clamp(4px, 1vw, 8px);
+            width: 160%;
+            height: 42%;
+            background-color: #2c5b91;
+            border-radius: 10px 10px 5px 5px;
         }
         
         .stopwatch-knob::after {
             content: '';
             position: absolute;
-            top: clamp(-2px, -0.5vw, -4px);
+            top: -12%;
             left: 50%;
             transform: translateX(-50%);
-            width: clamp(8px, 2vw, 16px);
-            height: clamp(5px, 1.25vw, 10px);
-            background-color: #2c5282;
+            width: 78%;
+            height: 28%;
+            background-color: #2c5b91;
             border-radius: 50%;
         }
         
         .hour-hand {
-            width: clamp(8px, 2vw, 20px);
-            height: clamp(32px, 8vw, 80px);
-            background-color: #2c5282;
+            width: 8%;
+            height: 29%;
+            background-color: #2c5b91;
             position: absolute;
-            bottom: calc(50% + clamp(3px, 0.75vw, 7px));
+            bottom: 50%;
             left: 50%;
             transform-origin: bottom center;
             transform: translateX(-50%) rotate(-30deg);
-            border-radius: clamp(5px, 1.25vw, 10px) clamp(5px, 1.25vw, 10px) 0 0;
+            border-radius: 8px 8px 0 0;
             z-index: 2;
         }
         
         .minute-hand {
-            width: clamp(6px, 1.5vw, 16px);
-            height: clamp(52px, 13vw, 130px);
-            background-color: #2c5282;
+            width: 6%;
+            height: 39%;
+            background-color: #2c5b91;
             position: absolute;
-            bottom: calc(50% + clamp(3px, 0.75vw, 7px));
+            bottom: 50%;
             left: 50%;
             transform-origin: bottom center;
             transform: translateX(-50%) rotate(0deg);
-            border-radius: clamp(4px, 1vw, 8px) clamp(4px, 1vw, 8px) 0 0;
+            border-radius: 7px 7px 0 0;
             z-index: 1;
             animation: sweep 3s ease-in-out forwards;
         }
         
         .mathnow-logo {
             opacity: 1;
-            width: clamp(300px, 60vw, 900px);
-            height: clamp(300px, 60vw, 900px);
+            width: auto;
+            height: auto;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
         }
         
         .logo-title {
             font-family: Arial, sans-serif;
-            font-size: clamp(60px, 15vw, 300px);
-            font-weight: bold;
-            margin-bottom: clamp(2px, 0.5vw, 10px);
-            text-align: left;
-            line-height: 1;
-            /*text-shadow: 
-                -2px -2px 0 #d3d3d3,
-                2px -2px 0 #d3d3d3,
-                -2px 2px 0 #d3d3d3,
-                2px 2px 0 #d3d3d3;*/
+            font-size: clamp(54px, 6vw, 96px);
+            font-weight: 800;
+            margin: 0;
+            text-align: center;
+            line-height: 0.95;
+            letter-spacing: -0.045em;
+            filter: drop-shadow(0 8px 12px rgba(31, 72, 112, 0.2));
         }
         
         .logo-tagline {
@@ -187,19 +186,17 @@
         /* Portrait mode adjustments for mobile devices */
         @media (orientation: portrait) and (max-width: 768px) {
             .main-container {
-                flex-direction: column;
-                gap: clamp(10px, 3vh, 30px);
-                margin-left: 0;
+                gap: clamp(8px, 1.5vh, 14px);
+                transform: translateY(-8vh);
             }
             
             .mathnow-logo {
-                width: clamp(200px, 80vw, 400px);
-                height: auto;
+                width: auto;
                 align-items: center;
             }
             
             .logo-title {
-                font-size: clamp(40px, 12vw, 120px);
+                font-size: clamp(46px, 13vw, 72px);
                 text-align: center;
             }
             
@@ -210,28 +207,34 @@
             }
             
             .clock {
-                width: clamp(80px, 20vw, 200px);
-                height: clamp(80px, 20vw, 200px);
+                width: clamp(100px, 28vw, 138px);
+                height: clamp(100px, 28vw, 138px);
             }
         }
         
         /* Landscape mode adjustments */
         @media (orientation: landscape) and (max-height: 500px) {
             .main-container {
-                gap: clamp(10px, 2vw, 30px);
+                gap: 7px;
+                transform: translateY(-9vh);
             }
             
             .mathnow-logo {
-                width: clamp(200px, 40vw, 600px);
-                height: clamp(200px, 40vw, 600px);
+                width: auto;
+                height: auto;
             }
             
             .logo-title {
-                font-size: clamp(40px, 10vw, 200px);
+                font-size: clamp(44px, 7vw, 62px);
             }
             
             .logo-tagline {
                 font-size: clamp(10px, 2.5vw, 40px);
+            }
+
+            .clock {
+                width: clamp(86px, 15vh, 108px);
+                height: clamp(86px, 15vh, 108px);
             }
         }
     </style>
@@ -249,7 +252,7 @@
         
         <div class="mathnow-logo" id="logo">
             <div class="logo-title">
-                <span style="color: white;">Math</span><span style="color: #60a5fa;">Now</span>
+                <span style="color: #163f70;">Math</span><span style="color: #2f8ff0;">Now</span>
             </div>
         </div>
     </div>

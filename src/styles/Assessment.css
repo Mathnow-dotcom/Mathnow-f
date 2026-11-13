@@ -1,4 +1,8 @@
 .assessment-page { min-height:100dvh; padding:24px 20px 130px; background:linear-gradient(145deg,#061528e8,#123f55d9),url('/night_sky_landscape.jpg') center/cover; color:#fff; display:flex; flex-direction:column; align-items:center; gap:32px; }
+.assessment-page--classroom-intro { position:relative; isolation:isolate; background:#efc28e url('/Mathnow_bg.png') center/cover fixed no-repeat; color:#173f70; padding-top:clamp(6.5rem,14vh,9rem); }
+.assessment-page--classroom-intro::before { content:''; position:fixed; inset:0; z-index:-1; pointer-events:none; background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(19,63,112,.05)); }
+.assessment-page--classroom-intro .assessment-student-toolbar { position:absolute; top:max(env(safe-area-inset-top),1rem); right:max(env(safe-area-inset-right),1rem); }
+.assessment-page--classroom-intro .assessment-start-card { border:1px solid rgba(110,157,199,.55); background:rgba(255,255,255,.93); box-shadow:0 20px 48px rgba(30,68,104,.22); backdrop-filter:blur(10px); }
 .assessment-toolbar { display:flex; justify-content:space-between; align-items:center; width:100%; max-width:1100px; gap:16px; }
 .assessment-card { margin:auto; width:min(100%,600px); padding:32px; background:linear-gradient(135deg,#e1edff,#f4eaff); color:#18253a; border-radius:26px; box-shadow:0 16px 50px #0003; text-align:center; }
 .assessment-card h1 { font-size:clamp(1.5rem,4vw,2rem); font-weight:700; margin:0 0 20px; }
@@ -60,7 +64,27 @@
 @media(max-width:480px) { .assessment-card { padding:24px 18px; } .assessment-keypad { gap:12px; } .assessment-page button { padding:12px; } }
 
 /* Selection screens only: keep assessment questions, keypad and reports unchanged. */
-.assessment-selection-page { padding-bottom:32px; gap:clamp(20px,4vh,40px); }
+.assessment-selection-page {
+  position:relative;
+  padding:clamp(5.25rem,11vh,7rem) clamp(14px,3vw,28px) 28px;
+  gap:clamp(20px,4vh,40px);
+  background:#efc28e url('/Mathnow_bg.png') center/cover fixed no-repeat;
+  color:#173f70;
+}
+.assessment-selection-page::before {
+  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,252,243,.04),rgba(255,241,211,.1));
+}
+.assessment-selection-page .assessment-student-toolbar {
+  position:absolute; top:max(env(safe-area-inset-top),clamp(.8rem,2.4vw,1.4rem));
+  right:max(env(safe-area-inset-right),clamp(.8rem,2.4vw,1.5rem));
+  z-index:6; width:auto;
+}
+.assessment-selection-page .assessment-student-toolbar > button {
+  min-height:2.75rem; padding:.7rem 1.2rem; border-radius:999px;
+  background:linear-gradient(135deg,#20b763,#11884a);
+  box-shadow:0 8px 20px rgba(15,117,63,.25);
+}
 .assessment-selection-page .assessment-toolbar > span { min-width:0; overflow-wrap:anywhere; }
 .assessment-selection-page .assessment-toolbar > button { flex-shrink:0; }
 .assessment-selection-card {
@@ -70,6 +94,18 @@
   box-shadow:0 18px 48px #0003;
   flex-shrink:0;
 }
+.assessment-selection-page .assessment-selection-card {
+  border-color:rgba(66,125,174,.26);
+  color:#173f70;
+  background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(241,248,255,.94));
+  box-shadow:0 20px 52px rgba(42,70,93,.27),inset 0 1px 0 #fff;
+  backdrop-filter:blur(12px);
+}
+.assessment-selection-page .assessment-mode-choices button {
+  background:linear-gradient(135deg,#20b763,#11884a);
+  box-shadow:0 8px 18px rgba(15,117,63,.22);
+}
+.assessment-selection-page .assessment-timer { position:fixed; right:1rem; bottom:1rem; z-index:5; margin:0; }
 .assessment-selection-card h1 {
   margin:0 0 24px;
   font-size:clamp(1.5rem,3vw,1.9rem);
@@ -96,7 +132,7 @@
   .assessment-selection-card .assessment-choices button:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 6px 12px #0002; }
 }
 @media(max-width:480px) {
-  .assessment-selection-page { padding:16px 12px 24px; }
+  .assessment-selection-page { padding:5.25rem 12px 6.5rem; }
   .assessment-selection-card { border-radius:20px; }
   .assessment-selection-card .assessment-mode-choices { grid-template-columns:1fr; }
   .assessment-selection-card .assessment-choices button { min-height:52px; padding:14px 16px; }

@@ -1,3 +1,5 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -125,19 +127,9 @@ const GameModeExitScreen = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
-      style={
-        isBonusMode
-          ? {
-              backgroundImage:
-                "linear-gradient(180deg, rgba(5,16,48,0.42), rgba(4,14,38,0.72)), url('/night_sky_landscape.jpg')",
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-            }
-          : undefined
-      }
+      className="classroom-selection-page classroom-game-summary fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
     >
+      <AdminBrand className="classroom-screen-brand" />
       {isBonusMode ? (
         <>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(126,211,255,0.24),transparent_30%),radial-gradient(circle_at_82%_22%,rgba(67,120,255,0.18),transparent_26%),radial-gradient(circle_at_50%_82%,rgba(34,211,238,0.14),transparent_30%)]" />
@@ -158,9 +150,9 @@ const GameModeExitScreen = () => {
           </div>
         </>
       ) : (
-        <div className="text-center p-8 bg-white/90 rounded-3xl shadow-2xl border-4 border-orange-500 transform scale-110">
-          <h1 className="text-6xl sm:text-7xl font-black text-orange-700 mb-4">{modeLabel}</h1>
-          <h1 className="text-6xl sm:text-7xl font-black text-orange-700 mb-4">GAME COMPLETED</h1>
+        <div className="relative mx-4 w-[calc(100%-2rem)] max-w-3xl text-center p-5 sm:p-8 bg-white/90 rounded-3xl shadow-2xl border-4 border-orange-500">
+          <h1 className="text-[clamp(1.6rem,6vw,4.5rem)] break-words font-black text-orange-700 mb-4">{modeLabel}</h1>
+          <h1 className="text-[clamp(1.6rem,6vw,4.5rem)] break-words font-black text-orange-700 mb-4">GAME COMPLETED</h1>
         </div>
       )}
     </div>

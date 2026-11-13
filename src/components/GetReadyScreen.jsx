@@ -1,3 +1,5 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 import React, { useEffect, useState } from 'react';
 
 const GetReadyScreen = () => {
@@ -15,17 +17,12 @@ const GetReadyScreen = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[100200] flex items-center justify-center px-4"
-      style={{
-        backgroundImage: "url('/night_sky_landscape.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
+      className="classroom-selection-page classroom-loading-screen fixed inset-0 z-[100200] flex items-center justify-center px-4"
       aria-modal="true"
       role="dialog"
       aria-live="polite"
     >
+      <AdminBrand className="classroom-screen-brand" />
       <style>
         {`
           @keyframes mascot-float {

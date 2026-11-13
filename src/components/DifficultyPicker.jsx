@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { getOperationLabel } from '../config/modulesConfig.js';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
 import FloatingBackButton from './ui/FloatingBackButton.jsx';
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 // import DailyStreakCounter from './ui/DailyStreakCounter.jsx';
 
 const COLOR_BELTS = ['white', 'yellow', 'green', 'blue', 'red', 'brown'];
@@ -175,23 +177,18 @@ const DifficultyPicker = () => {
   };
 
   return (
-    <div
-      className="min-h-screen w-full px-4 py-6 flex items-center justify-center"
-      style={{
-        backgroundImage: "url('/night_sky_landscape.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
+    <div className="classroom-selection-page min-h-screen w-full px-4 pt-24 sm:pt-28 pb-6 flex items-center justify-center">
+      <AdminBrand className="classroom-screen-brand" />
       {/* Fixed back button (doesn't affect centering) */}
-      <FloatingBackButton onClick={() => navigate('/levels')} ariaLabel="Back" />
+      <div className="classroom-selection-back">
+        <FloatingBackButton onClick={() => navigate('/levels')} ariaLabel="Back" />
+      </div>
 
       {/* <DailyStreakCounter /> */}
 
       {/* Centered content (title + grid) */}
       <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
-        <h1 className="text-white text-3xl font-extrabold drop-shadow mb-3 text-center">
+        <h1 className="classroom-selection-title text-3xl font-extrabold mb-3 text-center">
           {operationLabel} Level {selectedTable}
         </h1>
 

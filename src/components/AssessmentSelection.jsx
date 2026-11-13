@@ -2,13 +2,16 @@ import React, { useContext } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { MathGameContext } from '../App.jsx';
 import SessionTimer from './ui/SessionTimer.jsx';
+import AdminBrand from './admin/AdminBrand.jsx';
 import '../styles/Assessment.css';
+import '../styles/ClassroomTransitions.css';
 
 export default function AssessmentSelection({ tests = false }) {
   const ctx = useContext(MathGameContext);
   const navigate = useNavigate();
   if (!ctx.isLoggedIn) return <Navigate to="/name" replace />;
-  return <main className="assessment-page assessment-selection-page">
+  return <main className="assessment-page assessment-selection-page classroom-transition-page">
+    <AdminBrand className="classroom-screen-brand assessment-selection-brand" />
     <header className="assessment-toolbar assessment-student-toolbar">
       <button type="button" onClick={ctx.handleQuit}>Sign out</button>
     </header>

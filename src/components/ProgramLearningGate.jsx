@@ -1,3 +1,5 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 import React, { cloneElement, useContext, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MathGameContext } from '../App.jsx';
@@ -34,9 +36,9 @@ export default function ProgramLearningGate({ children }) {
     return () => { cancelled = true; };
   }, [ctx.childPin, ctx.selectedOperation, ctx.isLoggedIn, managed]);
   if (!managed) return children;
-  if (error || !state) return <div className="min-h-screen flex items-center justify-center text-white"
-    style={{ background: "#082338 url('/night_sky_landscape.jpg') center / cover" }}>
-    <p role={error ? 'alert' : 'status'}>{error || 'Loading…'}</p>
+  if (error || !state) return <div className="classroom-selection-page classroom-loading-screen min-h-screen flex items-center justify-center px-4">
+    <AdminBrand className="classroom-screen-brand" />
+    <p className="classroom-selection-status" role={error ? 'alert' : 'status'}>{error || 'Loading…'}</p>
   </div>;
   if (state.subject === ctx.selectedOperation && state.status !== 'LEARNING')
     return <Navigate to="/operations" replace />;

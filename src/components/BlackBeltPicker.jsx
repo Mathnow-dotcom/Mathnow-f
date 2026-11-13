@@ -3,6 +3,8 @@ import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
 import FloatingBackButton from './ui/FloatingBackButton.jsx';
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 
 const degrees = [1, 2, 3, 4, 5, 6, 7];
 
@@ -94,25 +96,18 @@ const BlackBeltPicker = () => {
    
 
   return (
-    <div
-      className="min-h-screen w-full px-4 py-6 flex flex-col items-center"
-      style={{
-        backgroundImage: "url('/night_sky_landscape.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
+    <div className="classroom-selection-page min-h-screen w-full px-4 pt-24 sm:pt-28 pb-6 flex flex-col items-center">
+      <AdminBrand className="classroom-screen-brand" />
       <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
-        <div className="flex items-center justify-between mb-4">
+        <div className="classroom-selection-back flex items-center justify-between mb-4">
           <FloatingBackButton onClick={() => navigate('/levels')} ariaLabel="Back" />
         </div>
 
-        <h1 className="text-white text-3xl font-extrabold drop-shadow mb-3 text-center">
+        <h1 className="classroom-selection-title text-3xl font-extrabold mb-3 text-center">
           Level {selectedTable}
         </h1>
 
-        <h1 className="text-white text-3xl font-extrabold drop-shadow text-center mb-4">
+        <h1 className="classroom-selection-title text-3xl font-extrabold text-center mb-4">
           Black Belt Degrees
         </h1>
 

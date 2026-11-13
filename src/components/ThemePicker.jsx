@@ -1,6 +1,8 @@
 // src/components/ThemePicker.jsx
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 import React, { useState, useMemo } from 'react';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { useNavigate as useRRNavigate } from 'react-router-dom';
 import { themeConfigs, ageThemeMap } from '../utils/mathGameLogic.js';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
@@ -89,21 +91,16 @@ const ThemePicker = () => {
 
   return (
     <div
-      className={`min-h-screen flex flex-col items-center ${
+      className={`classroom-selection-page classroom-theme-page min-h-screen w-full px-4 flex flex-col items-center ${
         themePickerMode === 'grid'
           ? 'justify-start overflow-y-auto'
           : 'justify-center overflow-hidden'
       }`}
-      style={{
-        background: "url('/night_sky_landscape.jpg')",
-        width: '100vw',
-        minHeight: '100vh',
-        paddingTop: 'max(env(safe-area-inset-top), 1rem)',
-        paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)',
-      }}
     >
+      <AdminBrand className="classroom-screen-brand" />
+      <div className="classroom-selection-back">
       <button
-        className="fixed z-50 bg-white/80 hover:bg-gray-200 text-gray-700 rounded-full p-2 shadow-lg border-2 border-gray-400 focus:outline-none transition-all duration-300 transform hover:scale-110 active:scale-95"
+        className="theme-arrow theme-back fixed z-50"
         style={{
           fontSize: 'clamp(1rem, 4vw, 1.5rem)',
           top: 'max(env(safe-area-inset-top), 0.5rem)',
@@ -114,9 +111,10 @@ const ThemePicker = () => {
       >
         <FaArrowLeft size={24} />
       </button>
+      </div>
 
       <h1
-        className="font-baloo text-white text-center drop-shadow-lg"
+        className="classroom-selection-title font-baloo text-center drop-shadow-lg"
         style={{ fontSize: 'clamp(1.5rem, 6vw, 2.5rem)' }}
       >
         {isLocked ? 'Your Adventure' : 'Choose Your Adventure!'}
@@ -125,33 +123,25 @@ const ThemePicker = () => {
       {themePickerMode === 'slide' && (
         <>
           <div
-            className="flex flex-row items-center justify-center w-full mb-4"
+            className="theme-carousel flex flex-row items-center justify-center w-full mb-4"
             style={{ minHeight: 'clamp(200px, 40vh, 320px)' }}
           >
             <button
-              className="kid-btn bg-yellow-300 hover:bg-yellow-400 text-white rounded-full mr-1"
-              style={{
-                fontSize: '16px',
-                padding: '1px',
-                width: '28px',
-                height: '28px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className="theme-arrow"
               onClick={gotoPrev}
               aria-label="Previous Adventure"
                disabled={!themes.length || isLocked} 
               title={!themes.length ? 'No themes available' : (isLocked ? 'Theme is locked' : 'Previous')}
             >
-              &#8592;
+              <FaArrowLeft aria-hidden="true" />
             </button>
 
             <div
               className="flex flex-col items-center justify-center"
               style={{
-                minWidth: 'clamp(200px, 60vw, 640px)',
-                maxWidth: 'clamp(300px, 80vw, 840px)',
+                minWidth: 0,
+                width: 'clamp(140px, 60vw, 640px)',
+                maxWidth: '100%',
               }}
             >
               <div className="flex flex-col items-center">
@@ -175,7 +165,7 @@ const ThemePicker = () => {
                   )}
                 </div>
                 <span
-                  className="font-baloo text-white drop-shadow-lg text-center font-bold bg-black bg-opacity-50 px-3 py-2 rounded-2xl border-2 border-yellow-200 mt-2"
+                  className="theme-name font-baloo text-center font-bold px-4 py-2 rounded-2xl mt-2"
                   style={{ fontSize: 'clamp(0.85rem, 3vw, 1.5rem)' }}
                 >
                   {cardTitle(currentTheme?.key || 'Theme')}
@@ -184,29 +174,18 @@ const ThemePicker = () => {
             </div>
 
             <button
-              className="kid-btn bg-yellow-300 hover:bg-yellow-400 text-white rounded-full ml-1"
-              style={{
-                fontSize: '16px',
-                padding: '1px',
-                width: '28px',
-                height: '28px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className="theme-arrow"
               onClick={gotoNext}
               aria-label="Next Adventure"
               disabled={!themes.length || isLocked}
               title={!themes.length ? 'No themes available' : (isLocked ? 'Theme is locked' : 'Next')}
             >
-              &#8594;
+              <FaArrowRight aria-hidden="true" />
             </button>
           </div>
 
           <button
-            className={`kid-btn text-white font-bold rounded-2xl mt-2 ${
-              themes.length && !isLocked ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'
-            }`} 
+            className="theme-choose font-bold rounded-2xl mt-2"
             style={{
               padding: 'clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 2rem)',
               fontSize: 'clamp(0.875rem, 3vw, 1.25rem)',

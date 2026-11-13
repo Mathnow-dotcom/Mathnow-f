@@ -4,7 +4,9 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MathGameContext } from '../App.jsx';
 import { assessmentStart, assessmentUpdate, programProgress } from '../api/mathApi.js';
 import SessionTimer from './ui/SessionTimer.jsx';
+import AdminBrand from './admin/AdminBrand.jsx';
 import '../styles/Assessment.css';
+import '../styles/ClassroomTransitions.css';
 
 export default function AssessmentScreen({ flow = 'learning', type, part = null }) {
   const ctx = useContext(MathGameContext);
@@ -159,8 +161,10 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
 
   if (!ctx.isLoggedIn) return <Navigate to={ctx.isQuittingRef?.current ? '/' : '/name'} replace />;
   const complete = running && attempt?.completed;
+  const showClassroomIntro = legacy && !running;
   return (
-    <main className="assessment-page">
+    <main className={`assessment-page${showClassroomIntro ? ' assessment-page--classroom-intro' : ''}`}>
+      {showClassroomIntro && <AdminBrand className="classroom-screen-brand" />}
       <header className="assessment-toolbar assessment-student-toolbar">
         {running && !complete
           ? <button type="button" onClick={() => setQuit(true)}>⚙ Quit test</button>
@@ -193,7 +197,8 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
         </>}
         {error && <div role="alert" className="assessment-error">{error}</div>}
       </section>
-      {quit && <div className="assessment-modal" role="dialog" aria-modal="true" aria-label="Quit test">
+      {quit && <div className="assessment-modal classroom-selection-page classroom-modal-screen" role="dialog" aria-modal="true" aria-label="Quit test">
+        <AdminBrand className="classroom-screen-brand" />
         <section className="assessment-card assessment-quit-card">
           <span className="assessment-card-symbol" aria-hidden="true">Ⅱ</span>
           <div className="assessment-card-actions">

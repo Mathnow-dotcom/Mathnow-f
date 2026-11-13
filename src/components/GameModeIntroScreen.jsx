@@ -1,3 +1,5 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
@@ -153,15 +155,9 @@ const GameModeIntroScreen = () => {
       `}</style>
 
       <div
-        className="fixed inset-0 z-[100] overflow-auto px-4 py-8 sm:px-6"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at top left, rgba(92, 196, 255, 0.22), transparent 32%), radial-gradient(circle at bottom right, rgba(102, 126, 234, 0.28), transparent 34%), url('/night_sky_landscape.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
+        className="classroom-selection-page classroom-game-intro fixed inset-0 z-[100] overflow-auto px-4 py-8 sm:px-6"
       >
-        <div className="absolute inset-0 bg-slate-950/40" />
+        <AdminBrand className="classroom-screen-brand" />
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-cyan-300/12 to-transparent" />
 
         <div className="relative flex min-h-full items-center justify-center py-8">

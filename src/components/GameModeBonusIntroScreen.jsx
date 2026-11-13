@@ -1,3 +1,5 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 import React, { useEffect, useRef } from 'react';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
 
@@ -33,15 +35,9 @@ const GameModeBonusIntroScreen = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center animate-fade-in-up overflow-hidden"
-      style={{
-        backgroundImage:
-          "linear-gradient(180deg, rgba(5,16,48,0.42), rgba(4,14,38,0.68)), url('/night_sky_landscape.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
+      className="classroom-selection-page classroom-game-intro fixed inset-0 z-[100] flex flex-col items-center justify-center animate-fade-in-up overflow-hidden"
     >
+        <AdminBrand className="classroom-screen-brand" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(126,211,255,0.24),transparent_32%),radial-gradient(circle_at_80%_24%,rgba(67,120,255,0.2),transparent_28%),radial-gradient(circle_at_50%_78%,rgba(34,211,238,0.12),transparent_32%)]" />
       <div className="relative w-full max-w-[760px] px-6">
         <div className="rounded-[34px] bg-[linear-gradient(145deg,rgba(116,211,255,0.42),rgba(44,108,255,0.24),rgba(8,18,58,0.74))] p-[1.5px] shadow-[0_24px_60px_rgba(4,12,20,0.6),0_0_30px_rgba(44,108,255,0.18)]">

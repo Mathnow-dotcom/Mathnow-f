@@ -1,0 +1,146 @@
+.start-screen {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: hidden;
+    background: #f2c38e url('/Mathnow_bg.png') center / cover no-repeat;
+}
+
+.start-screen__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 250, 240, 0.03) 0%,
+        rgba(255, 246, 225, 0.08) 60%,
+        rgba(255, 238, 205, 0.18) 100%
+    );
+}
+
+.start-screen__animation {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.start-screen__controls {
+    position: absolute;
+    top: 63%;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    width: min(92vw, 24rem);
+    transform: translateX(-50%);
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.8rem, 2vh, 1.25rem);
+    color: #173f6f;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.start-screen__release {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.35rem 1.1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: 0 8px 24px rgba(35, 73, 111, 0.12);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.start-screen__version,
+.start-screen__date {
+    margin: 0;
+}
+
+.start-screen__version {
+    font-size: clamp(0.78rem, 1.5vw, 0.94rem);
+    font-weight: 800;
+    letter-spacing: 0.045em;
+}
+
+.start-screen__date {
+    color: #315b83;
+    font-size: clamp(0.68rem, 1.25vw, 0.8rem);
+    font-weight: 600;
+    letter-spacing: 0.025em;
+}
+
+.start-screen__start-button {
+    display: inline-flex;
+    min-width: clamp(9.5rem, 15vw, 12rem);
+    min-height: clamp(3rem, 6vh, 3.65rem);
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    border: 1px solid rgba(13, 116, 62, 0.35);
+    border-radius: 999px;
+    background: linear-gradient(135deg, #24ad65 0%, #0e8749 100%);
+    box-shadow: 0 12px 28px rgba(8, 105, 54, 0.28);
+    color: #fff;
+    cursor: pointer;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: 800;
+    transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.start-screen__start-button:hover {
+    transform: translateY(-2px) scale(1.025);
+    box-shadow: 0 15px 32px rgba(8, 105, 54, 0.34);
+    filter: brightness(1.04);
+}
+
+.start-screen__start-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.start-screen__start-button:focus-visible {
+    outline: 4px solid rgba(41, 133, 239, 0.48);
+    outline-offset: 4px;
+}
+
+.start-screen__play-icon {
+    font-size: 0.82em;
+    line-height: 1;
+}
+
+@media (orientation: portrait) {
+    .start-screen {
+        background-position: 48% center;
+    }
+
+    .start-screen__controls {
+        top: 62%;
+    }
+}
+
+@media (max-height: 560px) {
+    .start-screen__controls {
+        top: 62%;
+        gap: 0.55rem;
+    }
+
+    .start-screen__release {
+        padding-block: 0.22rem;
+    }
+
+    .start-screen__start-button {
+        min-height: 2.7rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .start-screen__start-button {
+        transition: none;
+    }
+}

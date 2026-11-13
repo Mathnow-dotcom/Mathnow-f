@@ -11,6 +11,8 @@ import {
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
 import { programProgress } from '../api/mathApi.js';
 import FloatingBackButton from './ui/FloatingBackButton.jsx';
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 
 const OPERATION_UI = {
   add: {
@@ -156,25 +158,19 @@ const OperationPicker = () => {
     : 'text-2xl lg:text-[2.2rem]';
 
   return (
-    <div
-      className="relative min-h-screen w-full px-4"
-      style={{
-        backgroundImage: "url('/night_sky_landscape.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-
-      <FloatingBackButton onClick={() => navigate('/mode')} ariaLabel="Back to mode selection" />
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 sm:gap-8 lg:gap-10 pt-20 sm:pt-24 lg:pt-28 pb-24">
-        <h1 className="z-10 text-white text-3xl sm:text-4xl lg:text-5xl font-extrabold drop-shadow text-center animate-fade-in">
+    <div className="classroom-selection-page relative min-h-screen w-full px-4">
+      <AdminBrand className="classroom-screen-brand" />
+      <div className="classroom-selection-back">
+        <FloatingBackButton onClick={() => navigate('/mode')} ariaLabel="Back to mode selection" />
+      </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 sm:gap-8 lg:gap-10 pt-24 sm:pt-28 lg:pt-32 pb-24">
+        <h1 className="classroom-selection-title z-10 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-center animate-fade-in">
           WELCOME, {childNameDisplay}
         </h1>
 
-        {error && <p role="alert" className="text-white text-center">{error}</p>}
-        {!program && !error && <p role="status" className="text-white">Loading…</p>}
-        {program?.status === 'INTERVENTION_REQUIRED' && <p role="status" className="text-white text-center">Intervention Required</p>}
+        {error && <p role="alert" className="classroom-selection-status text-center">{error}</p>}
+        {!program && !error && <p role="status" className="classroom-selection-status">Loading…</p>}
+        {program?.status === 'INTERVENTION_REQUIRED' && <p role="status" className="classroom-selection-status text-center">Intervention Required</p>}
         <div className={`grid ${gridClass}`}>
           {program && visibleOperations.map((operation) => (
             <button

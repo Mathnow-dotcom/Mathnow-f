@@ -1,3 +1,5 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
 import React, { useEffect, useState } from 'react';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
 
@@ -29,15 +31,9 @@ const PretestIntroScreen = () => {
   return (
     <>
       <div
-        className="min-h-screen w-full fixed inset-0 flex flex-col items-center justify-center p-4 overflow-hidden"
-        style={{
-          backgroundImage:
-            "linear-gradient(180deg, rgba(4,20,44,0.44), rgba(2,14,34,0.74)), url('/night_sky_landscape.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
+        className="classroom-selection-page classroom-game-intro min-h-screen w-full fixed inset-0 flex flex-col items-center justify-center p-4 overflow-hidden"
       >
+        <AdminBrand className="classroom-screen-brand" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(159,244,255,0.18),transparent_30%),radial-gradient(circle_at_82%_22%,rgba(45,212,191,0.16),transparent_24%),radial-gradient(circle_at_50%_82%,rgba(34,211,238,0.12),transparent_28%)]" />
 
         <div className="relative w-full max-w-[560px] md:max-w-[700px] lg:max-w-[820px] xl:max-w-[900px]">

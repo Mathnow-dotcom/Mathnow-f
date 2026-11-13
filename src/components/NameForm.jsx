@@ -2,9 +2,20 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { getAdminStats } from '../api/mathApi.js';
-import { FaTimes, FaUserShield } from 'react-icons/fa';
+import {
+  FaBackspace,
+  FaGamepad,
+  FaGraduationCap,
+  FaLock,
+  FaPlay,
+  FaSchool,
+  FaTimes,
+  FaUser,
+  FaUserShield,
+} from 'react-icons/fa';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
 import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/NameForm.css';
 
 const formInputClass =
   "!w-full !max-w-[320px] sm:!max-w-[340px] mx-auto mb-2 sm:mb-3 h-10 sm:h-12 " +
@@ -301,7 +312,7 @@ const NameForm = () => {
     <button
       type="button"
       onClick={() => handleUserKeypadInput(value)}
-      className={`h-10 sm:h-12 w-full bg-gray-100 text-gray-900 text-center font-bold text-sm sm:text-base rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition select-none border border-gray-200 flex items-center justify-center ${className || ''}`}
+      className={`student-login-key h-10 sm:h-12 w-full bg-gray-100 text-gray-900 text-center font-bold text-sm sm:text-base rounded-xl shadow-md hover:bg-gray-200 active:scale-95 transition select-none border border-gray-200 flex items-center justify-center ${className || ''}`}
       tabIndex="-1"
     >
       {label || value}
@@ -354,20 +365,14 @@ const handleDemoClick = () => {
   return (
     <div
       className="student-login-page min-h-screen w-full flex items-center justify-center px-4"
-      style={{
-        backgroundImage: "url('/night_sky_landscape.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
     >
       <button
         type="button"
         onClick={handleOpenAdminPinModal}
-        className="fixed z-50 bg-white/80 hover:bg-gray-200 text-gray-700 rounded-full p-2 shadow-lg border-2 border-gray-400 focus:outline-none transition-all duration-300 transform hover:scale-110 active:scale-95 flex items-center justify-center space-x-1"
+        className="student-login-admin fixed z-50 bg-white/80 hover:bg-gray-200 text-gray-700 rounded-full p-2 shadow-lg border-2 border-gray-400 focus:outline-none transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-1"
         style={{
           top: 'max(env(safe-area-inset-top), 0.5rem)',
-          left: 'max(env(safe-area-inset-left), 0.5rem)',
+          right: 'max(env(safe-area-inset-right), 0.75rem)',
         }}
         aria-label="Admin Login"
       >
@@ -375,14 +380,19 @@ const handleDemoClick = () => {
         <span className="text-sm font-semibold">Admin</span>
       </button>
 
-      <div className={`student-login-panel ${panelClass}`}>
+      <main className="student-login-shell">
+        <AdminBrand className="student-login-brand" />
 
-        <form onSubmit={onSubmit} className="w-full flex flex-col items-center" autoComplete="off">
-          <label className={labelClass}>
-             Enter Your Name
+        <div className={`student-login-panel ${panelClass}`}>
+
+        <form onSubmit={onSubmit} className="student-login-form w-full flex flex-col items-center" autoComplete="off">
+          <label className={`${labelClass} student-login-label`} htmlFor="child-name">
+             <FaUser aria-hidden="true" />
+             <span>Enter your name</span>
           </label>
           <input
-            className={formInputClass}
+            id="child-name"
+            className={`${formInputClass} student-login-input`}
             value={childName}
             onChange={handleNameChange}
             type="text"
@@ -391,45 +401,49 @@ const handleDemoClick = () => {
             name="child-name"
             style={{ backgroundColor: '#ffffff', color: '#1f2937' }}
           />
-          <label className={labelClass} htmlFor="student-school">
-             Select Your School
+          <label className={`${labelClass} student-login-label`} htmlFor="student-school">
+             <FaSchool aria-hidden="true" />
+             <span>School Name</span>
           </label>
           <select
             id="student-school"
             name="student-school"
-            className={`${formSelectClass} ${school ? 'text-gray-800' : 'text-gray-400'}`}
+            className={`${formSelectClass} student-login-select ${school ? 'student-login-select--selected' : 'student-login-select--empty'}`}
             value={school}
             onChange={(event) => setSchool(event.target.value)}
             autoComplete="organization"
           >
-            <option value="" disabled className="text-gray-400">Select your school</option>
+            <option value="" className="student-login-select-placeholder">Select your school</option>
             {SCHOOL_OPTIONS.map((option) => (
-              <option key={option} value={option} className="text-gray-800">{option}</option>
+              <option key={option} value={option} className="student-login-select-option">{option}</option>
             ))}
           </select>
 
-          <label className={labelClass} htmlFor="student-grade">
-             Select Your Grade Level
+          <label className={`${labelClass} student-login-label`} htmlFor="student-grade">
+             <FaGraduationCap aria-hidden="true" />
+             <span>Grade</span>
           </label>
           <select
             id="student-grade"
             name="student-grade"
-            className={`${formSelectClass} ${grade ? 'text-gray-800' : 'text-gray-400'}`}
+            className={`${formSelectClass} student-login-select ${grade ? 'student-login-select--selected' : 'student-login-select--empty'}`}
             value={grade}
             onChange={(event) => setGrade(event.target.value)}
           >
-            <option value="" disabled className="text-gray-400">Select your grade level</option>
+            <option value="" className="student-login-select-placeholder">Select your grade level</option>
             {GRADE_OPTIONS.map((option) => (
-              <option key={option} value={option} className="text-gray-800">{option}</option>
+              <option key={option} value={option} className="student-login-select-option">{option}</option>
             ))}
           </select>
 
-          <label className={labelClass}>
-             Enter Your Passcode
+          <label className={`${labelClass} student-login-label`} htmlFor="student-passcode">
+             <FaLock aria-hidden="true" />
+             <span>Enter your passcode</span>
           </label>
 
           <input
-            className={formInputClass}
+            id="student-passcode"
+            className={`${formInputClass} student-login-input student-login-passcode`}
             value={childPin || ''}
             readOnly
             type="password"
@@ -439,39 +453,47 @@ const handleDemoClick = () => {
             name="passcode"
           />
 
-          <div className="grid grid-cols-3 gap-2 mb-1 mx-auto justify-items-center w-full max-w-[320px] sm:max-w-[340px]">
+          <div className="student-login-keypad grid grid-cols-3 gap-2 mb-1 mx-auto justify-items-center w-full max-w-[320px] sm:max-w-[340px]">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
               <UserKeypadButton key={num} value={String(num)} />
             ))}
             <UserKeypadButton value="9" />
+            <UserKeypadButton
+              value="<"
+              className="student-login-key--backspace"
+              label={<FaBackspace aria-label="Backspace" />}
+            />
             <UserKeypadButton value="0" />
             <UserKeypadButton 
               value="C" 
-              className="col-span-2 bg-gray-200 text-gray-800 font-semibold border-gray-300" 
+              className="student-login-key--clear bg-gray-200 text-gray-800 font-semibold border-gray-300"
               label={<span className="text-sm sm:text-base w-full text-center">Clear</span>} 
             />
           </div>
 
-          <div className="flex justify-center space-x-2 mt-1">
+          <div className="student-login-actions flex justify-center space-x-2 mt-1">
             <button
               type="submit"
-              className="bg-green-800 hover:bg-green-900 text-white font-bold py-1 px-3 sm:px-4 rounded-2xl duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex-1 text-sm"
+              className="student-login-action student-login-action--start bg-green-800 hover:bg-green-900 text-white font-bold py-1 px-3 sm:px-4 rounded-2xl duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex-1 text-sm"
               disabled={isLoginLoading}
             >
-              Start
+              <FaPlay aria-hidden="true" />
+              <span>Start</span>
             </button>
             
             <button
               type="button"
               onClick={handleDemoClick}
-              className="bg-green-800 hover:bg-green-900 text-white font-bold py-1 px-3 sm:px-4 rounded-2xl duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex-1 text-sm"
+              className="student-login-action student-login-action--demo bg-green-800 hover:bg-green-900 text-white font-bold py-1 px-3 sm:px-4 rounded-2xl duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex-1 text-sm"
               disabled={isLoginLoading}
             >
-              Demo 
+              <FaGamepad aria-hidden="true" />
+              <span>Demo</span>
             </button>
           </div>
         </form>
-      </div>
+        </div>
+      </main>
 
       {error && (
         <div
@@ -500,14 +522,14 @@ const handleDemoClick = () => {
         <div 
             className="fixed inset-0 z-[101] flex items-center justify-center animate-fade-in" 
             style={{ 
-                backgroundImage: "url('/night_sky_landscape.jpg')", 
+                backgroundImage: "url('/Mathnow_bg.png')",
                 backgroundSize: 'cover', 
                 backgroundPosition: 'center', 
                 backgroundRepeat: 'no-repeat', 
                 backgroundColor: 'rgba(0, 0, 0, 0.9)', // Fallback and slight darkening 
             }} 
         > 
-            <div className="relative w-[92vw] max-w-[26rem] sm:max-w-[30rem] lg:max-w-[36rem] rounded-3xl border border-white/25 bg-slate-950/60 p-5 sm:p-7 lg:p-8 text-white shadow-2xl backdrop-blur-md">
+            <div className="student-login-loading-card relative w-[92vw] max-w-[26rem] sm:max-w-[30rem] lg:max-w-[36rem] rounded-3xl border border-white/25 p-5 sm:p-7 lg:p-8 text-white shadow-2xl backdrop-blur-md">
                 <span className="pointer-events-none absolute top-3 left-4 text-lg sm:top-4 sm:left-5 sm:text-xl lg:text-2xl text-cyan-100/80 animate-pulse">+</span>
                 <span className="pointer-events-none absolute top-3 right-4 text-lg sm:top-4 sm:right-5 sm:text-xl lg:text-2xl text-emerald-100/80 animate-pulse">-</span>
 
