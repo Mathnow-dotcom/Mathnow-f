@@ -1,3 +1,6 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
+import '../styles/ActiveRun.css';
 import '../styles/LearningKeypad.css';
 import React, { useRef, useEffect, useState } from 'react';
 import { FaCog } from "react-icons/fa";
@@ -210,25 +213,14 @@ const GameModeScreen = () => {
 
   return (
     <div
-      className="App keypad-page min-h-screen w-full relative landscape-optimized portrait-optimized ios-notch"
+      className="classroom-active-page App keypad-page min-h-screen w-full relative landscape-optimized portrait-optimized ios-notch"
       style={{
-        background: useNightSkyTheme
-          ? undefined
-          : 'linear-gradient(135deg, #1A237E 0%, #303F9F 60%, #3F51B5 100%)',
-        backgroundImage: useNightSkyTheme
-          ? "linear-gradient(180deg, rgba(5,16,48,0.38), rgba(4,14,38,0.7)), url('/night_sky_landscape.jpg')"
-          : undefined,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        transition: 'background 0.5s ease',
         paddingTop: 'max(env(safe-area-inset-top), 1rem)',
         paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)',
       }}
     >
-      {useNightSkyTheme && (
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(126,211,255,0.24),transparent_30%),radial-gradient(circle_at_80%_22%,rgba(67,120,255,0.18),transparent_26%),radial-gradient(circle_at_50%_82%,rgba(34,211,238,0.14),transparent_30%)]" />
-      )}
+      <AdminBrand className="classroom-screen-brand" />
+
 
       <div className="keypad-page__content w-full min-h-screen flex flex-col items-center justify-center relative">
         <div

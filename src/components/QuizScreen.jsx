@@ -1,3 +1,6 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
+import '../styles/ActiveRun.css';
 import '../styles/LearningKeypad.css';
 // src/components/QuizScreen.jsx
 import React, { useRef, useEffect, useState } from 'react';
@@ -144,17 +147,13 @@ const QuizScreen = () => {
 
   return (
     <div
-      className="App keypad-page min-h-screen w-full relative landscape-optimized portrait-optimized ios-notch"
+      className="classroom-active-page App keypad-page min-h-screen w-full relative landscape-optimized portrait-optimized ios-notch"
       style={{
-        background: 'linear-gradient(135deg, #23272f 0%, #18181b 60%, #111113 100%)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        transition: 'background 0.5s ease',
         paddingTop: 'max(env(safe-area-inset-top), 1rem)',
         paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)'
       }}
     >
+      <AdminBrand className="classroom-screen-brand" />
       <div className="keypad-page__content w-full min-h-screen flex flex-col items-center justify-center relative">
         
         <div

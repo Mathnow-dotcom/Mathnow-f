@@ -1,3 +1,6 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
+import '../styles/ActiveRun.css';
 import '../styles/LearningKeypad.css';
 // ranjannkumar/math-facts/math-facts-53836cb507e63890a9c757d863525a6cb3341e86/src/components/LearningModule.jsx
 import { useEffect, useMemo, useState } from 'react';
@@ -890,17 +893,8 @@ useEffect(() => {
     paused={showQuitModal || isQuittingRef?.current} onComplete={() => handleSubmitTypedAnswer(true)} />;
 
   return (
-    <div className="keypad-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-      <div 
-        className="fixed inset-0" 
-        style={{
-          backgroundImage: `url('/night_sky_landscape.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          zIndex: -1, 
-        }}
-      />
+    <div className="classroom-active-page keypad-overlay fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4">
+      <AdminBrand className="classroom-screen-brand" />
       {/* Modal/Popup Container */}
       <div
         className={`learning-keypad-card bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 rounded-2xl sm:rounded-3xl shadow-2xl border border-blue-200/30 popup-zoom-in ${

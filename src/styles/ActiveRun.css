@@ -1,0 +1,108 @@
+/* Presentation shared only by active student runs. */
+.classroom-active-page,
+.classroom-active-page.assessment-page {
+  position: relative;
+  isolation: isolate;
+  background: #fff4e4 url('/Mathnow_active.png') center / cover fixed no-repeat;
+}
+
+.classroom-active-page.keypad-overlay { position: fixed; }
+
+.classroom-active-page .classroom-screen-brand.admin-brand {
+  position: fixed;
+  pointer-events: none;
+}
+
+.classroom-active-page.assessment-page { padding-top: max(env(safe-area-inset-top), 1.5rem); }
+
+@media (max-width: 767px) {
+  .classroom-active-page .classroom-screen-brand.admin-brand {
+    top: max(env(safe-area-inset-top), 0.5rem);
+    left: max(env(safe-area-inset-left), 0.65rem);
+    gap: 0.35rem;
+  }
+  .classroom-active-page .classroom-screen-brand .admin-brand__mark { width: 1.9rem; height: 1.9rem; }
+  .classroom-active-page .classroom-screen-brand .admin-brand__word { font-size: 1.2rem; }
+
+  .layout-has-stats:has(.classroom-active-page) > .fixed {
+    top: max(calc(env(safe-area-inset-top) + 3rem), 3rem) !important;
+  }
+  .classroom-active-page.keypad-page { overflow-y: auto; }
+  .classroom-active-page .keypad-page__content { padding-top: 6rem; }
+  .classroom-active-page.keypad-overlay { padding-top: 3.5rem !important; overflow-y: auto; }
+  .classroom-active-page.assessment-page { padding-top: 3.5rem; }
+}
+
+/* Continue the active background behind MainLayout's mobile stats footer. */
+.layout-has-stats:has(.classroom-active-page) {
+  background: #fff4e4 url('/Mathnow_active.png') center / cover fixed no-repeat !important;
+}
+
+.classroom-active-page.classroom-activity-loading {
+  position: fixed;
+  padding-top: max(calc(env(safe-area-inset-top) + 4rem), 5rem);
+}
+
+.activity-loading-card {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 21rem);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border: 1px solid #cee3f7;
+  border-radius: 1.75rem;
+  background: linear-gradient(145deg, #ffffff, #f1f8ff);
+  box-shadow: 0 16px 42px rgba(30, 68, 104, 0.16);
+}
+
+.activity-loading-spinner {
+  position: relative;
+  display: grid;
+  width: clamp(5.5rem, 18vw, 7rem);
+  height: clamp(5.5rem, 18vw, 7rem);
+  place-items: center;
+  border: 4px solid #deedfb;
+  border-radius: 50%;
+}
+
+.activity-loading-ring {
+  position: absolute;
+  inset: -4px;
+  border: 4px solid transparent;
+  border-top-color: #2588ef;
+  border-right-color: #50b7e8;
+  border-radius: 50%;
+  animation: activity-loading-spin 1.1s linear infinite;
+}
+
+.activity-loading-center {
+  display: grid;
+  width: 70%;
+  height: 70%;
+  place-items: center;
+  border-radius: 50%;
+  color: #1670c7;
+  background: #e7f3ff;
+}
+.activity-loading-center svg { width: 65%; height: 65%; }
+.activity-loading-label { margin: 1.25rem 0 0; color: #173f70; font-size: clamp(1.1rem, 4vw, 1.35rem); font-weight: 800; }
+.activity-loading-dots { display: flex; gap: 0.45rem; margin-top: 0.85rem; }
+.activity-loading-dots span { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: #2588ef; animation: activity-loading-pulse 1.2s ease-in-out infinite; }
+.activity-loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+.activity-loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes activity-loading-spin { to { transform: rotate(360deg); } }
+@keyframes activity-loading-pulse { 0%, 80%, 100% { opacity: 0.35; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .activity-loading-ring, .activity-loading-dots span { animation: none; }
+}
+
+@media (max-height: 520px) {
+  .classroom-active-page.classroom-activity-loading {
+    justify-content: flex-start;
+    padding-top: max(calc(env(safe-area-inset-top) + 5rem), 6rem);
+  }
+}
+
+.classroom-activity-loading.activity-loading-foreground { z-index: 100200; }

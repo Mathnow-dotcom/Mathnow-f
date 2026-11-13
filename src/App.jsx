@@ -327,7 +327,11 @@ const App = () => {
 
       {showScreenStatsDock && <ScreenStatsDock />}
 
-      {(ctx.isInitialPrepLoading || ctx.isQuizStarting) && <GetReadyScreen />}
+      {(ctx.isInitialPrepLoading || ctx.isQuizStarting) && (
+        ctx.isQuizStarting && location.pathname === '/learning'
+          ? <CorrectionTransition foreground />
+          : <GetReadyScreen />
+      )}
 
 
      {/* --- DAILY STREAK ANIMATION OVERLAY (NEW COMPONENT) --- */}

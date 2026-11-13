@@ -1,3 +1,6 @@
+import AdminBrand from './admin/AdminBrand.jsx';
+import '../styles/ClassroomTransitions.css';
+import '../styles/ActiveRun.css';
 import '../styles/LearningKeypad.css';
 import CorrectionTransition from './CorrectionTransition.jsx';
 import React, { useEffect, useRef, useState } from 'react';
@@ -84,7 +87,8 @@ export default function CorrectionLoop({ runId, pin, paused, onComplete }) {
   };
   if (!q || ['passed','finished'].includes(state?.phase))
     return <CorrectionTransition error={error} onRetry={retry} busy={busy} />;
-  return <div className="keypad-overlay fixed inset-0 z-50 flex items-center justify-center overflow-hidden p-4 font-comic" style={{background:"#082338 url('/night_sky_landscape.jpg') center / cover"}}>
+  return <div className="classroom-active-page keypad-overlay fixed inset-0 z-50 flex items-center justify-center overflow-hidden p-4 font-comic">
+    <AdminBrand className="classroom-screen-brand" />
     <section className={`learning-keypad-card ${['practice','retry'].includes(state.phase) && !reverse ? 'bg-[#d3d3d3]' : 'bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100'} rounded-3xl shadow-2xl my-auto shrink-0 p-6 sm:p-8 w-full ${shown ? 'max-w-2xl' : 'max-w-md'}`}>
       {shown ? <>
         <div className={`font-bold text-green-600 mb-6 text-center text-[clamp(2rem,8vw,5rem)] ${q.operation === 'frac' ? 'fraction-question-prompt' : ''}`}>{q.question.replace(/\s*=\s*\?\s*$/, '')} = {displayAnswer}</div>

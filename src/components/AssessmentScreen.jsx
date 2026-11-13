@@ -7,6 +7,7 @@ import SessionTimer from './ui/SessionTimer.jsx';
 import AdminBrand from './admin/AdminBrand.jsx';
 import '../styles/Assessment.css';
 import '../styles/ClassroomTransitions.css';
+import '../styles/ActiveRun.css';
 
 export default function AssessmentScreen({ flow = 'learning', type, part = null }) {
   const ctx = useContext(MathGameContext);
@@ -163,8 +164,8 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
   const complete = running && attempt?.completed;
   const showClassroomIntro = legacy && !running;
   return (
-    <main className={`assessment-page${showClassroomIntro ? ' assessment-page--classroom-intro' : ''}`}>
-      {showClassroomIntro && <AdminBrand className="classroom-screen-brand" />}
+    <main className={`assessment-page${showClassroomIntro ? ' assessment-page--classroom-intro' : ''}${running ? ' classroom-active-page' : ''}`}>
+      {(showClassroomIntro || running) && <AdminBrand className="classroom-screen-brand" />}
       <header className="assessment-toolbar assessment-student-toolbar">
         {running && !complete
           ? <button type="button" onClick={() => setQuit(true)}>⚙ Quit test</button>
