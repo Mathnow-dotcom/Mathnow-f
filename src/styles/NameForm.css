@@ -204,12 +204,25 @@
 }
 
 .student-login-key--backspace {
-  color: #fff !important;
-  background: linear-gradient(145deg, #285d91, #163f70) !important;
+  color: #1764a5 !important;
+  background: linear-gradient(180deg, #eef8ff, #e2f1fb) !important;
 }
 
 .student-login-key--backspace svg {
-  font-size: 1.05rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  flex-shrink: 0;
+}
+
+.student-login-key--backspace:hover,
+.student-login-key--backspace:active {
+  color: #1764a5 !important;
+  background: #eaf3fa !important;
+}
+
+.student-login-key--backspace:focus-visible {
+  outline: 2px solid #1764a5;
+  outline-offset: 2px;
 }
 
 .student-login-key--clear {
