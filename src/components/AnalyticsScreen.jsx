@@ -939,10 +939,16 @@ export default function AnalyticsScreen() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[url('/Mathnow_bg.png')] bg-cover bg-center opacity-0"
       />
+      <div className="admin-page-utility">
+        <AdminBrand />
+            <button type="button" className="admin-analytics-nav__logout" onClick={handleLogout}>
+              <FaSignOutAlt aria-hidden="true" />
+              <span>Logout</span>
+            </button>
+      </div>
       <div className="relative z-[1] mx-auto w-full max-w-[1280px] px-4 py-4 md:px-6 md:py-6">
         <header className="admin-analytics-header mb-5 md:mb-6">
           <div className="admin-analytics-heading">
-            <AdminBrand />
             <div className="admin-analytics-title-row">
               <span className="admin-analytics-title-icon" aria-hidden="true">
                 <FaChartLine />
@@ -951,10 +957,7 @@ export default function AnalyticsScreen() {
             </div>
           </div>
           <nav className="admin-analytics-nav" aria-label="Analytics navigation">
-            <button type="button" className="admin-analytics-nav__logout" onClick={handleLogout}>
-              <FaSignOutAlt aria-hidden="true" />
-              <span>Logout</span>
-            </button>
+
             <div className="admin-analytics-nav__secondary">
               <button
                 type="button"
