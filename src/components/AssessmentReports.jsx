@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   assessmentReports,
   assessmentExport,
@@ -16,6 +16,7 @@ import {
   FaUsers,
 } from 'react-icons/fa';
 import '../styles/Assessment.css';
+import '../styles/AssessmentReports.css';
 import AdminBrand from './admin/AdminBrand.jsx';
 
 const subjectNames = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', frac: 'Fractions to Decimals', completed: 'Completed' };
@@ -37,8 +38,8 @@ const toNumber = (value) => {
 };
 const queryDates = ({ student, type, from, to }) => {
   const result = { student: student.trim(), type };
-  if (from) result.from = new Date(`${from}T00:00:00`).toISOString();
-  if (to) {
+  if (from && Number.isFinite(new Date(`${from}T00:00:00`).getTime())) result.from = new Date(`${from}T00:00:00`).toISOString();
+  if (to && Number.isFinite(new Date(`${to}T00:00:00`).getTime())) {
     const end = new Date(`${to}T00:00:00`);
     end.setDate(end.getDate() + 1);
     result.to = end.toISOString();
@@ -49,9 +50,20 @@ const queryDates = ({ student, type, from, to }) => {
 export default function AssessmentReports() {
   const navigate = useNavigate();
   const pin = localStorage.getItem('math-admin-pin');
-  const [filters, setFilters] = useState({ student: '', type: '', from: '', to: '' });
-  const [query, setQuery] = useState({});
-  const [page, setPage] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialFilters = {
+    student: searchParams.get('student') || '', type: searchParams.get('type') || '',
+    from: /^\d{4}-\d{2}-\d{2}$/.test(searchParams.get('from') || '') ? searchParams.get('from') : '',
+    to: /^\d{4}-\d{2}-\d{2}$/.test(searchParams.get('to') || '') ? searchParams.get('to') : '',
+  };
+  const [filters, setFilters] = useState(initialFilters);
+  const [query, setQuery] = useState(() => queryDates(initialFilters));
+  const [page, setPage] = useState(() => Math.max(0, Number.parseInt(searchParams.get('page'), 10) || 0));
+  const changePage = (next) => {
+    setPage(next);
+    const params = new URLSearchParams(searchParams); params.set('page', String(next));
+    setSearchParams(params, { replace: true });
+  };
   const [rows, setRows] = useState([]);
   const [busy, setBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -170,6 +182,7 @@ export default function AssessmentReports() {
         e.preventDefault();
         if (filters.from && filters.to && filters.from > filters.to) { setError('Start date must be before end date.'); return; }
         setPage(0); setQuery(queryDates(filters));
+        setSearchParams(Object.fromEntries(Object.entries(filters).filter(([, value]) => value)), { replace: true });
       }}>
         <label>Student PIN<input value={filters.student} onChange={e => setFilters({ ...filters, student: e.target.value })} /></label>
         <label>Test<select value={filters.type} onChange={e => setFilters({ ...filters, type: e.target.value })}>
@@ -182,32 +195,31 @@ export default function AssessmentReports() {
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
-      {busy ? <p role="status">Loading results…</p> : <div className="assessment-results">
+      {busy ? <p role="status">Loading results…</p> : <div className="assessment-results assessment-attempt-list">
         {rows.length === 0 ? <p>No tests found.</p> : <table><thead><tr>
           <th>#</th><th>Student</th><th>Test</th><th>Batch / attempt</th><th>Result</th><th>Status</th><th>Answered</th><th>Started</th><th>Completed / ended</th><th>Accuracy</th><th>Total time</th>
-          <th>Average time per item</th><th title="Percentage of all test items answered correctly in less than 2 seconds">Correct under 2 seconds</th>
-          <th title="Percentage of all test items answered correctly in less than 3 seconds">Correct under 3 seconds</th><th>Per-item detail</th>
-        </tr></thead><tbody>{rows.map((row, rowIndex) => <tr key={row.id}>
+          <th title="Average time per answered item">Avg time</th><th title="Percentage of all test items answered correctly in less than 2 seconds">Correct<br />(2 s)</th>
+          <th title="Percentage of all test items answered correctly in less than 3 seconds">Correct<br />(3 s)</th>
+        </tr></thead><tbody>{rows.map((row, rowIndex) => <tr key={row.id} className="assessment-clickable-row" tabIndex={0}
+          aria-label={`View test ${row.type} details for ${row.student}`}
+          onClick={() => navigate(`/admin/tests/${encodeURIComponent(row.id)}`, { state: { returnTo: `/admin/tests${searchParams.size ? `?${searchParams}` : ''}` } })}
+          onKeyDown={event => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); event.currentTarget.click(); } }}>
           <td className="assessment-row-number">{page * 25 + rowIndex + 1}</td>
           <td><span className="assessment-student-cell"><span className="assessment-student-avatar">{String(row.student || '?').charAt(0).toUpperCase()}</span><span>{row.student}<small>#{row.pin}</small></span></span></td><td>{row.type}{row.part ? ` — Part ${row.part}` : ''}</td>
           <td>{row.partBatch ?? row.batch ?? 'HIGH STAKES TEST'}</td><td><span className={`assessment-result-badge ${row.passed == null ? 'is-neutral' : row.passed ? 'is-pass' : 'is-fail'}`}>{row.passed == null ? '—' : row.passed ? 'Pass' : 'Fail'}</span></td>
-          <td>{row.status || 'Completed'}</td><td>{row.answered ?? row.answers.length} / {row.count}</td>
+          <td>{row.status === 'Ended unfinished' ? 'Incomplete' : row.status || 'Completed'}</td><td>{row.answered ?? row.answers.length} / {row.count}</td>
           <td>{row.startedAt ? new Date(row.startedAt).toLocaleString() : '—'}</td>
           <td>{row.completedAt || row.endedAt ? new Date(row.completedAt || row.endedAt).toLocaleString() : '—'}</td>
           <td><span className="assessment-metric-pill is-accuracy">{row.percent.toFixed(1)}%</span></td><td>{duration(row.totalMs)}</td>
           <td>{Number.isFinite(row.averageTimeMs) ? `${(row.averageTimeMs / 1000).toFixed(2)} s` : '—'}</td>
           <td><span className="assessment-metric-pill is-fast">{Number.isFinite(row.correctUnderTwoSecondsPercent) ? `${row.correctUnderTwoSecondsPercent.toFixed(1)}%` : '—'}</span></td>
           <td><span className="assessment-metric-pill is-three">{Number.isFinite(row.correctUnderThreeSecondsPercent) ? `${row.correctUnderThreeSecondsPercent.toFixed(1)}%` : '—'}</span></td>
-          <td><details><summary>View {row.count} items</summary><table><thead><tr>
-            <th>Problem</th><th>Answer</th><th>Result</th><th>Time</th><th title="Time the server accepted the answer, in your device timezone">Answered at</th>
-          </tr></thead><tbody>{(row.items || row.answers.map(a => a.problem)).map((problem, i) => { const a = row.answers[i]; return <tr key={i}><td>{problem}</td><td>{a?.answer ?? '—'}</td>
-            <td>{!a ? 'Not answered' : a.correct ? 'Correct' : 'Incorrect'}</td><td>{a ? duration(a.timeMs) : '—'}</td>
-            <td>{a?.answeredAt ? new Date(a.answeredAt).toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Not recorded'}</td></tr>; })}</tbody></table></details></td>
+
         </tr>)}</tbody></table>}
       </div>}
       <div className="assessment-toolbar mt-6">
-        <button disabled={busy || page === 0} onClick={() => setPage(p => p - 1)}>Previous</button>
-        <span>Page {page + 1}</span><button disabled={busy || rows.length < 25} onClick={() => setPage(p => p + 1)}>Next</button>
+        <button disabled={busy || page === 0} onClick={() => changePage(page - 1)}>Previous</button>
+        <span>Page {page + 1}</span><button disabled={busy || rows.length < 25} onClick={() => changePage(page + 1)}>Next</button>
       </div>
       <details className="mt-6" onToggle={e => {
         if (e.target === e.currentTarget) setShowProgram(e.currentTarget.open);

@@ -168,6 +168,8 @@ try {
     }
     if (path === '/admin/assessments') response = [{ id: 'test-1', student: 'Demo', pin: '77777', type: 'A', completedAt: new Date().toISOString(),
       correct: 2, count: 3, percent: 200/3, totalMs: 6000, answers: [{ problem: '1 + 2', answer: '3', correct: true, timeMs: 2000 }] }];
+    if (path === '/admin/assessments/test-1') response = { id: 'test-1', student: 'Demo', pin: '77777', type: 'A', completedAt: new Date().toISOString(),
+      correct: 2, count: 3, percent: 200/3, totalMs: 6000, answers: [{ problem: '1 + 2', answer: '3', correct: true, timeMs: 2000 }] };
     await command('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [
       { name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: origin },
       { name: 'Access-Control-Allow-Headers', value: '*' }, { name: 'Access-Control-Allow-Methods', value: 'GET,POST,OPTIONS' },
@@ -608,7 +610,7 @@ try {
   await wait(() => evaluate('location.origin === ' + JSON.stringify(origin)), 'App origin for admin storage');
   await evaluate('localStorage.setItem("math-admin-pin", "mock-admin")');
   await command('Page.navigate', { url: `${origin}/admin/tests` });
-  await see('66.7%'); await see('View 3 items');
+  await see('66.7%'); await wait(() => evaluate('!!document.querySelector(".assessment-clickable-row")'), 'Clickable test rows');
   assert.equal(calls.filter(c => c.path === '/admin/assessments/progress').length, 0,
     'Test history must not load an unsolicited program table above its filters');
   assert(await evaluate(`(() => {
@@ -616,7 +618,11 @@ try {
     const summary = [...document.querySelectorAll('summary')].find(s => s.textContent.includes('student summary'));
     return !!form && !!summary && !summary.parentElement.open && form.getBoundingClientRect().top < summary.getBoundingClientRect().top;
   })()`), 'Filters and attempt history stay above the collapsed program summary');
-  await evaluate('document.querySelector("summary").click()'); await see('1 + 2');
+  await evaluate('document.querySelector(".assessment-clickable-row").click()');
+  await wait(() => evaluate('location.pathname === "/admin/tests/test-1"'), 'Dedicated test detail route');
+  await see('1 + 2');
+  await evaluate('document.querySelector(".assessment-back-link").click()');
+  await wait(() => evaluate('!!document.querySelector(".assessment-clickable-row")'), 'Clickable test rows');
   await evaluate(`{
     const input = document.querySelector('.assessment-filters input');
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '77777');

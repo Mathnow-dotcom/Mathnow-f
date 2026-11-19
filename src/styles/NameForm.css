@@ -135,6 +135,14 @@
   text-align: left !important;
 }
 
+/* Match typed names to the selected school text; keep passcode styling separate. */
+.student-login-input[name="child-name"] {
+  font-family: inherit;
+  font-size: clamp(0.78rem, 1.8vh, 0.92rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
 .student-login-passcode {
   text-align: center !important;
 }

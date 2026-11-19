@@ -11,13 +11,13 @@
 .classroom-active-page .classroom-screen-brand.admin-brand {
   position: fixed;
   pointer-events: none;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.72));
 }
 
 .classroom-active-page .classroom-screen-brand .admin-brand__math { color: #173f70; }
 .classroom-active-page .classroom-screen-brand .admin-brand__word strong { color: #60a5fa; }
 .classroom-active-page .classroom-screen-brand .admin-brand__word {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95), 0 2px 8px rgba(255, 255, 255, 0.78);
 }
 
 .classroom-active-page.assessment-page { padding-top: max(env(safe-area-inset-top), 1.5rem); }

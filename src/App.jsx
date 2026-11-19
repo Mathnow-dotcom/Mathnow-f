@@ -12,6 +12,7 @@ const StartScreen = lazy(() => import('./components/StartScreen.jsx'));
 const AssessmentScreen = lazy(() => import('./components/AssessmentScreen.jsx'));
 const ProgramLearningGate = lazy(() => import('./components/ProgramLearningGate.jsx'));
 const AssessmentReports = lazy(() => import('./components/AssessmentReports.jsx'));
+const AssessmentReportDetail = lazy(() => import('./components/AssessmentReportDetail.jsx'));
 const NameForm = lazy(() => import('./components/NameForm.jsx'));
 const ThemePicker = lazy(() => import('./components/ThemePicker.jsx'));
 const OperationPicker = lazy(() => import('./components/OperationPicker.jsx'));
@@ -272,6 +273,7 @@ const App = () => {
         <Route path="/test-c" element={<AssessmentScreen key="multiplication-test" />} />
         <Route path="/test-d" element={<AssessmentScreen key="division-test" />} />
         <Route path="/admin/tests" element={<AssessmentReports />} />
+        <Route path="/admin/tests/:attemptId" element={<AssessmentReportDetail />} />
         <Route path="/" element={<StartScreen />} />
         <Route path="/name" element={<NameForm />} />
         

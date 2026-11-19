@@ -201,7 +201,6 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
       {quit && <div className="assessment-modal classroom-selection-page classroom-modal-screen" role="dialog" aria-modal="true" aria-label="Quit test">
         <AdminBrand className="classroom-screen-brand" />
         <section className="assessment-card assessment-quit-card">
-          <span className="assessment-card-symbol" aria-hidden="true">Ⅱ</span>
           <div className="assessment-card-actions">
           <button disabled={busy} onClick={leave}>End test</button>
           <button className="assessment-secondary" disabled={busy} onClick={() => setQuit(false)}>Keep going</button>

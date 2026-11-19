@@ -1,0 +1,90 @@
+/* Match the dashboard's reading sizes; wide reports scroll within their panel. */
+.assessment-page.assessment-page.admin-reports-page { font-family:'Baloo 2','Nunito Sans','Trebuchet MS',sans-serif; }
+.assessment-page.admin-reports-page .admin-reports-title-row h1 { font-size:clamp(1.8rem,3.4vw,2.8rem); }
+.assessment-page.admin-reports-page .admin-reports-title-icon { width:3rem; height:3rem; font-size:1.4rem; }
+.assessment-page.admin-reports-page .admin-reports-nav button { min-height:3rem; font-size:1rem; padding:.75rem 1rem; }
+.assessment-page.admin-reports-page .admin-reports-summary { gap:.85rem; }
+.assessment-page.admin-reports-page .admin-reports-summary__card { padding:1rem; gap:.85rem; }
+.assessment-page.admin-reports-page .admin-reports-summary__card strong { font-size:clamp(1.5rem,2.8vw,2.3rem); }
+.assessment-page.admin-reports-page .admin-reports-summary__card span:last-child { font-size:.9rem; line-height:1.35; }
+.assessment-page.admin-reports-page .admin-reports-summary__icon { width:3rem; height:3rem; font-size:1.3rem; }
+.assessment-page.admin-reports-page .assessment-filters { gap:.8rem; padding:1rem; }
+.assessment-page.admin-reports-page .assessment-filters label { font-size:.9rem; }
+.assessment-page.admin-reports-page .assessment-filters input,
+.assessment-page.admin-reports-page .assessment-filters select,
+.assessment-page.admin-reports-page .assessment-filters button { font-size:1rem; min-height:2.9rem; }
+.assessment-page.admin-reports-page .assessment-results > table { min-width:1850px; font-size:1rem; }
+.assessment-page.admin-reports-page .assessment-results th { font-size:.85rem; padding:.85rem .75rem; line-height:1.35; }
+.assessment-page.admin-reports-page .assessment-results td { padding:.85rem .75rem; line-height:1.4; }
+.assessment-page.admin-reports-page .assessment-student-cell small { font-size:.82rem; }
+.assessment-page.admin-reports-page .assessment-student-avatar { width:2.5rem; height:2.5rem; }
+.assessment-page.admin-reports-page .assessment-result-badge,
+.assessment-page.admin-reports-page .assessment-metric-pill { font-size:.88rem; padding:.4rem .6rem; }
+.assessment-page.admin-reports-page .assessment-back-link:focus-visible { outline:3px solid #2588ef; outline-offset:3px; border-radius:.3rem; }
+.assessment-page.admin-reports-page .assessment-back-link { display:inline-flex; align-items:center; gap:.5rem; padding:.75rem 1rem; border:1px solid #b6d2e7; border-radius:.8rem; background:#fff; color:#173f70; font-weight:800; }
+.assessment-page.admin-reports-page .assessment-detail-summary { width:min(100%,1540px); margin-inline:auto; padding:clamp(1rem,3vw,1.75rem); border:1px solid #b6d2e7; border-radius:1.25rem; background:rgba(255,255,255,.97); box-shadow:0 12px 32px #173f7026; }
+.assessment-detail-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
+.assessment-detail-heading h2 { font-size:clamp(1.4rem,3vw,2rem); font-weight:900; }
+.assessment-detail-heading small { font-size:1rem; color:#587493; }
+.assessment-detail-heading p { margin:.35rem 0; }
+.assessment-detail-status { padding:.5rem .8rem; border-radius:.7rem; background:#e5f1ff; color:#1764a5; font-weight:800; }
+.assessment-detail-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; margin-top:1.25rem; }
+.assessment-detail-metrics dt { color:#587493; font-size:.88rem; font-weight:700; }
+.assessment-detail-metrics dd { font-size:1.05rem; font-weight:800; overflow-wrap:anywhere; }
+.assessment-page.admin-reports-page .assessment-detail-items h2 { margin-top:1rem; font-size:1.5rem; font-weight:900; }
+.assessment-page.admin-reports-page .assessment-detail-items > p { margin:.5rem 0 1rem; }
+.assessment-page.admin-reports-page .assessment-detail-items .assessment-results > table { min-width:720px; width:100%; }
+@media(max-width:1100px) { .assessment-page.admin-reports-page .assessment-filters { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:640px) { .assessment-detail-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .assessment-detail-heading { flex-direction:column; } }
+@media(max-width:480px) { .assessment-page.admin-reports-page .assessment-filters { grid-template-columns:1fr; } }
+
+/* Attempts open with a click, Enter or Space. */
+.assessment-page.admin-reports-page .assessment-clickable-row { cursor:pointer; }
+.assessment-page.admin-reports-page .assessment-clickable-row:hover td { background:#e7f2ff; }
+.assessment-page.admin-reports-page .assessment-clickable-row:focus-visible { outline:3px solid #2588ef; outline-offset:-3px; }
+.assessment-page.admin-test-detail-page .admin-reports-header,
+.assessment-page.admin-test-detail-page .assessment-detail-summary,
+.assessment-page.admin-test-detail-page .assessment-detail-items { width:min(100%,1120px); margin-inline:auto; }
+.assessment-page.admin-test-detail-page .admin-reports-header { margin-block:.5rem; }
+.assessment-page.admin-test-detail-page .admin-reports-title-row h1 { font-size:clamp(1.5rem,2.8vw,2rem); }
+.assessment-page.admin-test-detail-page .assessment-detail-summary { padding:1.25rem; border-radius:1rem; }
+.assessment-detail-identity { display:flex; align-items:center; gap:.85rem; min-width:0; }
+.assessment-page.admin-test-detail-page .assessment-detail-identity .assessment-student-avatar { width:3.25rem; height:3.25rem; flex-shrink:0; font-size:1.3rem; }
+.assessment-detail-heading h2 { margin:0; line-height:1.2; font-size:1.5rem; }
+.assessment-detail-heading p { font-size:.9rem; line-height:1.35; }
+.assessment-detail-status { white-space:nowrap; }
+.assessment-detail-metrics { gap:.75rem; margin:1rem 0; }
+.assessment-detail-metrics > div { padding:.75rem 1rem; border:1px solid #d8e7f3; border-radius:.65rem; background:#f3f8fd; }
+.assessment-detail-metrics dd { margin:0; font-size:1.3rem; line-height:1.4; }
+.assessment-detail-dates { display:flex; flex-wrap:wrap; gap:.6rem 2rem; border-top:1px solid #deebf5; padding-top:.75rem; margin:0; }
+.assessment-detail-dates > div { display:flex; flex-wrap:wrap; gap:.25rem .5rem; font-size:.85rem; }
+.assessment-detail-dates dt { color:#587493; }
+.assessment-detail-dates dd { margin:0; font-weight:700; }
+.assessment-page.admin-test-detail-page .assessment-detail-items { background:#fff; border:1px solid #b6d2e7; border-radius:1rem; overflow:hidden; }
+.assessment-items-heading { padding:1rem 1.25rem; }
+.assessment-page.admin-test-detail-page .assessment-items-heading h2 { margin:0; font-size:1.2rem; }
+.assessment-items-heading h2 span { margin-left:.5rem; font-size:.85rem; color:#587493; font-weight:600; }
+.assessment-items-heading p { margin:.2rem 0 0; font-size:.85rem; color:#587493; }
+.assessment-page.admin-test-detail-page .assessment-detail-items .assessment-results { border:0; border-radius:0; margin:0; }
+.assessment-page.admin-test-detail-page .assessment-detail-items th,
+.assessment-page.admin-test-detail-page .assessment-detail-items td { text-align:left; padding:.7rem 1rem; }
+.assessment-page.admin-test-detail-page .assessment-detail-items th:first-child { width:5%; }
+.assessment-page.admin-test-detail-page .assessment-detail-items th:last-child { width:27%; }
+@media(max-width:640px) {
+ .assessment-detail-identity { align-items:flex-start; }
+ .assessment-detail-heading { flex-direction:row; flex-wrap:wrap; }
+ .assessment-detail-metrics > div { padding:.6rem; }
+ .assessment-page.admin-test-detail-page .assessment-detail-summary { padding:1rem; }
+ .assessment-detail-dates { flex-direction:column; }
+}
+
+/* Keep report headings aligned with their values and compact timing columns. */
+.assessment-page.admin-reports-page .assessment-attempt-list > table { min-width:1500px; width:100%; }
+.assessment-page.admin-reports-page .assessment-attempt-list th,
+.assessment-page.admin-reports-page .assessment-attempt-list td { text-align:left; padding:.75rem .65rem; }
+.assessment-page.admin-reports-page .assessment-attempt-list :is(th,td):is(:first-child,:nth-child(5),:nth-child(7),:nth-child(n+10)) { text-align:center; }
+.assessment-page.admin-reports-page .assessment-attempt-list :is(th,td):nth-child(n+10) { width:6.5%; white-space:nowrap; padding-inline:.5rem; }
+.assessment-page.admin-reports-page .assessment-attempt-list td { transition:background-color .18s ease,box-shadow .18s ease; }
+.assessment-page.admin-reports-page .assessment-attempt-list tr:is(:hover,:focus-visible) td { background:#e7f2ff; box-shadow:inset 0 0 0 1px #4fd6ff59; }
+.assessment-page.admin-reports-page .assessment-attempt-list { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+@media(prefers-reduced-motion:reduce) { .assessment-page.admin-reports-page .assessment-attempt-list td { transition:none; } }

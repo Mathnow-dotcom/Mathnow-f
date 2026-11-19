@@ -705,3 +705,6 @@ export const updateAdminPin = async (adminPin, currentPin, newPin) => {
 
 export const adminUpdateStudentProfile = (adminPin, userId, profile) =>
   callApi(`/admin/users/${encodeURIComponent(userId)}/profile`, 'PUT', profile, adminPin);
+
+export const assessmentReportDetail = (pin, id) =>
+  callApi(`/admin/assessments/${encodeURIComponent(id)}`, 'GET', null, pin);
