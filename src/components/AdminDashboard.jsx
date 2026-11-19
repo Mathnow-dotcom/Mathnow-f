@@ -543,8 +543,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard admin-classroom-page" style={dashboardStyle}>
-      <div className="admin-dashboard__shell">
-        <div className="admin-dashboard__utility-bar">
+        <div className="admin-dashboard__utility-bar admin-page-utility">
           <AdminBrand />
           <button
             onClick={handleLogout}
@@ -556,6 +555,8 @@ const AdminDashboard = () => {
             <span>Logout</span>
           </button>
         </div>
+      <div className="admin-dashboard__shell">
+
 
         <header className="admin-dashboard__topbar">
           <div className="admin-dashboard__heading-wrap">

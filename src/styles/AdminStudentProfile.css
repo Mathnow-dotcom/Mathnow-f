@@ -1,0 +1,22 @@
+.admin-student-profile { position:relative; margin:0 1rem 1rem; padding:1rem; border:1px solid #cce0f3; border-radius:1rem; background:#f3f9ff; color:#173f70; }
+.admin-student-profile__details { display:flex; flex-wrap:wrap; align-items:center; gap:1rem 2rem; }
+.admin-student-profile__field { display:flex; align-items:center; gap:.65rem; min-width:0; }
+.admin-student-profile__field > svg { color:#1976c5; font-size:1.3rem; flex-shrink:0; }
+.admin-student-profile__field span { display:block; font-size:.75rem; font-weight:700; color:#546f8a; }
+.admin-student-profile__field strong { display:block; font-size:1rem; overflow-wrap:anywhere; }
+.admin-student-profile button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.65rem 1rem; border:1px solid #bad5ee; border-radius:.7rem; font-weight:800; color:#1764a5; background:#fff; min-height:2.75rem; }
+.admin-student-profile button:disabled { opacity:.55; cursor:default; }
+.admin-student-profile button:focus-visible { outline:3px solid #2588ef; outline-offset:3px; }
+.admin-student-profile .admin-student-profile__edit { margin-left:auto; }
+.admin-student-profile__form { margin-top:1rem; padding-top:1rem; border-top:1px solid #cce0f3; }
+.admin-student-profile__inputs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.admin-student-profile__inputs label { display:grid; gap:.4rem; font-size:.85rem; font-weight:800; }
+.admin-student-profile__inputs select { width:100%; min-width:0; min-height:2.8rem; border:1px solid #a7c9e7; border-radius:.6rem; background:#fff; color:#173f70; padding:.6rem; }
+.admin-student-profile__inputs select:focus-visible { outline:2px solid #2588ef; outline-offset:2px; }
+.admin-student-profile__hint { margin:.8rem 0; font-size:.8rem; color:#546f8a; }
+.admin-student-profile__actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:.65rem; }
+.admin-student-profile__actions button[type=submit] { background:linear-gradient(135deg,#20b763,#11884a); color:#fff; border-color:#11884a; }
+.admin-student-profile__error { margin:.75rem 0 0; color:#b12435; font-weight:700; }
+.admin-student-profile__notice { margin:.75rem 0 0; color:#087744; font-weight:700; }
+@media(min-width:768px) { .admin-student-profile { margin-inline:1.5rem; } }
+@media(max-width:480px) { .admin-student-profile .admin-student-profile__edit { width:100%; margin-left:0; } .admin-student-profile__inputs { grid-template-columns:1fr; } .admin-student-profile__actions button { flex:1; } }

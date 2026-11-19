@@ -3,7 +3,7 @@
 .classroom-active-page.assessment-page {
   position: relative;
   isolation: isolate;
-  background: #fff4e4 url('/Mathnow_active.png') center / cover fixed no-repeat;
+  background: linear-gradient(135deg, #23272f 0%, #18181b 60%, #111113 100%);
 }
 
 .classroom-active-page.keypad-overlay { position: fixed; }
@@ -11,6 +11,13 @@
 .classroom-active-page .classroom-screen-brand.admin-brand {
   position: fixed;
   pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+.classroom-active-page .classroom-screen-brand .admin-brand__math { color: #173f70; }
+.classroom-active-page .classroom-screen-brand .admin-brand__word strong { color: #60a5fa; }
+.classroom-active-page .classroom-screen-brand .admin-brand__word {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .classroom-active-page.assessment-page { padding-top: max(env(safe-area-inset-top), 1.5rem); }
@@ -35,7 +42,7 @@
 
 /* Continue the active background behind MainLayout's mobile stats footer. */
 .layout-has-stats:has(.classroom-active-page) {
-  background: #fff4e4 url('/Mathnow_active.png') center / cover fixed no-repeat !important;
+  background: linear-gradient(135deg, #23272f 0%, #18181b 60%, #111113 100%) !important;
 }
 
 .classroom-active-page.classroom-activity-loading {

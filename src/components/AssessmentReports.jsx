@@ -120,18 +120,21 @@ export default function AssessmentReports() {
     navigate('/name', { replace: true });
   };
   return <main className="assessment-page admin-classroom-page admin-reports-page">
+    <div className="admin-page-utility">
+      <AdminBrand />
+        <button type="button" className="admin-reports-nav__logout" onClick={logout}>
+          <FaSignOutAlt aria-hidden="true" /> Logout
+        </button>
+    </div>
     <header className="admin-reports-header">
       <div className="admin-reports-heading">
-        <AdminBrand />
         <div className="admin-reports-title-row">
           <span className="admin-reports-title-icon" aria-hidden="true"><FaChartLine /></span>
           <h1>Test Results</h1>
         </div>
       </div>
       <nav className="admin-reports-nav" aria-label="Test results navigation">
-        <button type="button" className="admin-reports-nav__logout" onClick={logout}>
-          <FaSignOutAlt aria-hidden="true" /> Logout
-        </button>
+
         <div className="admin-reports-nav__secondary">
           <button type="button" onClick={() => navigate('/admin-dashboard')}>
             <FaChartLine aria-hidden="true" /> Student Stats

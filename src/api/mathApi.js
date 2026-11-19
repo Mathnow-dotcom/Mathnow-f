@@ -702,3 +702,6 @@ export const updateBlackBeltTimer = async (adminPin, degree, payload) => {
 export const updateAdminPin = async (adminPin, currentPin, newPin) => {
   return callApi('/config/admin-pin', 'PUT', { currentPin, newPin }, adminPin);
 };
+
+export const adminUpdateStudentProfile = (adminPin, userId, profile) =>
+  callApi(`/admin/users/${encodeURIComponent(userId)}/profile`, 'PUT', profile, adminPin);

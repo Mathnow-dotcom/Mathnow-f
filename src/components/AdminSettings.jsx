@@ -974,9 +974,20 @@ const AdminSettings = () => {
         </div>
       )}
 
+      <div className="admin-page-utility">
+        <AdminBrand />
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="admin-config-nav__button admin-config-nav__button--logout"
+          >
+            <FaSignOutAlt aria-hidden="true" />
+            <span>Logout</span>
+          </button>
+      </div>
+
       <header className="admin-config-header mb-5 flex items-start justify-between gap-4 sm:mb-6">
         <div className="admin-config-heading min-w-0">
-          <AdminBrand />
           <div className="admin-config-heading-copy min-w-0">
             <h1 className="text-white text-3xl font-extrabold leading-[0.95] tracking-[0.01em] drop-shadow sm:text-[3.3rem]">
               App Configuration
@@ -988,14 +999,7 @@ const AdminSettings = () => {
         </div>
 
         <nav className="admin-config-nav" aria-label="Admin settings navigation">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="admin-config-nav__button admin-config-nav__button--logout"
-          >
-            <FaSignOutAlt aria-hidden="true" />
-            <span>Logout</span>
-          </button>
+
           <button
             type="button"
             onClick={() => navigate('/admin-dashboard')}

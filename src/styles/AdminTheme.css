@@ -68,8 +68,24 @@
   letter-spacing: -.05em;
   text-shadow: 0 1px 2px rgba(22,67,110,.66);
 }
-.admin-brand__math { color: #fff; }
+.admin-brand__math { color: #173f70; }
 .admin-brand__word strong { color: #60a5fa; font-weight: 900; }
+
+/* Match the student navigation wordmark without changing admin header layouts. */
+.admin-classroom-page .admin-brand {
+  filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.72));
+}
+.admin-classroom-page .admin-brand__mark {
+  width: clamp(2.5rem, 5vw, 3.6rem);
+  height: clamp(2.5rem, 5vw, 3.6rem);
+  flex-shrink: 0;
+}
+.admin-classroom-page .admin-brand__word {
+  font-size: clamp(1.35rem, 3vw, 2.1rem);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95), 0 2px 8px rgba(255, 255, 255, 0.78);
+}
+.admin-classroom-page .admin-brand__word strong { color: #2e8ff0; }
+
 
 .admin-login-page {
   padding: clamp(4.75rem, 9vh, 7rem) 1rem 2rem;
@@ -1263,4 +1279,41 @@
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/* Page-wide branding and logout stay independent of centered admin content. */
+.admin-classroom-page .admin-page-utility {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  max-width: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin: 0 0 1rem;
+}
+.admin-analytics-page > .admin-page-utility {
+  padding: clamp(.8rem, 2.4vw, 1.4rem) clamp(.8rem, 2.4vw, 1.5rem) 0;
+}
+.admin-classroom-page .admin-page-utility > button {
+  display: inline-flex;
+  width: auto;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: .75rem 1.25rem;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 1rem;
+  color: #fff;
+  background: linear-gradient(135deg, #ff464e, #f32736);
+  box-shadow: 0 8px 20px rgba(118,18,28,.24);
+  font-weight: 800;
+}
+@media (max-width: 480px) {
+  .admin-classroom-page .admin-page-utility { gap: .5rem; }
+  .admin-classroom-page .admin-page-utility > button { padding: .6rem .75rem; font-size: .85rem; }
 }
