@@ -24,6 +24,7 @@ import {
 } from "../api/mathApi.js";
 import { MODULE_META, getOperationMaxLevel, normalizeOperation } from "../config/modulesConfig.js";
 import AdminBrand from "./admin/AdminBrand.jsx";
+import AdminStudentProfile from "./admin/AdminStudentProfile.jsx";
 
 const OPS = [
   { value: "all", label: "All operations" },
@@ -174,7 +175,7 @@ const findStudentFromAdminStats = async (adminPin, targetPin) => {
   const wantedPin = String(targetPin ?? "").trim();
   if (!adminPin || !wantedPin) return null;
 
-  const pageSize = 100;
+  const pageSize = 10;
   let offset = 0;
   let safetyCounter = 0;
 
@@ -194,9 +195,9 @@ const findStudentFromAdminStats = async (adminPin, targetPin) => {
         ? response.pagination.hasMore
         : null;
     const hasMore = hasMoreFromHeader ?? rows.length >= pageSize;
-    if (!hasMore) return null;
+    if (!hasMore || rows.length === 0) return null;
 
-    offset += pageSize;
+    offset += rows.length;
     safetyCounter += 1;
   }
 
@@ -543,6 +544,10 @@ export default function AnalyticsScreen() {
     pin: toSafeStudentText(routePin || location.state?.studentPin, "N/A"),
   }));
 
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileLoadError, setProfileLoadError] = useState('');
+  const [profileReloadKey, setProfileReloadKey] = useState(0);
+
   const [level, setLevel] = useState("all");
   const [operation, setOperation] = useState("all");
 
@@ -724,8 +729,13 @@ export default function AnalyticsScreen() {
       const initialBelt = toSafeStudentText(location.state?.studentBelt, "Loading...");
       const initialPin = toSafeStudentText(routePin || location.state?.studentPin || pin, "N/A");
 
+      setProfileLoading(true);
+      setProfileLoadError('');
       setStudentInfo((prev) => ({
         ...prev,
+        id: null,
+        school: null,
+        grade: null,
         name: initialName,
         level: initialLevel,
         belt: initialBelt,
@@ -747,7 +757,13 @@ export default function AnalyticsScreen() {
       const resolvedName =
         adminStudent.status === "fulfilled" ? toSafeStudentText(adminStudent.value?.name, "") : "";
 
+      const profile = adminStudent.status === "fulfilled" ? adminStudent.value : null;
+      setProfileLoading(false);
+      if (!profile) setProfileLoadError('Unable to load student details. Please retry.');
       setStudentInfo((prev) => ({
+        id: profile?.id || profile?._id || null,
+        school: profile?.school || '',
+        grade: profile?.grade || '',
         name: resolvedName || (prev.name === "Loading..." ? "N/A" : prev.name),
         level: progressInfo.level || prev.level || "N/A",
         belt: progressInfo.belt || prev.belt || "N/A",
@@ -757,6 +773,8 @@ export default function AnalyticsScreen() {
 
     loadStudentInfo().catch(() => {
       if (cancelled) return;
+      setProfileLoading(false);
+      setProfileLoadError('Unable to load student details. Please retry.');
       setStudentInfo((prev) => ({
         ...prev,
         name: prev.name === "Loading..." ? "N/A" : prev.name,
@@ -768,7 +786,7 @@ export default function AnalyticsScreen() {
     return () => {
       cancelled = true;
     };
-  }, [pin, routePin, location.state]);
+  }, [pin, routePin, location.state, profileReloadKey]);
 
   useEffect(() => {
     if (!pin) {
@@ -1021,6 +1039,10 @@ export default function AnalyticsScreen() {
               </span>
             </div>
           </div>
+          <AdminStudentProfile key={pin} student={studentInfo} loading={profileLoading}
+            loadError={profileLoadError} onReload={() => setProfileReloadKey(key => key + 1)}
+            onUpdated={profile => setStudentInfo(previous => previous.pin === pin
+              ? { ...previous, school: profile.school, grade: profile.grade } : previous)} />
           <div className="admin-analytics-profile-footer relative flex items-center justify-between gap-3 border-t border-blue-100/15 bg-[#06173d]/75 px-4 py-3 md:px-6">
             <div className="inline-flex items-center gap-2 text-xl font-bold md:text-2xl">
               <FaLayerGroup className="text-lg text-blue-200/80" />
