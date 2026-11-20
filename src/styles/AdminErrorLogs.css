@@ -1,0 +1,23 @@
+.error-logs-page { min-height:100vh; padding:1rem; color:#173f70; font-family:'Baloo 2',sans-serif; }
+.error-logs-shell { width:min(100%,1180px); margin:1.5rem auto; }
+.error-logs-heading,.error-log-title { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+.error-logs-heading h1 { font-size:2.3rem; font-weight:900; margin:0; }
+.error-logs-heading p { margin:0 0 1rem; }
+.error-logs-page button,.error-logs-heading a { background:#1676cc; color:#fff; border:1px solid #bdd6eb; border-radius:.65rem; padding:.65rem 1rem; font:inherit; font-weight:800; cursor:pointer; }
+.error-logs-page button:disabled { opacity:.55; cursor:default; }
+.error-logs-page :is(button,input,select,summary,a):focus-visible { outline:3px solid #1686dc; outline-offset:3px; }
+.error-logs-filters { display:flex; align-items:end; flex-wrap:wrap; gap:.8rem; padding:1rem; background:#fff; border-radius:1rem; }
+.error-logs-filters label { display:grid; gap:.3rem; font-weight:700; flex:1; min-width:140px; }
+.error-logs-filters label:first-child { flex:2; min-width:230px; }
+.error-logs-filters input,.error-logs-filters select { width:100%; min-height:44px; padding:.5rem; border:1px solid #b5cfe5; border-radius:.5rem; color:#173f70; background:#fff; font:inherit; }
+.error-logs-policy { background:#edf6ff; padding:.8rem 1rem; border-radius:.7rem; font-size:.9rem; margin:1rem 0; }
+.error-log-card { background:#fff; border:1px solid #c3daed; border-radius:1rem; padding:1.25rem; margin:.75rem 0; box-shadow:0 6px 20px #173f7017; }
+.error-log-card h2 { font-size:1.2rem; font-weight:800; margin:.35rem 0; }
+.error-log-card code { overflow-wrap:anywhere; font-size:.85rem; }
+.error-log-status,.error-log-source { display:inline-block; padding:.2rem .6rem; border-radius:.4rem; background:#fff0d8; color:#855000; font-size:.8rem; font-weight:800; margin-right:.5rem; }
+.error-log-status.resolved { background:#dcf8e9; color:#087647; }.error-log-source { background:#e8f3ff; color:#1765ac; }
+.error-log-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.8rem; margin:1rem 0; padding:1rem 0; border-block:1px solid #e0ebf4; }
+.error-log-metrics dt { font-size:.85rem; color:#587493; }.error-log-metrics dd { margin:0; font-weight:800; }
+.error-log-card summary { cursor:pointer; font-weight:800; }.error-log-card pre { white-space:pre-wrap; overflow-wrap:anywhere; padding:.75rem; background:#f3f7fb; border-radius:.5rem; font-size:.8rem; }
+.error-log-pagination { display:flex; justify-content:center; align-items:center; gap:1rem; margin:1rem; }
+@media(max-width:640px) { .error-log-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }.error-logs-page {padding:.65rem;}.error-log-card {padding:1rem;} }

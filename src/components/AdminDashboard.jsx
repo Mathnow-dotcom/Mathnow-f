@@ -570,6 +570,7 @@ const AdminDashboard = () => {
           </div>
 
           <div className="admin-dashboard__actions">
+            <button type="button" className="admin-dashboard__btn admin-dashboard__btn--settings" onClick={() => navigate('/admin/error-logs')}>Error Logs</button>
             <button
               onClick={openCreateUser}
               type="button"
