@@ -5,6 +5,7 @@ let sent = 0;
 let windowStart = 0;
 let inFlight = false;
 const recent = new Map();
+const pending = [];
 const routes = new Set(['name','mode','levels','belts','operations','quiz','learning','pretest','game-mode','theme','results','way-to-go','pretest-intro','pretest-result','admin-dashboard','admin-settings','admin/tests','legacy-test-a-part-1','legacy-test-a-part-2','legacy-test-b','legacy-test-c','legacy-test-d']);
 export function safeRoute(path) {
   const clean = path.replace(/^\/+|\/+$/g, '');
@@ -15,7 +16,7 @@ export function safeRoute(path) {
 // Only bundle location is extracted. Never transmit error.message, full stack, URL query or context.
 export function reportError(kind, error, status = 0, path = location.pathname) {
   try {
-    if (!transport || inFlight) return;
+    if (!transport || pending.length >= 8) return;
     const now = Date.now();
     if (now - windowStart > 60000) { sent = 0; windowStart = now; recent.clear(); }
     if (sent >= 10) return;
@@ -26,15 +27,23 @@ export function reportError(kind, error, status = 0, path = location.pathname) {
     const key = JSON.stringify(payload);
     if (recent.has(key)) return;
     recent.set(key, now); sent++;
-    inFlight = true;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
-    // No credentials, PIN, authorization headers, referrer, cookies or persistent retry queue.
-    Promise.resolve(transport(`${base}/error-logs`, { method:'POST', credentials:'omit', referrerPolicy:'no-referrer',
-      headers:{'Content-Type':'application/json'}, body:key, signal:controller.signal }))
-      .catch(() => {}).finally(() => { clearTimeout(timer); inFlight = false; });
-  } catch { inFlight = false; }
+    pending.push(key);
+    drain();
+  } catch { /* Telemetry is always best effort. */ }
 }
+function drain() {
+  if (inFlight || !pending.length) return;
+  inFlight = true;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 3000);
+  // No credentials, PIN, authorization headers, referrer, cookies or persistent retry queue.
+  Promise.resolve().then(() => transport(`${base}/error-logs`, { method:'POST', credentials:'omit', referrerPolicy:'no-referrer',
+    headers:{'Content-Type':'application/json'}, body:pending[0], signal:controller.signal }))
+    .catch(() => {}).finally(() => {
+      clearTimeout(timer); pending.shift(); inFlight = false; drain();
+    });
+}
+
 export function installErrorLogging() {
   if (installed) return;
   installed = true;
@@ -50,7 +59,7 @@ export function installErrorLogging() {
     } catch { /* Preserve fetch's normal validation. */ }
     try {
       const response = await transport(input, options);
-      if (relevant && response.status >= 500) reportError('http', null, response.status);
+      if (relevant && response.status >= 400) reportError('http', null, response.status);
       return response;
     } catch (error) {
       if (relevant && error?.name !== 'AbortError') reportError('network');
