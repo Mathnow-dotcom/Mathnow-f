@@ -6,7 +6,7 @@
     max(env(safe-area-inset-bottom), 0.65rem) max(env(safe-area-inset-left), 0.75rem) !important;
   overflow-x: hidden;
   overflow-y: auto;
-  background: #efc28e url('/Mathnow_bg.png') center / cover fixed no-repeat;
+  background: #efc28e url('/Mathnow_theme.png') center / cover fixed no-repeat;
   font-family: 'Baloo 2', 'Nunito Sans', 'Trebuchet MS', sans-serif;
 }
 

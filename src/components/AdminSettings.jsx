@@ -935,7 +935,7 @@ const AdminSettings = () => {
       <div
         className="pointer-events-none absolute inset-0 opacity-0"
         style={{
-          backgroundImage: "url('/Mathnow_bg.png')",
+          backgroundImage: "url('/Mathnow_theme.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

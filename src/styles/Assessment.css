@@ -1,5 +1,5 @@
 .assessment-page { min-height:100dvh; padding:24px 20px 130px; background:linear-gradient(145deg,#061528e8,#123f55d9),url('/night_sky_landscape.jpg') center/cover; color:#fff; display:flex; flex-direction:column; align-items:center; gap:32px; }
-.assessment-page--classroom-intro { position:relative; isolation:isolate; background:#efc28e url('/Mathnow_bg.png') center/cover fixed no-repeat; color:#173f70; padding-top:clamp(6.5rem,14vh,9rem); }
+.assessment-page--classroom-intro { position:relative; isolation:isolate; background:#efc28e url('/Mathnow_theme.png') center/cover fixed no-repeat; color:#173f70; padding-top:clamp(6.5rem,14vh,9rem); }
 .assessment-page--classroom-intro::before { content:''; position:fixed; inset:0; z-index:-1; pointer-events:none; background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(19,63,112,.05)); }
 .assessment-page--classroom-intro .assessment-student-toolbar { position:absolute; top:max(env(safe-area-inset-top),1rem); right:max(env(safe-area-inset-right),1rem); }
 .assessment-page--classroom-intro .assessment-start-card { border:1px solid rgba(110,157,199,.55); background:rgba(255,255,255,.93); box-shadow:0 20px 48px rgba(30,68,104,.22); backdrop-filter:blur(10px); }
@@ -68,7 +68,7 @@
   position:relative;
   padding:clamp(5.25rem,11vh,7rem) clamp(14px,3vw,28px) 28px;
   gap:clamp(20px,4vh,40px);
-  background:#efc28e url('/Mathnow_bg.png') center/cover fixed no-repeat;
+  background:#efc28e url('/Mathnow_theme.png') center/cover fixed no-repeat;
   color:#173f70;
 }
 .assessment-selection-page::before {

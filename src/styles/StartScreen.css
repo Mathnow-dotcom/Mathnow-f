@@ -6,7 +6,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     overflow: hidden;
-    background: #f2c38e url('/Mathnow_bg.png') center / cover no-repeat;
+    background: #f2c38e url('/Mathnow_theme.png') center / cover no-repeat;
 }
 
 .start-screen__backdrop {

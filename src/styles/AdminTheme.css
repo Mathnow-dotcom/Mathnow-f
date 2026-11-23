@@ -18,7 +18,7 @@
   color: var(--admin-ink);
   background:
     linear-gradient(120deg, rgba(255,255,255,.16), rgba(255,248,232,.08)),
-    url('/Mathnow_bg.png') center / cover fixed no-repeat !important;
+    url('/Mathnow_theme.png') center / cover fixed no-repeat !important;
   font-family: 'Baloo 2', 'Nunito Sans', 'Trebuchet MS', sans-serif;
 }
 
