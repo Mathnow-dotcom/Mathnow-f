@@ -71,7 +71,7 @@ const AdminPinModal = ({
     return (
         <div className="admin-classroom-page admin-login-page fixed inset-0 flex items-center justify-center z-[100] animate-fade-in"
              style={{
-                 backgroundImage: "url('/Mathnow_bg.png')",
+                 backgroundImage: "url('/Mathnow_theme.png')",
                  backgroundSize: 'cover',
                  backgroundPosition: 'center',
                  backgroundRepeat: 'no-repeat',
@@ -330,7 +330,7 @@ const handleDemoClick = () => {
       <div
         className="admin-classroom-page fixed inset-0 z-[102] flex items-center justify-center"
         style={{
-          backgroundImage: "url('/Mathnow_bg.png')",
+          backgroundImage: "url('/Mathnow_theme.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -526,7 +526,7 @@ const handleDemoClick = () => {
         <div 
             className="fixed inset-0 z-[101] flex items-center justify-center animate-fade-in" 
             style={{ 
-                backgroundImage: "url('/Mathnow_bg.png')",
+                backgroundImage: "url('/Mathnow_theme.png')",
                 backgroundSize: 'cover', 
                 backgroundPosition: 'center', 
                 backgroundRepeat: 'no-repeat', 

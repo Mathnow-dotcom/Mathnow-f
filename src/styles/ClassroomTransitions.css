@@ -4,7 +4,7 @@
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
-  background: #efc28e url('/Mathnow_bg.png') center / cover fixed no-repeat;
+  background: #efc28e url('/Mathnow_theme.png') center / cover fixed no-repeat;
   color: #173f70;
   font-family: 'Baloo 2', 'Nunito Sans', 'Trebuchet MS', sans-serif;
 }
@@ -189,7 +189,7 @@
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
-  background: #efc28e url('/Mathnow_bg.png') center / cover fixed no-repeat !important;
+  background: #efc28e url('/Mathnow_theme.png') center / cover fixed no-repeat !important;
   color: #173f70;
   font-family: 'Baloo 2', 'Nunito Sans', 'Trebuchet MS', sans-serif;
 }

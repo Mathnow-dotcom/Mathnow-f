@@ -505,7 +505,7 @@ const AdminDashboard = () => {
       <div
         className="admin-classroom-page fixed inset-0 z-[102] flex items-center justify-center"
         style={{
-          backgroundImage: "url('/Mathnow_bg.png')",
+          backgroundImage: "url('/Mathnow_theme.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

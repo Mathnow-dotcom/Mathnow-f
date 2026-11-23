@@ -955,7 +955,7 @@ export default function AnalyticsScreen() {
     <div style={dashboardStyle} className="admin-classroom-page admin-analytics-page relative overflow-hidden text-white">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[url('/Mathnow_bg.png')] bg-cover bg-center opacity-0"
+        className="pointer-events-none absolute inset-0 bg-[url('/Mathnow_theme.png')] bg-cover bg-center opacity-0"
       />
       <div className="admin-page-utility">
         <AdminBrand />
