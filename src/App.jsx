@@ -43,6 +43,7 @@ const GameModeBonusVideoIntroScreen = lazy(() => import('./components/GameModeBo
 const GameModeBonusIntroScreen = lazy(() => import('./components/GameModeBonusIntroScreen.jsx'));
 const UserQuestionStats = lazy(() => import('./components/UserQuestionStats.jsx'));
 const AnalyticsScreen = lazy(() => import('./components/AnalyticsScreen.jsx'));
+const AdminErrorLogs = lazy(() => import('./components/AdminErrorLogs.jsx'));
 const AdminSettings = lazy(() => import('./components/AdminSettings.jsx'));
 
 const SpeedTestScreen = lazy(() => import('./components/ui/SpeedTestScreen.jsx'));
@@ -272,6 +273,7 @@ const App = () => {
         <Route path="/test-b" element={<AssessmentScreen key="subtraction-test" />} />
         <Route path="/test-c" element={<AssessmentScreen key="multiplication-test" />} />
         <Route path="/test-d" element={<AssessmentScreen key="division-test" />} />
+        <Route path="/admin/error-logs" element={<AdminErrorLogs />} />
         <Route path="/admin/tests" element={<AssessmentReports />} />
         <Route path="/admin/tests/:attemptId" element={<AssessmentReportDetail />} />
         <Route path="/" element={<StartScreen />} />

@@ -708,3 +708,6 @@ export const adminUpdateStudentProfile = (adminPin, userId, profile) =>
 
 export const assessmentReportDetail = (pin, id) =>
   callApi(`/admin/assessments/${encodeURIComponent(id)}`, 'GET', null, pin);
+
+export const errorLogs = (pin, filters) => callApi(`/error-logs?${new URLSearchParams(filters)}`, 'GET', null, pin);
+export const resolveErrorLog = (pin, id, resolved) => callApi(`/error-logs/${encodeURIComponent(id)}`, 'PUT', { resolved }, pin);
