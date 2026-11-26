@@ -141,7 +141,11 @@ const VideoPlayerScreen = () => {
       const isBlack = String(selectedDifficulty || '').startsWith('black');
       const degree = isBlack ? parseInt(String(selectedDifficulty).split('-')[1] || '0', 10) : 0;
 
-      if (selectedDifficulty === 'brown' || (isBlack && degree >= 1 && degree <= 6)) {
+      if (selectedDifficulty === 'word-problems') {
+        finalDestination = '/word-problems-complete';
+      } else if (selectedOperation === 'add' && selectedDifficulty === 'black-7') {
+        finalDestination = '/word-problems';
+      } else if (selectedDifficulty === 'brown' || (isBlack && degree >= 1 && degree <= 6)) {
         finalDestination = '/black';
       } else if (isBlack && degree === 7) {
         finalDestination = isLastLevelInOperation ? '/operations' : '/levels';
@@ -154,7 +158,7 @@ const VideoPlayerScreen = () => {
     setQuizRunId(null);
     setTempNextRoute(null);
     navigate(finalDestination, { replace: true });
-  }, [tempNextRoute, selectedDifficulty, isLastLevelInOperation, setQuizRunId, setTempNextRoute, navigate]);
+  }, [tempNextRoute, selectedDifficulty, selectedOperation, isLastLevelInOperation, setQuizRunId, setTempNextRoute, navigate]);
 
   // Navigate automatically when video ends
   useEffect(() => {

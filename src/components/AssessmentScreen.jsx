@@ -62,7 +62,6 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
     alive.current = true;
     if (!ctx.isLoggedIn) return;
     let cancelled = false;
-    setAdditionPart(part);
     if (testType === 'A' && !legacy) programProgress(pin).then(p => {
       if (!cancelled && p.subject === 'add') setAdditionPart(p.part || null);
     }).catch(() => {}); // Label only; eligibility remains enforced by Start.
@@ -104,7 +103,7 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
 
   // Navigation leaves the attempt ended rather than resumable.
   useEffect(() => {
-    if (!['/test-a', '/test-b', '/test-c', '/test-d', '/legacy-test-a', '/legacy-test-a-part-1', '/legacy-test-a-part-2', '/legacy-test-b', '/legacy-test-c', '/legacy-test-d'].includes(pathname) && running) {
+    if (!['/test-a', '/test-b', '/test-c', '/test-d', '/legacy-test-a', '/legacy-test-a-part-1', '/legacy-test-a-part-2', '/legacy-test-b', '/legacy-test-c-part-1', '/legacy-test-c-part-2', '/legacy-test-d'].includes(pathname) && running) {
       setRunning(false);
       if (current.current?.completed) apply(null);
     }
@@ -163,6 +162,7 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
   if (!ctx.isLoggedIn) return <Navigate to={ctx.isQuittingRef?.current ? '/' : '/name'} replace />;
   const complete = running && attempt?.completed;
   const showClassroomIntro = legacy && !running;
+  const displayPart = legacy ? part : testType === 'A' ? (attempt ? attempt.part : additionPart) : null;
   return (
     <main className={`assessment-page${showClassroomIntro ? ' assessment-page--classroom-intro' : ''}${running ? ' classroom-active-page' : ''}`}>
       {(showClassroomIntro || running) && <AdminBrand className="classroom-screen-brand" />}
@@ -175,8 +175,8 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
         {complete ? <>
           <h1 role="status">Test complete</h1><p>{legacy ? 'Returning to tests…' : 'Returning to your subjects…'}</p>
         </> : !running ? <>
-          <h1>{{ A: 'Addition', B: 'Subtraction', C: 'Multiplication', D: 'Division' }[testType]}{testType === 'A' && (attempt ? attempt.part : additionPart) ? ` — Part ${attempt ? attempt.part : additionPart}` : ''}</h1>
-          <p>This is a timed test.</p>
+          <h1>{{ A: 'Addition', B: 'Subtraction', C: 'Multiplication', D: 'Division' }[testType]}{displayPart ? ` — Part ${displayPart}` : ''}</h1>
+          <p>{legacy && testType === 'C' && part ? 'This is a timed test.' : 'This is a timed test.'}</p>
           <div className="assessment-card-actions">
           <button disabled={busy || !loaded} onClick={begin}>{busy ? 'Loading…' : 'Start'}</button>
           <button className="assessment-secondary" disabled={busy} onClick={() => navigate(returnPath)}>Back</button>

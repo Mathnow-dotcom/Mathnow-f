@@ -37,6 +37,7 @@ const DEFAULT_NUMBERS = {
   blackDegree5: 40,
   blackDegree6: 35,
   blackDegree7: 60,
+  wordProblemTimer: 1200,
   lightningTarget: 5,
   lightningTimer: 2,
   surfQuestionsPerQuiz: 5,
@@ -139,6 +140,7 @@ const mapConfigToValues = (config) => {
     blackDegree5: String(timerSeconds(resolved?.blackBeltTimers?.degree5, DEFAULT_NUMBERS.blackDegree5)),
     blackDegree6: String(timerSeconds(resolved?.blackBeltTimers?.degree6, DEFAULT_NUMBERS.blackDegree6)),
     blackDegree7: String(timerSeconds(resolved?.blackBeltTimers?.degree7, DEFAULT_NUMBERS.blackDegree7)),
+    wordProblemTimer: String((resolved?.wordProblemTimeLimitMs ?? 1200000) / 1000),
     lightningTarget: String(
       Number.isFinite(resolved?.lightningMode?.targetCorrect)
         ? resolved.lightningMode.targetCorrect
@@ -390,6 +392,7 @@ const AdminSettings = () => {
     blackDegree5: String(DEFAULT_NUMBERS.blackDegree5),
     blackDegree6: String(DEFAULT_NUMBERS.blackDegree6),
     blackDegree7: String(DEFAULT_NUMBERS.blackDegree7),
+    wordProblemTimer: String(DEFAULT_NUMBERS.wordProblemTimer),
     lightningTarget: String(DEFAULT_NUMBERS.lightningTarget),
     lightningTimer: String(DEFAULT_NUMBERS.lightningTimer),
     surfQuestionsPerQuiz: String(DEFAULT_NUMBERS.surfQuestionsPerQuiz),
@@ -414,6 +417,7 @@ const AdminSettings = () => {
     blackDegree5: String(DEFAULT_NUMBERS.blackDegree5),
     blackDegree6: String(DEFAULT_NUMBERS.blackDegree6),
     blackDegree7: String(DEFAULT_NUMBERS.blackDegree7),
+    wordProblemTimer: String(DEFAULT_NUMBERS.wordProblemTimer),
     lightningTarget: String(DEFAULT_NUMBERS.lightningTarget),
     lightningTimer: String(DEFAULT_NUMBERS.lightningTimer),
     surfQuestionsPerQuiz: String(DEFAULT_NUMBERS.surfQuestionsPerQuiz),
@@ -531,6 +535,7 @@ const AdminSettings = () => {
       ].filter(({ key }) => values[key] !== baselineValues[key]);
 
       const generalKeys = [
+        'wordProblemTimer',
         'lightningTarget',
         'lightningTimer',
         'surfQuestionsPerQuiz',
@@ -578,6 +583,11 @@ const AdminSettings = () => {
         }
 
         const payload = buildConfigPayload(values);
+        if (selectedModule === 'add') {
+          const seconds = Number(values.wordProblemTimer);
+          if (!Number.isFinite(seconds) || seconds < 1 || seconds > 7200) throw new Error('Word problem time must be between 1 and 7200 seconds.');
+          payload.wordProblemTimeLimitMs = Math.round(seconds * 1000);
+        }
         if (hasPerLevelPretestTimerChanges) {
           const pretestTimeLimitsPerLevelMs = {};
           for (let level = 1; level <= PRETEST_LEVEL_COUNT; level += 1) {
@@ -1042,6 +1052,10 @@ const AdminSettings = () => {
       )}
 
       <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
+        {selectedModule === 'add' && <SectionCard icon={FaClock} title="Word Problem Belt Timer (seconds)">
+          <p>Default: 1200 seconds (20 minutes). Applies to Addition Word Problems only.</p>
+          <input aria-label="Word problem time limit in seconds" type="number" min="1" max="7200" className={inputClass} value={values.wordProblemTimer} onChange={handleChange('wordProblemTimer')} disabled={isBusy}/>
+        </SectionCard>}
         <SectionCard
           icon={FaClock}
           iconClass="border-[#3e8fff]/40 text-[#59bfff]"

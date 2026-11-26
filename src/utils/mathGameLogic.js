@@ -218,7 +218,7 @@ export function getLearningModuleContent(belt, level) {
 export function normalizeDifficulty(diff) {
   if (!diff) return null;
   const basic = ['white', 'yellow', 'green', 'blue', 'red', 'brown'];
-  if (basic.includes(diff)) return diff;
+  if (diff === 'word-problems' || basic.includes(diff)) return diff;
   if (String(diff).startsWith('black')) return diff;
   return null;
 }

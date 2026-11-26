@@ -19,6 +19,8 @@ const OperationPicker = lazy(() => import('./components/OperationPicker.jsx'));
 const AssessmentSelection = lazy(() => import('./components/AssessmentSelection.jsx'));
 const TablePicker = lazy(() => import('./components/TablePicker.jsx'));
 const DifficultyPicker = lazy(() => import('./components/DifficultyPicker.jsx'));
+const WordProblemCompletion = lazy(() => import('./components/WordProblemCompletion.jsx'));
+const WordProblemBelt = lazy(() => import('./components/WordProblemBelt.jsx'));
 const BlackBeltPicker = lazy(() => import('./components/BlackBeltPicker.jsx')); 
 const QuizScreen = lazy(() => import('./components/QuizScreen.jsx'));
 const ResultsScreen = lazy(() => import('./components/ResultsScreen.jsx'));
@@ -265,10 +267,13 @@ const App = () => {
       <Routes>
         <Route path="/mode" element={<AssessmentSelection />} />
         <Route path="/test-selection" element={<AssessmentSelection tests />} />
-        {['A', 'B', 'C', 'D'].map(type => <Route key={type} path={`/legacy-test-${type.toLowerCase()}`}
+        {['A', 'B', 'D'].map(type => <Route key={type} path={`/legacy-test-${type.toLowerCase()}`}
           element={<AssessmentScreen key={`legacy-${type}`} type={type} flow="legacy" />} />)}
         {[1, 2].map(part => <Route key={part} path={`/legacy-test-a-part-${part}`}
           element={<AssessmentScreen key={`legacy-add-${part}`} type="A" flow="legacy" part={part} />} />)}
+        <Route path="/legacy-test-c" element={<Navigate to="/test-selection" replace />} />
+        {[1, 2].map(part => <Route key={part} path={`/legacy-test-c-part-${part}`}
+          element={<AssessmentScreen key={`legacy-mul-${part}`} type="C" flow="legacy" part={part} />} />)}
         <Route path="/test-a" element={<AssessmentScreen />} />
         <Route path="/test-b" element={<AssessmentScreen key="subtraction-test" />} />
         <Route path="/test-c" element={<AssessmentScreen key="multiplication-test" />} />
@@ -317,6 +322,8 @@ const App = () => {
         <Route element={<MainLayout hideStats={showSiblingCheck || ctx.hideStatsUI} />}> 
           <Route path="/levels" element={<ProgramLearningGate><TablePicker /></ProgramLearningGate>} />
           <Route path="/belts" element={<DifficultyPicker />} />
+          <Route path="/word-problems-complete" element={<WordProblemCompletion />} />
+          <Route path="/word-problems" element={<WordProblemBelt />} />
           <Route path="/black" element={<BlackBeltPicker />} /> {/* ✅ BLACK ROUTE */}
           <Route path="/quiz" element={<QuizScreen />} />
           <Route path="/way-to-go" element={<WayToGoScreen />} />
