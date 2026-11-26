@@ -6,7 +6,7 @@ let windowStart = 0;
 let inFlight = false;
 const recent = new Map();
 const pending = [];
-const routes = new Set(['name','mode','levels','belts','operations','quiz','learning','pretest','game-mode','theme','results','way-to-go','pretest-intro','pretest-result','admin-dashboard','admin-settings','admin/tests','legacy-test-a-part-1','legacy-test-a-part-2','legacy-test-b','legacy-test-c','legacy-test-d']);
+const routes = new Set(['word-problems','word-problems-complete','name','mode','levels','belts','operations','quiz','learning','pretest','game-mode','theme','results','way-to-go','pretest-intro','pretest-result','admin-dashboard','admin-settings','admin/tests','legacy-test-a-part-1','legacy-test-a-part-2','legacy-test-b','legacy-test-c','legacy-test-d']);
 export function safeRoute(path) {
   const clean = path.replace(/^\/+|\/+$/g, '');
   if (/^admin\/students\/[^/]+\/analytics$/.test(clean)) return 'admin/student-analytics';

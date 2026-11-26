@@ -12,6 +12,7 @@ import {
   quizPracticeAnswer,
   quizPrepare,
   quizStart,
+  quizComplete,
   quizSubmitAnswer,
   userGetOperations,
   userGetProgress,
@@ -223,6 +224,7 @@ const useMathGame = () => {
   // Timers
   const [quizStartTime, setQuizStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [wordProblemRemainingAtStartMs, setWordProblemRemainingAtStartMs] = useState(1200000);
   const [dailyTotalMs, setDailyTotalMs] = useState(0);
   const [totalTimeToday, setTotalTimeToday] = useState(0);
   const [pausedTime, setPausedTime] = useState(0);
@@ -387,7 +389,7 @@ const useMathGame = () => {
 
   // --- CLIENT-SIDE HELPERS ---
   const determineMaxQuestions = useCallback((difficulty) => {
-    if (difficulty && difficulty.startsWith('black')) return 20;
+    if (difficulty === 'word-problems' || (difficulty && difficulty.startsWith('black'))) return 20;
     return 10;
   }, []);
 
@@ -668,6 +670,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
   const getRecoveryRoute = useCallback(
     (beltOrDegree = selectedDifficulty, level = selectedTable) => {
+      if (beltOrDegree === 'word-problems') return '/word-problems';
       if (beltOrDegree && String(beltOrDegree).startsWith('black')) return '/black';
       if (level != null) return '/belts';
       return '/levels';
@@ -1207,6 +1210,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         const started = await quizStart(idToUse, childPin);
         if (started.practice) { await resumeCorrectionRun(idToUse); return; }
         applyInactivityTimeout(started);
+        if (started?.questions?.[0]?.beltOrDegree === 'word-problems') setWordProblemRemainingAtStartMs(started?.timer?.remainingMs ?? started?.timer?.limitMs ?? 1200000);
         const { questions: backendQuestions, resumed = false, currentIndex, mainFlowCorrect, wrong } =
           started;
 
@@ -1934,7 +1938,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
       setMaxQuestions(determineMaxQuestions(difficulty));
 
       setIsInitialPrepLoading(true);
-      if (String(difficulty).startsWith('black')) {
+      if (difficulty === 'word-problems' || String(difficulty).startsWith('black')) {
         setIsInitialPrepLoading(false);
       }
 
@@ -1983,7 +1987,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
 
         setIsInitialPrepLoading(false);
 
-        const isBlackBelt = String(difficulty).startsWith('black');
+        const isBlackBelt = difficulty === 'word-problems' || String(difficulty).startsWith('black');
 
         if (!isBlackBelt && !resumed && practiceItems && practiceItems.length > 0) {
           setShowLearningModule(true);
@@ -3577,6 +3581,20 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     maxQuestions,
     quizStartTime,
     setQuizStartTime,
+    wordProblemRemainingMs: Math.max(0, wordProblemRemainingAtStartMs - elapsedTime * 1000),
+    expireWordProblem: async () => {
+      if (selectedDifficulty !== 'word-problems' || !quizRunId) return;
+      setIsTimerPaused(true); setQuizStartTime(null);
+      try { await quizComplete(quizRunId, childPin); }
+      catch (error) {
+        showUiMessage({ type:'error', title:'Could not finish the quiz', message:'Please return to Word Problems and retry.', navigateTo:'/word-problems', primaryLabel:'Back to Word Problems' });
+        navigate('/word-problems', {replace:true}); return;
+      }
+      localStorage.setItem('game-mode-belt', 'word-problems');
+      localStorage.setItem('game-mode-table', String(selectedTable));
+      localStorage.setItem('game-mode-operation', selectedOperation);
+      navigate('/game-mode-intro', { replace: true });
+    },
     elapsedTime,
     setElapsedTime,
     pausedTime,

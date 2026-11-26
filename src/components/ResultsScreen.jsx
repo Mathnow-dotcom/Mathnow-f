@@ -103,7 +103,7 @@ const ResultsScreen = () => {
 
   const isBlack = String(selectedDifficulty).startsWith('black');
   const degree = isBlack ? parseInt(String(selectedDifficulty).split('-')[1] || '1', 10) : null;
-  const maxQuestions = isBlack ? 20 : 10;
+  const maxQuestions = isBlack || selectedDifficulty === 'word-problems' ? 20 : 10;
   const allCorrect = sessionCorrectCount === maxQuestions;
   const isLastLevelInOperation = resolveIsLastLevelInOperation(
     selectedOperation,
@@ -125,6 +125,7 @@ const ResultsScreen = () => {
         degree,
         isLastLevelInOperation
       );
+      const destination = selectedOperation === 'add' && selectedDifficulty === 'black-7' ? '/word-problems' : selectedDifficulty === 'word-problems' ? '/word-problems-complete' : finalRoute;
 
       if (!completionSentRef.current && quizRunId) {
         completionSentRef.current = true;
@@ -139,7 +140,7 @@ const ResultsScreen = () => {
       const autoNavDelay = setTimeout(() => {
         localStorage.removeItem('math-last-quiz-duration');
         setQuizRunId(null);
-        setTempNextRoute(finalRoute);
+        setTempNextRoute(destination);
         navigate('/video', { replace: true });
       }, 5000);
 
@@ -154,6 +155,7 @@ const ResultsScreen = () => {
     isBlack,
     degree,
     selectedDifficulty,
+    selectedOperation,
     isLastLevelInOperation,
     quizRunId,
     childPin,
@@ -198,7 +200,7 @@ const ResultsScreen = () => {
   }, [allCorrect, leaving, selectedDifficulty, sessionCorrectCount, correctCount, grandTotalCorrect]);
 
   const handlePrimary = () => {
-    const nextRoute = calculateFinalRoute(selectedDifficulty, isBlack, degree, isLastLevelInOperation);
+    const nextRoute = selectedOperation === 'add' && selectedDifficulty === 'black-7' ? '/word-problems' : selectedDifficulty === 'word-problems' ? '/word-problems-complete' : calculateFinalRoute(selectedDifficulty, isBlack, degree, isLastLevelInOperation);
 
     if (allCorrect && !leaving) {
       setLeaving(true);
@@ -223,6 +225,7 @@ const ResultsScreen = () => {
   const sessionTimeSecs = Math.round(timeSecs);
   const timeLabel = `${sessionTimeSecs}s`;
   const beltName = (() => {
+    if (selectedDifficulty === 'word-problems') return 'Word Problems';
     if (isBlack) return `Black (Degree ${degree})`;
     switch (selectedDifficulty) {
       case 'white':

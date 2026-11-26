@@ -1,19 +1,23 @@
 import AdminBrand from './admin/AdminBrand.jsx';
 import '../styles/ClassroomTransitions.css';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getOperationMaxLevel,
   normalizeOperation,
 } from '../config/modulesConfig.js';
 import { useMathGamePick } from '../store/mathGameBridgeStore.js';
+import { getWordProblemNextRoute } from '../utils/wordProblemProgress.js';
 
 const GAME_MODE_EXIT_TARGET_KEY = 'game-mode-exit-target';
+const WORD_PROBLEM_EXIT_TARGET = '/word-problems-complete';
 
-const getExitRouteFromBelt = (belt, { isLastLevelInOperation = false } = {}) => {
+const getExitRouteFromBelt = (belt, { isLastLevelInOperation = false, operation } = {}) => {
   if (!belt) return null;
 
   const lowerBelt = String(belt).toLowerCase();
+  if (operation === 'add' && lowerBelt === 'black-7') return '/word-problems';
+  if (operation === 'add' && lowerBelt === 'word-problems') return WORD_PROBLEM_EXIT_TARGET;
   if (lowerBelt === 'brown') return '/black';
 
   if (lowerBelt.includes('black')) {
@@ -35,6 +39,8 @@ const GameModeExitScreen = () => {
     selectedOperation,
     selectedTable,
     operationsMeta,
+    childPin,
+    refreshOperationAndProgress,
     setIsTimerPaused,
     setPausedTime,
     setQuizStartTime,
@@ -46,11 +52,14 @@ const GameModeExitScreen = () => {
     selectedOperation: ctx.selectedOperation || null,
     selectedTable: ctx.selectedTable || null,
     operationsMeta: ctx.operationsMeta || {},
+    childPin: ctx.childPin,
+    refreshOperationAndProgress: ctx.refreshOperationAndProgress,
     setIsTimerPaused: ctx.setIsTimerPaused || (() => {}),
     setPausedTime: ctx.setPausedTime || (() => {}),
     setQuizStartTime: ctx.setQuizStartTime || (() => {}),
   }));
-  const resolvedRouteRef = useRef(null);
+  const [nextActivityError, setNextActivityError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const initialGameModeTypeRef = useRef(gameModeType || null);
   const timeoutRef = useRef(null);
   const hardResetRef = useRef(hardResetQuizState);
@@ -63,27 +72,27 @@ const GameModeExitScreen = () => {
     setIsQuizStartingRef.current = setIsQuizStarting;
   }, [hardResetQuizState, setIsQuizStarting]);
 
+  const effectiveOperation = normalizeOperation(localStorage.getItem('game-mode-operation') || selectedOperation);
+  const operationMaxLevel = Number(
+    operationsMeta?.[effectiveOperation]?.maxLevel || getOperationMaxLevel(effectiveOperation, 19)
+  );
+
   useEffect(() => {
+    let cancelled = false;
     const belt = localStorage.getItem('game-mode-belt');
-    const storedOperation = localStorage.getItem('game-mode-operation');
     const storedTable = localStorage.getItem('game-mode-table');
     const storedTargetRoute = sessionStorage.getItem(GAME_MODE_EXIT_TARGET_KEY);
-    const effectiveOperation = normalizeOperation(storedOperation || selectedOperation);
     const effectiveTable = Number(storedTable || selectedTable);
-    const operationMaxLevel = Number(
-      operationsMeta?.[effectiveOperation]?.maxLevel || getOperationMaxLevel(effectiveOperation, 19)
-    );
     const isLastLevelInOperation =
       Number.isFinite(effectiveTable) &&
       Number.isFinite(operationMaxLevel) &&
       effectiveTable >= operationMaxLevel;
     const targetRoute =
-      getExitRouteFromBelt(belt, { isLastLevelInOperation }) ||
-      getExitRouteFromBelt(selectedDifficulty, { isLastLevelInOperation }) ||
+      getExitRouteFromBelt(belt, { isLastLevelInOperation, operation: effectiveOperation }) ||
+      getExitRouteFromBelt(selectedDifficulty, { isLastLevelInOperation, operation: effectiveOperation }) ||
       storedTargetRoute ||
       '/belts';
 
-    resolvedRouteRef.current = targetRoute;
     sessionStorage.setItem(GAME_MODE_EXIT_TARGET_KEY, targetRoute);
 
     // Exit screen is terminal for the current run. Freeze timing immediately.
@@ -91,7 +100,18 @@ const GameModeExitScreen = () => {
     setPausedTime(Date.now());
     setQuizStartTime(null);
 
-    timeoutRef.current = setTimeout(() => {
+    timeoutRef.current = setTimeout(async () => {
+      let destination = targetRoute;
+      if (targetRoute === WORD_PROBLEM_EXIT_TARGET) {
+        try {
+          destination = await getWordProblemNextRoute(childPin, refreshOperationAndProgress);
+        } catch {
+          if (!cancelled) setNextActivityError(true);
+          return;
+        }
+        if (cancelled) return;
+      }
+
       localStorage.removeItem('game-mode-belt');
       localStorage.removeItem('game-mode-table');
       localStorage.removeItem('game-mode-operation');
@@ -105,10 +125,11 @@ const GameModeExitScreen = () => {
         setIsQuizStartingRef.current(false);
       }
 
-      navigate(resolvedRouteRef.current || '/belts', { replace: true });
-    }, 3000); // 2 seconds to show the "MODE COMPLETE" screen
+      navigate(destination, { replace: true });
+    }, retry ? 0 : 3000);
 
     return () => {
+      cancelled = true;
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
@@ -116,9 +137,12 @@ const GameModeExitScreen = () => {
     };
   }, [
     navigate,
-    operationsMeta,
+    childPin,
+    effectiveOperation,
+    operationMaxLevel,
+    refreshOperationAndProgress,
+    retry,
     selectedDifficulty,
-    selectedOperation,
     selectedTable,
     setIsTimerPaused,
     setPausedTime,
@@ -153,6 +177,15 @@ const GameModeExitScreen = () => {
         <div className="relative mx-4 w-[calc(100%-2rem)] max-w-3xl text-center p-5 sm:p-8 bg-white/90 rounded-3xl shadow-2xl border-4 border-orange-500">
           <h1 className="text-[clamp(1.6rem,6vw,4.5rem)] break-words font-black text-orange-700 mb-4">{modeLabel}</h1>
           <h1 className="text-[clamp(1.6rem,6vw,4.5rem)] break-words font-black text-orange-700 mb-4">GAME COMPLETED</h1>
+        </div>
+      )}
+      {nextActivityError && (
+        <div className="relative mx-4 mt-4 rounded-xl bg-white px-4 py-3 text-center text-slate-900">
+          <p role="alert">Could not load your next activity.</p>
+          <button type="button" className="mt-2 rounded-lg bg-blue-700 px-4 py-2 font-bold text-white" onClick={() => {
+            setNextActivityError(false);
+            setRetry(attempt => attempt + 1);
+          }}>Retry</button>
         </div>
       )}
     </div>

@@ -402,6 +402,7 @@ export function mapQuestionToFrontend(backendQuestion) {
     answers,
     answerLabels: isRocketQuestion ? displayedTextChoices : fractionAnswerLabels,
     answerScale: fractionAnswerScale,
+    statements: Array.isArray(backendQuestion.statements) ? backendQuestion.statements : null,
     isRocketQuestion,
     isFractionQuestion: operation === 'frac',
   };

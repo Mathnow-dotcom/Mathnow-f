@@ -84,6 +84,7 @@ const getAvatarGradient = (name) => {
 };
 
 const getBeltLabel = (levelData = {}) => {
+  if (levelData['word-problems']?.unlocked) return levelData['word-problems']?.completed ? 'Word Problems Complete' : 'Word Problems';
   const beltsOrder = ["white", "yellow", "green", "blue", "red", "brown"];
   let currentBelt = "White";
 

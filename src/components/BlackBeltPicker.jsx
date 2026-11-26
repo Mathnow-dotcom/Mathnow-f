@@ -12,11 +12,13 @@ const BlackBeltPicker = () => {
   const navigate = useNavigate();
   const {
     selectedTable,
+    selectedOperation,
     startQuizWithDifficulty,
     tableProgress,
     isQuizStarting,
   } = useMathGamePick((ctx) => ({
     selectedTable: ctx.selectedTable,
+    selectedOperation: ctx.selectedOperation,
     startQuizWithDifficulty: ctx.startQuizWithDifficulty || (() => {}),
     tableProgress: ctx.tableProgress || {},
     isQuizStarting: Boolean(ctx.isQuizStarting),
@@ -150,7 +152,12 @@ const BlackBeltPicker = () => {
             </button>
           );
         })}
-
+        {selectedOperation === 'add' && <button onClick={() => navigate('/word-problems')} disabled={!completedSet.has(7) || isQuizStarting || isPickLocked} className="text-center">
+          <CardShell locked={!completedSet.has(7)} stripColor="bg-blue-600" highlighted={false}>
+            <h3 className="text-xl font-extrabold text-slate-900">Word Problems</h3><span className="text-3xl my-3" aria-hidden="true">📖</span>
+            <span className="text-slate-800">20 Questions</span>
+          </CardShell>
+        </button>}
         </div>
       </div>
     </div>

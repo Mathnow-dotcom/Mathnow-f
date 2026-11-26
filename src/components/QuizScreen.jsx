@@ -1,3 +1,4 @@
+import WordProblemQuestion from './WordProblemQuestion.jsx';
 import AdminBrand from './admin/AdminBrand.jsx';
 import '../styles/ClassroomTransitions.css';
 import '../styles/ActiveRun.css';
@@ -27,6 +28,8 @@ const QuizScreen = () => {
     pretestRemainingMs,
     pretestTimeLimitMs,
     pretestQuestionCount,
+    wordProblemRemainingMs,
+    expireWordProblem,
   } = useMathGamePick((ctx) => ({
     currentQuestion: ctx.currentQuestion || null,
     quizProgress: Number.isFinite(ctx.quizProgress) ? ctx.quizProgress : 0,
@@ -44,6 +47,8 @@ const QuizScreen = () => {
     pretestRemainingMs: Number.isFinite(ctx.pretestRemainingMs) ? ctx.pretestRemainingMs : null,
     pretestTimeLimitMs: Number.isFinite(ctx.pretestTimeLimitMs) ? ctx.pretestTimeLimitMs : null,
     pretestQuestionCount: Number.isFinite(ctx.pretestQuestionCount) ? ctx.pretestQuestionCount : 20,
+    wordProblemRemainingMs: ctx.wordProblemRemainingMs ?? 1200000,
+    expireWordProblem: ctx.expireWordProblem,
   }));
 
   const answerRefs = useRef([]);
@@ -144,6 +149,10 @@ const QuizScreen = () => {
   const visibleAnswerSymbols = answerSymbols.filter(
     (answer) => typeof answer?.symbol === 'string' && answer.symbol.trim() !== ''
   );
+
+  if (selectedDifficulty === 'word-problems') return <WordProblemQuestion key={currentQuestion?.id || 'loading'} question={currentQuestion} index={currentQuestionIndex} progress={quizProgress}
+    paused={isTimerPaused} disabled={isAnimating || isAnswerSubmitted || showResult || isAwaitingInactivityResponse}
+    onAnswer={handleAnswerClick} remainingMs={wordProblemRemainingMs} onTimeout={() => Promise.resolve(expireWordProblem?.()).catch(() => {})} />;
 
   return (
     <div

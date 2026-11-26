@@ -19,6 +19,8 @@ const OperationPicker = lazy(() => import('./components/OperationPicker.jsx'));
 const AssessmentSelection = lazy(() => import('./components/AssessmentSelection.jsx'));
 const TablePicker = lazy(() => import('./components/TablePicker.jsx'));
 const DifficultyPicker = lazy(() => import('./components/DifficultyPicker.jsx'));
+const WordProblemCompletion = lazy(() => import('./components/WordProblemCompletion.jsx'));
+const WordProblemBelt = lazy(() => import('./components/WordProblemBelt.jsx'));
 const BlackBeltPicker = lazy(() => import('./components/BlackBeltPicker.jsx')); 
 const QuizScreen = lazy(() => import('./components/QuizScreen.jsx'));
 const ResultsScreen = lazy(() => import('./components/ResultsScreen.jsx'));
@@ -317,6 +319,8 @@ const App = () => {
         <Route element={<MainLayout hideStats={showSiblingCheck || ctx.hideStatsUI} />}> 
           <Route path="/levels" element={<ProgramLearningGate><TablePicker /></ProgramLearningGate>} />
           <Route path="/belts" element={<DifficultyPicker />} />
+          <Route path="/word-problems-complete" element={<WordProblemCompletion />} />
+          <Route path="/word-problems" element={<WordProblemBelt />} />
           <Route path="/black" element={<BlackBeltPicker />} /> {/* ✅ BLACK ROUTE */}
           <Route path="/quiz" element={<QuizScreen />} />
           <Route path="/way-to-go" element={<WayToGoScreen />} />

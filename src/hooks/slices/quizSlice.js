@@ -35,6 +35,8 @@ export const buildQuizSlice = (d) => ({
   maxQuestions: d.maxQuestions,
   quizStartTime: d.quizStartTime,
   setQuizStartTime: d.setQuizStartTime,
+  wordProblemRemainingMs: d.wordProblemRemainingMs,
+  expireWordProblem: d.expireWordProblem,
   elapsedTime: d.elapsedTime,
   setElapsedTime: d.setElapsedTime,
   pausedTime: d.pausedTime,
