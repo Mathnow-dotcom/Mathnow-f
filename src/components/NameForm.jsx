@@ -159,6 +159,9 @@ const NameForm = () => {
   const [error, setError] = useState('');
   const [school, setSchool] = useState('');
   const [grade, setGrade] = useState('');
+  const [showDemoPicker, setShowDemoPicker] = useState(false);
+  const demoPickerRef = useRef(null);
+  const demoButtonRef = useRef(null);
   const [showAdminPinModal, setShowAdminPinModal] = useState(false);
   const [adminPin, setAdminPin] = useState('');
   const [adminError, setAdminError] = useState('');
@@ -171,6 +174,15 @@ const NameForm = () => {
     'Loading your progress...',
     'Setting up your math adventure...',
   ];
+
+  useEffect(() => {
+    if (!showDemoPicker) return;
+    const dismiss = (event) => {
+      if (!demoPickerRef.current?.contains(event.target)) setShowDemoPicker(false);
+    };
+    document.addEventListener('pointerdown', dismiss);
+    return () => document.removeEventListener('pointerdown', dismiss);
+  }, [showDemoPicker]);
 
   useEffect(() => {
     setChildName('');
@@ -319,10 +331,11 @@ const NameForm = () => {
   );
 
 
-const handleDemoClick = () => {
-      if (isLoginLoading) return;
-      setError('');
-      handleDemoLogin();
+  const selectDemo = (account) => {
+    if (isLoginLoading) return;
+    setShowDemoPicker(false);
+    setError('');
+    handleDemoLogin(account);
   };
 
   if (isAdminLoading) {
@@ -485,15 +498,35 @@ const handleDemoClick = () => {
               <span>Start</span>
             </button>
             
-            <button
-              type="button"
-              onClick={handleDemoClick}
-              className="student-login-action student-login-action--demo bg-green-800 hover:bg-green-900 text-white font-bold py-1 px-3 sm:px-4 rounded-2xl duration-300 transform hover:scale-105 active:scale-95 shadow-lg flex-1 text-sm"
-              disabled={isLoginLoading}
-            >
-              <FaGamepad aria-hidden="true" />
-              <span>Demo</span>
-            </button>
+            <div className="student-demo-picker flex-1" ref={demoPickerRef} onKeyDown={event => {
+              if (event.key === 'Escape' && showDemoPicker) {
+                event.stopPropagation();
+                setShowDemoPicker(false);
+                demoButtonRef.current?.focus();
+              }
+            }}>
+              <button
+                type="button"
+                ref={demoButtonRef}
+                aria-expanded={showDemoPicker}
+                aria-controls={showDemoPicker ? 'student-demo-accounts' : undefined}
+                onClick={() => setShowDemoPicker(open => !open)}
+                className="student-login-action student-login-action--demo w-full shadow-lg"
+                disabled={isLoginLoading}
+              >
+                <FaGamepad aria-hidden="true" />
+                <span>Demo</span>
+              </button>
+              {showDemoPicker && (
+                <div id="student-demo-accounts" className="student-demo-accounts" role="group" aria-label="Demo accounts">
+                  {Array.from({ length: 10 }, (_, index) => index + 1).map(account => (
+                    <button type="button" key={account} onClick={() => selectDemo(account)}>
+                      <span>Demo{account}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </form>
         </div>

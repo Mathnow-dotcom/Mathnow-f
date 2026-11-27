@@ -90,6 +90,9 @@ export const authLogin = async (pin, name = 'Player', school, grade) => {
   return callApi('/auth/login-pin', 'POST', { pin, name, school, grade });
 };
 
+export const authDemoLogin = (demoAccount) =>
+  callApi('/auth/login-pin', 'POST', { demoAccount });
+
 export const userUpdateTheme = async (themeKey, pin) => {
   return callApi('/user/theme', 'POST', { themeKey }, pin);
 };

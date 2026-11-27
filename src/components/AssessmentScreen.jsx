@@ -23,7 +23,6 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
   const [savingNext, setSavingNext] = useState(false);
   const [error, setError] = useState('');
   const [answer, setAnswer] = useState('');
-  const [quit, setQuit] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const session = useRef(crypto.randomUUID());
   const current = useRef(null);
@@ -149,13 +148,16 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
     catch (e) { apply(submitted); setError(e.message); }
     finally { locked.current = false; setBusy(false); setSavingNext(false); }
   };
-  const leave = async () => {
+  const quitTest = async () => {
     if (locked.current) return;
     locked.current = true; setBusy(true);
     try { await update('end'); ended.current = true; }
     catch { endOnExit(); }
     finally {
-      locked.current = false; setBusy(false); setRunning(false); setQuit(false); navigate(legacy ? '/mode' : returnPath);
+      locked.current = false;
+      setBusy(false);
+      setRunning(false);
+      navigate('/mode');
     }
   };
 
@@ -168,7 +170,7 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
       {(showClassroomIntro || running) && <AdminBrand className="classroom-screen-brand" />}
       <header className="assessment-toolbar assessment-student-toolbar">
         {running && !complete
-          ? <button type="button" onClick={() => setQuit(true)}>⚙ Quit test</button>
+          ? <button type="button" className="assessment-quit-button" disabled={busy} onClick={quitTest}>Quit test</button>
           : <button type="button" onClick={ctx.handleQuit}>Sign out</button>}
       </header>
       <section className={`assessment-card${!running ? ' assessment-start-card' : ''}${running && !complete ? ' assessment-question-card' : ''}`} aria-busy={busy}>
@@ -187,27 +189,17 @@ export default function AssessmentScreen({ flow = 'learning', type, part = null 
           <form onSubmit={submit}>
             <label className="sr-only" htmlFor="test-answer">Your answer</label>
             <input key={attempt.position} id="test-answer" autoFocus inputMode="none" pattern="[0-9]*" autoComplete="off"
-              value={answer} onChange={(e) => edit(e.target.value)} disabled={(busy && !savingNext) || quit} placeholder="Type answer" />
+              value={answer} onChange={(e) => edit(e.target.value)} disabled={busy && !savingNext} placeholder="Type answer" />
             <div className="assessment-keypad">
-              {[1,2,3,4,5,6,7,8,9,'Clear',0].map(key => <button type="button" key={key} className={key === 'Clear' ? 'assessment-clear' : undefined} disabled={(busy && !savingNext) || quit}
+              {[1,2,3,4,5,6,7,8,9,'Clear',0].map(key => <button type="button" key={key} className={key === 'Clear' ? 'assessment-clear' : undefined} disabled={busy && !savingNext}
                 onClick={() => edit(key === 'Clear' ? '' : answer + key)}>{key}</button>)}
               <button type="submit" className={answer ? 'assessment-submit' : 'assessment-submit assessment-submit--empty'}
-                disabled={busy || quit || !answer}>Submit</button>
+                disabled={busy || !answer}>Submit</button>
             </div>
           </form>
         </>}
         {error && <div role="alert" className="assessment-error">{error}</div>}
       </section>
-      {quit && <div className="assessment-modal classroom-selection-page classroom-modal-screen" role="dialog" aria-modal="true" aria-label="Quit test">
-        <AdminBrand className="classroom-screen-brand" />
-        <section className="assessment-card assessment-quit-card">
-          <div className="assessment-card-actions">
-          <button disabled={busy} onClick={leave}>End test</button>
-          <button className="assessment-secondary" disabled={busy} onClick={() => setQuit(false)}>Keep going</button>
-          </div>
-          {error && <p role="alert">{error}</p>}
-        </section>
-      </div>}
       <aside className="assessment-timer"><SessionTimer accumulatedTime={ctx.totalTimeToday} /></aside>
     </main>
   );
