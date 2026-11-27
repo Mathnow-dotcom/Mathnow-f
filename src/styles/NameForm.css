@@ -239,6 +239,7 @@
 }
 
 .student-login-actions {
+  position: relative;
   width: 100%;
   gap: 0.55rem;
   margin-top: clamp(0.55rem, 1.2vh, 0.75rem) !important;
@@ -267,6 +268,50 @@
   color: #1764a5 !important;
   background: linear-gradient(180deg, #f4faff, #e5f3ff) !important;
 }
+
+.student-demo-picker { min-width: 0; }
+
+.student-demo-accounts {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  bottom: calc(100% + 0.45rem);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.3rem;
+  padding: 0.45rem;
+  border: 1px solid #c5ddf2;
+  border-radius: 0.8rem;
+  background: #fff;
+  box-shadow: 0 8px 24px #173f7033;
+}
+
+.student-demo-accounts button {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.25rem 0;
+  border-radius: 0.45rem;
+  color: #1764a5;
+  background: #edf6ff;
+  font-size: clamp(0.75rem, 3.5vw, 0.9rem);
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+@media (max-width: 340px) {
+  .student-demo-accounts button { font-size: 0.75rem; }
+}
+
+@media (max-width: 290px) {
+  .student-demo-accounts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.student-demo-accounts button:hover,
+.student-demo-accounts button:focus-visible { background: #d9edff; }
 
 @media (max-width: 520px) {
   .student-login-page {

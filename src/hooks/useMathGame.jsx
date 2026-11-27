@@ -7,6 +7,7 @@ import { themeConfigs } from '../utils/mathGameLogic.js';
 // Import API functions
 import {
   authLogin,
+  authDemoLogin,
   mapQuestionToFrontend,
   quizHandleInactivity,
   quizPracticeAnswer,
@@ -1039,23 +1040,19 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
   );
 
   // ---------------- LOGIN ----------------
-  const handlePinSubmit = useCallback(
-    async (pinValue, nameValue, schoolValue, gradeValue) => {
+  const handleLogin = useCallback(
+    async (requestLogin) => {
       const oldPin = localStorage.getItem('math-child-pin');
       const storedGameModePin = localStorage.getItem('game-mode-pin');
-      const shouldPreserveGameModeContext =
-        oldPin === pinValue || storedGameModePin === pinValue;
-      localStorage.setItem('math-child-pin', pinValue);
-      setChildPin(pinValue);
       try {
         setIsLoginLoading(true);
 
-        const loginResponse = await authLogin(
-          pinValue,
-          nameValue.trim(),
-          schoolValue,
-          gradeValue
-        );
+        const loginResponse = await requestLogin();
+        const pinValue = loginResponse.user.pin;
+        const shouldPreserveGameModeContext =
+          oldPin === pinValue || storedGameModePin === pinValue;
+        localStorage.setItem('math-child-pin', pinValue);
+        setChildPin(pinValue);
         usageSessionRef.current = loginResponse?.user?.appUsage?.sessionId || null;
         applyAppUsage(loginResponse?.user?.appUsage);
         setIsLoggedIn(true);
@@ -1119,10 +1116,11 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
     ]
   );
 
-  const handleDemoLogin = useCallback(() => {
-    const demoPin = '77777';
-    const demoName = 'Demo';
-    handlePinSubmit(demoPin, demoName, 'School A', 'K').catch((err) => {
+  const handlePinSubmit = useCallback((pin, name, school, grade) =>
+    handleLogin(() => authLogin(pin, name.trim(), school, grade)), [handleLogin]);
+
+  const handleDemoLogin = useCallback((account) => {
+    return handleLogin(() => authDemoLogin(account)).catch((err) => {
       console.error('Demo Login failed:', err.message);
       showUiMessage({
         type: 'error',
@@ -1131,7 +1129,7 @@ const showAnswerSymbolFor300ms = useCallback((payload) => {
         details: err.message,
       });
     });
-  }, [handlePinSubmit, showUiMessage]);
+  }, [handleLogin, showUiMessage]);
 
   // Persist theme
   const updateThemeAndNavigate = useCallback(

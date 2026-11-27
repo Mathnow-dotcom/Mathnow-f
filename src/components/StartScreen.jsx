@@ -5,7 +5,7 @@ import '../styles/StartScreen.css';
 const NOOP_NAVIGATE = () => {};
 
 
-const APP_VERSION = '12.5';
+const APP_VERSION = '12.6';
 const APP_RELEASE_DATE_BY_VERSION = {
     '6.2': '2026-04-02',
     '6.3': '2026-04-03',
@@ -70,6 +70,7 @@ const APP_RELEASE_DATE_BY_VERSION = {
     '12.3': '2026-11-23',
     '12.4': '2026-11-24',
     '12.5': '2026-11-26',
+    '12.6': '2026-11-27',
 };
 
 const StartScreen = () => {
