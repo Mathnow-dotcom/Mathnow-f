@@ -25,7 +25,7 @@
 .assessment-student-toolbar { justify-content:flex-end; max-width:none; }
 .assessment-student-toolbar > button { margin-right:0; }
 .assessment-page .assessment-quit-button { background:#e5e7eb; color:#1f2937; }
-.assessment-page .assessment-quit-button:hover:not(:disabled) { background:#d1d5db; }
+.assessment-page .assessment-quit-button:disabled { opacity:1; }
 /* Match the learning/Surf keypad without changing assessment input or save handling. */
 .assessment-question-card { width:min(100%,448px); }
 .assessment-question-card form { max-width:384px; margin-inline:auto; }
